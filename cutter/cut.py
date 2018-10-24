@@ -1,4 +1,4 @@
-from .thulac import Thulac
+from thulac_cutter import Thulac
 import os
 import argparse
 import json
