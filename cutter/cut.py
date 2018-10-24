@@ -24,8 +24,8 @@ def cut(file_path):
     ouf = open(output_path, "w")
 
     for line in inf:
+        data = json.loads(line[:-1])
         try:
-            data = json.loads(line[:-1])
 
             data["WS"]["QW"]["@value"] = cutter.fast_cut(data["WS"]["QW"]["@value"])
             data["WS"]["SB"]["SSJL"]["@value"] = cutter.fast_cut(data["WS"]["SB"]["SSJL"]["@value"])
