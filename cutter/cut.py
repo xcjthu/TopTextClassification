@@ -24,17 +24,20 @@ def cut(file_path):
     ouf = open(output_path, "w")
 
     for line in inf:
-        data = json.loads(line[:-1])
+        try:
+            data = json.loads(line[:-1])
 
-        data["WS"]["QW"]["@value"] = cutter.fast_cut(data["WS"]["QW"]["@value"])
-        data["WS"]["SB"]["SSJL"]["@value"] = cutter.fast_cut(data["WS"]["SB"]["SSJL"]["@value"])
-        data["WS"]["SS"]["@value"] = cutter.fast_cut(data["WS"]["SS"]["@value"])
-        data["WS"]["LY"]["@value"] = cutter.fast_cut(data["WS"]["LY"]["@value"])
-        data["WS"]["PJJG"]["@value"] = cutter.fast_cut(data["WS"]["PJJG"]["@value"])
-        data["WS"]["WB"]["@value"] = cutter.fast_cut(data["WS"]["WB"]["@value"])
-        data["WS"]["QTXX"]["TITLE"]["@value"] = cutter.fast_cut(data["WS"]["QTXX"]["TITLE"]["@value"])
+            data["WS"]["QW"]["@value"] = cutter.fast_cut(data["WS"]["QW"]["@value"])
+            data["WS"]["SB"]["SSJL"]["@value"] = cutter.fast_cut(data["WS"]["SB"]["SSJL"]["@value"])
+            data["WS"]["SS"]["@value"] = cutter.fast_cut(data["WS"]["SS"]["@value"])
+            data["WS"]["LY"]["@value"] = cutter.fast_cut(data["WS"]["LY"]["@value"])
+            data["WS"]["PJJG"]["@value"] = cutter.fast_cut(data["WS"]["PJJG"]["@value"])
+            data["WS"]["WB"]["@value"] = cutter.fast_cut(data["WS"]["WB"]["@value"])
+            data["WS"]["QTXX"]["TITLE"]["@value"] = cutter.fast_cut(data["WS"]["QTXX"]["TITLE"]["@value"])
 
-        print(json.dumps(data, ensure_ascii=False), file=ouf)
+            print(json.dumps(data, ensure_ascii=False), file=ouf)
+        except Exception as e:
+            print(data["uid"])
 
 
 def dfs_search(path):
