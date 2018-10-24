@@ -36,8 +36,6 @@ def cut(file_path):
 
         print(json.dumps(data, ensure_ascii=False), file=ouf)
 
-    gg
-
 
 def dfs_search(path):
     for file_name in os.listdir(path):
