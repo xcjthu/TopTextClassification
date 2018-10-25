@@ -12,7 +12,7 @@ cutter = Thulac("/home/zhx/THULAC/models", "/home/zhx/THULAC/dict.txt")
 
 num_process = 40
 data_dir = "/data/disk1/data/wenshu_data/new_json_data"
-output_dir = "/data/disk1/private/zhx/law/cutted_data"
+output_dir = "/data/disk1/private/zhx/law/new_cutted_data"
 
 
 def cut(file_path):
