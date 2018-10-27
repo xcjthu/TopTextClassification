@@ -13,6 +13,14 @@ class FNN(nn.Module):
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(1024, config.getint("model", "out_classes"))
 
+    def init_hidden(self, config, usegpu):
+        pass
+
+    def init_multi_gpu(self, device):
+        self.fc1 = nn.DataParallel(self.fc1, device_ids=device)
+        self.relu = nn.DataParallel(self.relu, device_ids=device)
+        self.fc2 = nn.DataParallel(self.fc2, device_ids=device)
+
     def forward(self, data, criterion):
         x = data["input"]
         labels = data["label"]
