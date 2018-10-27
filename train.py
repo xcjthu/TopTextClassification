@@ -32,14 +32,6 @@ print_info("Start to build Net")
 model_name = config.get("model", "name")
 net = get_model(model_name)
 
-try:
-    net.load_state_dict(
-        torch.load(
-            os.path.join(config.get("output", "model_path"), config.get("output", "model_name"),
-                         "model-" + config.get("train", "pre_train") + ".pkl")))
-except Exception as e:
-    print(e)
-
 device = []
 if torch.cuda.is_available() and use_gpu:
     device_list = args.gpu.split(",")
@@ -48,16 +40,25 @@ if torch.cuda.is_available() and use_gpu:
 
     net = net.cuda()
 
-try:
-    if use_gpu:
+    try:
         net.init_multi_gpu(device)
+    except Exception as e:
+        print_info(str(e))
+
+try:
+    net.load_state_dict(
+        torch.load(
+            os.path.join(config.get("output", "model_path"), config.get("output", "model_name"),
+                         "model-" + config.get("train", "pre_train") + ".pkl")))
 except Exception as e:
-    pass
+    print_info(str(e))
 
 print_info("Net build done")
 
 print_info("Start to prepare Data")
 
+train_dataset, test_dataset = init_dataset(config)
+
 print_info("Data preparation Done")
 
-train_net(net, train_dataset, valid_dataset, test_dataset, use_gpu, config)
+train_net(net, train_dataset, test_dataset, use_gpu, config)

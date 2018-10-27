@@ -1,5 +1,6 @@
 import time
 import torch
+import os
 
 
 def print_time():
@@ -11,8 +12,11 @@ def print_info(s):
     print("[%s] %s" % (times, s))
 
 
-def get_file_list(file_name):
-    return file_name.replace(" ", "").split(",")
+def get_file_list(file_path, file_name):
+    file_list = file_name.replace(" ", "").split(",")
+    for a in range(0, len(file_list)):
+        file_list[a] = os.path.join(file_path, file_list[a])
+    return file_list
 
 
 def calc_accuracy(outputs, label):
