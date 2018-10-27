@@ -7,7 +7,7 @@ import multiprocessing
 import random
 
 from utils.util import print_info, get_file_list
-from formatter.format import format, check
+from formatter.format import format, check, init
 from word2vec.word2vec import transformer
 
 
@@ -121,13 +121,14 @@ def init_train_dataset(config):
                           config, config.getint("reader", "train_reader_num"), "train")
 
 
-def init_test_dataset(config):
+def init_valid_dataset(config):
     return create_dataset(get_file_list(config.get("data", "test_data_path"), config.get("data", "test_file_list")),
-                          config, config.getint("reader", "test_reader_num"), "test")
+                          config, config.getint("reader", "test_reader_num"), "valid")
 
 
 def init_dataset(config):
+    init(config)
     train_dataset = init_train_dataset(config)
-    test_dataset = init_test_dataset(config)
+    valid_dataset = init_valid_dataset(config)
 
-    return train_dataset, test_dataset
+    return train_dataset, valid_dataset
