@@ -89,7 +89,8 @@ class reader():
                     return None
                 continue
 
-            if check(x, config):
+            x = check(x, config)
+            if not (x is None):
                 data_list.append(x)
 
         if len(data_list) < batch_size:
