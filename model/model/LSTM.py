@@ -65,4 +65,4 @@ class LSTM(nn.Module):
         loss = criterion(y, labels)
         accu = calc_accuracy(y, labels, config)
 
-        return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy()}
+        return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y}
