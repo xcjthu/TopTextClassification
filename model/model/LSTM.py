@@ -35,9 +35,8 @@ class LSTM(nn.Module):
                                 self.hidden_dim)))
 
     def init_multi_gpu(self, device):
-        self.fc1 = nn.DataParallel(self.fc1, device_ids=device)
-        self.relu = nn.DataParallel(self.relu, device_ids=device)
-        self.fc2 = nn.DataParallel(self.fc2, device_ids=device)
+        self.lstm = nn.DataParallel(self.lstm)
+        self.fc = nn.DataParallel(self.fc)
 
     def forward(self, data, criterion, config, usegpu):
         x = data["input"]
