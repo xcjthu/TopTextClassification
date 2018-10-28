@@ -90,4 +90,5 @@ class AYPredictionFormatter:
 
         matrix = [ss[i] + title[i] + pjjg[i] for i in range(len(data))]
         matrix = torch.Tensor(matrix)
+        label = torch.from_numpy(np.array(label, dtype=np.int))
         return {'input': matrix, 'label': label}
