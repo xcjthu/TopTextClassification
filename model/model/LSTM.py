@@ -14,7 +14,7 @@ class LSTM(nn.Module):
         self.lstm = nn.LSTM(self.data_size, self.hidden_dim, batch_first=True,
                             num_layers=config.getint("model", "num_layers"))
 
-        self.fc = nn.Linear(self.hidden, config.getint("model", "output_dim"))
+        self.fc = nn.Linear(self.hidden_dim, config.getint("model", "output_dim"))
 
     def init_hidden(self, config, usegpu):
         if torch.cuda.is_available() and usegpu:
