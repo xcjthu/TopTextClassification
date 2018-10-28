@@ -17,15 +17,13 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     print_info("valid begin")
     net.eval()
 
-    task_loss_type = config.get("data", "type_of_loss")
+    task_loss_type = config.get("train", "type_of_loss")
     criterion = get_loss(task_loss_type)
 
     running_acc = 0
     running_loss = 0
     cnt = 0
 
-    # TODO
-    # Here to read data
     while True:
         data = valid_dataset.fetch_data(config)
         if data is None:
