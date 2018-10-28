@@ -13,7 +13,7 @@ class Word2vec:
     def __init__(self, path):
         print_info("begin to load word embedding")
 
-        self.model = fasttext.load_model(os.path.join(path, "model.bin"))
+        self.model = fasttext.load_model(path)
 
         print_info("load word embedding succeed")
 

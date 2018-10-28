@@ -4,7 +4,7 @@ import random
 
 from utils.util import print_info, get_file_list
 from reader.formatter.format import AYPredictionFormatter
-from word2vec.word2vec import transformer
+from word2vec.word2vec import transformer, init_transformer
 
 formatter = None
 
@@ -121,11 +121,12 @@ def init_train_dataset(config):
 
 
 def init_valid_dataset(config):
-    return create_dataset(get_file_list(config.get("data", "test_data_path"), config.get("data", "test_file_list")),
-                          config, config.getint("reader", "test_reader_num"), "valid")
+    return create_dataset(get_file_list(config.get("data", "valid_data_path"), config.get("data", "valid_file_list")),
+                          config, config.getint("reader", "valid_reader_num"), "valid")
 
 
 def init_dataset(config):
+    init_transformer(config)
     global formatter
     formatter = AYPredictionFormatter(config)
     train_dataset = init_train_dataset(config)
