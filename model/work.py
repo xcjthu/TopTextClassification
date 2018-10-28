@@ -39,7 +39,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
 
         results = net(data, criterion, config, use_gpu)
 
-        outputs, loss, accu = results["x"], results["loss"], results["accu"]
+        outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
 
         running_loss += loss.item()
         running_acc += accu.item()
@@ -134,7 +134,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
             results = net(data, criterion, config, use_gpu)
 
-            outputs, loss, accu = results["x"], results["loss"], results["accu"]
+            outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
 
             loss.backward()
 

@@ -62,3 +62,8 @@ train_dataset, valid_dataset = init_dataset(config)
 print_info("Data preparation Done")
 
 train_net(net, train_dataset, valid_dataset, use_gpu, config)
+
+for a in range(0, len(train_dataset.read_process)):
+    train_dataset.read_process[a].terminate()
+for a in range(0, len(valid_dataset.read_process)):
+    valid_dataset.read_process[a].terminate()
