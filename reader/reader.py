@@ -1,13 +1,9 @@
-import torch
-import os
-import json
 import time
-from torch.utils.data import DataLoader
 import multiprocessing
 import random
 
 from utils.util import print_info, get_file_list
-from formatter.format import AYPredictionFormatter
+from reader.formatter.format import AYPredictionFormatter
 from word2vec.word2vec import transformer
 
 formatter = None
