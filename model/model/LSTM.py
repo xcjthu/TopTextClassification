@@ -20,18 +20,18 @@ class LSTM(nn.Module):
         if torch.cuda.is_available() and usegpu:
             self.hidden = (
                 torch.autograd.Variable(
-                    torch.zeros(config.getint("model", "num_layers"), config.getint("train", "batch_size"),
+                    torch.zeros(config.getint("train", "batch_size"), config.getint("model", "num_layers"),
                                 self.hidden_dim).cuda()),
                 torch.autograd.Variable(
-                    torch.zeros(config.getint("model", "num_layers"), config.getint("train", "batch_size"),
+                    torch.zeros(config.getint("train", "batch_size"), config.getint("model", "num_layers"),
                                 self.hidden_dim).cuda()))
         else:
             self.hidden = (
                 torch.autograd.Variable(
-                    torch.zeros(config.getint("model", "num_layers"), config.getint("train", "batch_size"),
+                    torch.zeros(config.getint("train", "batch_size"), config.getint("model", "num_layers"),
                                 self.hidden_dim)),
                 torch.autograd.Variable(
-                    torch.zeros(config.getint("model", "num_layers"), config.getint("train", "batch_size"),
+                    torch.zeros(config.getint("train", "batch_size"), config.getint("model", "num_layers"),
                                 self.hidden_dim)))
 
     def init_multi_gpu(self, device):
@@ -45,6 +45,7 @@ class LSTM(nn.Module):
         x = x.view(config.getint("train", "batch_size"), -1, self.data_size)
         print(x)
         self.init_hidden(config, usegpu)
+        self.hidden = torch.transpose(self.hidden, 0, 1)
 
         lstm_out, self.hidden = self.lstm(x, self.hidden)
 
