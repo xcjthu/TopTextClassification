@@ -94,7 +94,7 @@ class reader():
         if len(data_list) < batch_size:
             return None
 
-        return formatter.format(data_list, config, transformer)
+        return formatter.format(data_list, config, transformer, self.mode)
 
     def fetch_data(self, config):
         while True:
