@@ -4,9 +4,7 @@ import random
 
 from utils.util import print_info, get_file_list
 from reader.formatter.format import AYPredictionFormatter
-from word2vec.word2vec import transformer, init_transformer
-
-formatter = None
+from word2vec.word2vec import init_transformer
 
 
 class reader():
@@ -33,6 +31,9 @@ class reader():
                                               args=(config, self.data_queue, self.file_queue, a,))
             self.read_process.append(process)
             self.read_process[-1].start()
+
+        from word2vec.word2vec import transformer
+        self.transformer = transformer
 
     def init_file_list(self, config):
         if config.getboolean("train", "shuffle") and self.mode == "train":
@@ -94,7 +95,7 @@ class reader():
         if len(data_list) < batch_size:
             return None
 
-        return formatter.format(data_list, config, transformer, self.mode)
+        return formatter.format(data_list, config, self.transformer, self.mode)
 
     def fetch_data(self, config):
         while True:
