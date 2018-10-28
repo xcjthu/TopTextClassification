@@ -26,14 +26,14 @@ class reader():
 
         self.none_cnt = 0
 
+        from word2vec.word2vec import transformer
+        self.transformer = transformer
+
         for a in range(0, num_process):
             process = multiprocessing.Process(target=self.always_read_data,
                                               args=(config, self.data_queue, self.file_queue, a,))
             self.read_process.append(process)
             self.read_process[-1].start()
-
-        from word2vec.word2vec import transformer
-        self.transformer = transformer
 
     def init_file_list(self, config):
         if config.getboolean("train", "shuffle") and self.mode == "train":
