@@ -36,6 +36,7 @@ def calc_accuracy(outputs, label, config):
             outputs1 = (outputs[:, i] >= 0.5).long()
             labels1 = (labels[:, i] >= 0.5).long()
             total += int((labels1 * outputs1).sum())
+            total += int(((1-labels1) * (1-outputs1)).sum())
 
         return torch.Tensor([1.0 * total / len(outputs) / len(outputs[0])])
     else:
