@@ -27,7 +27,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     # TODO
     # Here to read data
     while True:
-        data = valid_dataset.fetch_data()
+        data = valid_dataset.fetch_data(config)
         if data is None:
             break
         cnt += 1
@@ -121,7 +121,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
         while True:
             cnt += 1
-            data = train_dataset.fetch_data()
+            data = train_dataset.fetch_data(config)
             if data is None:
                 break
 

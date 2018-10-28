@@ -52,7 +52,7 @@ class AYPredictionFormatter:
                 while len(text) < config.getInt('train', 'ss_text_lenght'):
                     text.append(transformer.load('BLANK'))
             '''
-            ss.append(self.pad(sstmp, config.getInt('train', 'ss_text_length'), transformer))
+            ss.append(self.pad(sstmp, config.getint('train', 'ss_text_length'), transformer))
             '''
             for v in sstmp:
                 if len(text) < config.getInt('train', 'ss_text_length'):
@@ -66,7 +66,7 @@ class AYPredictionFormatter:
             '''
 
             titletmp = [v[0] for v in line['WS']['QTXX']['TITLE']['@value']]
-            title.append(self.pad(titletmp, config.getInt('train', 'title_length'), transformer))
+            title.append(self.pad(titletmp, config.getint('train', 'title_length'), transformer))
             '''
             for v in titletmp:
                 if len(titleText) < config.getInt('train', 'title_length'):
@@ -79,7 +79,7 @@ class AYPredictionFormatter:
             '''
 
             pjjgtmp = [v[0] for v in line['WS']['PJJG']['@value']]
-            pjjg.append(self.pad(pjjgtmp, config.getInt('train', 'pjjg_length'), transformer))
+            pjjg.append(self.pad(pjjgtmp, config.getint('train', 'pjjg_length'), transformer))
 
             tmp = np.zeros(len(self.labelToId))
             try:
