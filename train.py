@@ -30,7 +30,7 @@ config = ConfigParser(configFilePath)
 print_info("Start to build Net")
 
 model_name = config.get("model", "name")
-net = get_model(model_name)
+net = get_model(model_name, config)
 
 device = []
 if torch.cuda.is_available() and use_gpu:

@@ -7,8 +7,8 @@ model_list = {
 }
 
 
-def get_model(name):
+def get_model(name, config):
     if name in model_list.keys():
-        pass
+        return model_list[name](config)
     else:
         raise NotImplementedError
