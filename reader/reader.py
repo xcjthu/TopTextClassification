@@ -7,8 +7,10 @@ import multiprocessing
 import random
 
 from utils.util import print_info, get_file_list
-from formatter.format import format, check, init
+from formatter.format import AYPredictionFormatter
 from word2vec.word2vec import transformer
+
+formatter = None
 
 
 class reader():
@@ -89,14 +91,14 @@ class reader():
                     return None
                 continue
 
-            x = check(x, config)
+            x = formatter.check(x, config)
             if not (x is None):
                 data_list.append(x)
 
         if len(data_list) < batch_size:
             return None
 
-        return format(data_list, config, transformer)
+        return formatter.format(data_list, config, transformer)
 
     def fetch_data(self, config):
         while True:
@@ -128,7 +130,8 @@ def init_valid_dataset(config):
 
 
 def init_dataset(config):
-    init(config)
+    global formatter
+    formatter = AYPredictionFormatter(config)
     train_dataset = init_train_dataset(config)
     valid_dataset = init_valid_dataset(config)
 
