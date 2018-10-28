@@ -1,4 +1,8 @@
-model_list = {}
+from model.model.fnn import FNN
+
+model_list = {
+    "FNN": FNN
+}
 
 
 def get_model(name):

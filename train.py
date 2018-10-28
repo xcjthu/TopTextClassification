@@ -57,8 +57,8 @@ print_info("Net build done")
 
 print_info("Start to prepare Data")
 
-train_dataset, test_dataset = init_dataset(config)
+train_dataset, valid_dataset = init_dataset(config)
 
 print_info("Data preparation Done")
 
-train_net(net, train_dataset, test_dataset, use_gpu, config)
+train_net(net, train_dataset, valid_dataset, use_gpu, config)
