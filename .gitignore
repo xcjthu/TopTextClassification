@@ -7,3 +7,5 @@ __pycache__
 
 config/default_local.config
 SVM/svmModel
+
+temp

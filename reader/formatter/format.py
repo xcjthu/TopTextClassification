@@ -17,7 +17,7 @@ class AYPredictionFormatter:
 
     def check(self, data, config):
         data = json.loads(data)
-        if ',' in data['WS']['QTXX']['AY'] or data['WS']['QTXX']['AT'] == "":
+        if ',' in data['WS']['QTXX']['AY'] or data['WS']['QTXX']['AY'] == "":
             return None
 
         return data
