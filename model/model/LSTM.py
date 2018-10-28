@@ -5,6 +5,14 @@ import torch.functional as F
 from utils.util import calc_accuracy, print_info
 
 
+class transpose(nn.Module):
+    def __init__(self):
+        super(transpose, self).__init__()
+
+    def forward(self, x):
+        return (torch.transpose(x[0], 0, 1), torch.transpose(x[1], 0, 1))
+
+
 class LSTM(nn.Module):
     def __init__(self, config):
         super(LSTM, self).__init__()
@@ -15,6 +23,7 @@ class LSTM(nn.Module):
                             num_layers=config.getint("model", "num_layers"))
 
         self.fc = nn.Linear(self.hidden_dim, config.getint("model", "output_dim"))
+        self.transpose = transpose()
 
     def init_hidden(self, config, usegpu):
         if torch.cuda.is_available() and usegpu:
@@ -37,6 +46,7 @@ class LSTM(nn.Module):
     def init_multi_gpu(self, device):
         self.lstm = nn.DataParallel(self.lstm)
         self.fc = nn.DataParallel(self.fc)
+        self.transpose = nn.DataParallel(self.transpose)
 
     def forward(self, data, criterion, config, usegpu):
         x = data["input"]
@@ -45,7 +55,7 @@ class LSTM(nn.Module):
         x = x.view(config.getint("train", "batch_size"), -1, self.data_size)
         print(x.size())
         self.init_hidden(config, usegpu)
-        self.hidden = (torch.transpose(self.hidden[0], 0, 1), torch.transpose(self.hidden[1], 0, 1))
+        self.hidden = self.transpose(self.hidden)
 
         lstm_out, self.hidden = self.lstm(x, self.hidden)
 
