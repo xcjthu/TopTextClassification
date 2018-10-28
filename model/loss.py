@@ -11,10 +11,19 @@ def get_loss(task_loss_type):
         criterion = nn.NLLLoss()
     elif task_loss_type == "focal_loss":
         criterion = FocalLoss()
+    elif task_loss_type == "multi_label_cross_entropy_loss":
+        criterion = multi_label_cross_entropy_loss
     else:
         raise NotImplementedError
 
     return criterion
+
+def multi_label_cross_entropy_loss(outputs, labels):
+    temp = F.sigmoid(outputs)
+    res = - labels * torch.log(temp) - (1 - labels) * torch.log(1 - temp)
+    res = torch.mean(torch.sum(res, dim=1))
+
+    return res
 
 
 def cross_entropy_loss(outputs, labels):

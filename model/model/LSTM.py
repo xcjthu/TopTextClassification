@@ -53,7 +53,6 @@ class LSTM(nn.Module):
         labels = data["label"]
 
         x = x.view(config.getint("train", "batch_size"), -1, self.data_size)
-        print(x.size())
         self.init_hidden(config, usegpu)
         self.hidden = self.transpose(self.hidden)
 
