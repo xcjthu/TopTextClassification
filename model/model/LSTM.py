@@ -43,9 +43,9 @@ class LSTM(nn.Module):
         labels = data["label"]
 
         x = x.view(config.getint("train", "batch_size"), -1, self.data_size)
-        print(x)
+        print(x.size())
         self.init_hidden(config, usegpu)
-        self.hidden = torch.transpose(self.hidden, 0, 1)
+        self.hidden = (torch.transpose(self.hidden[0], 0, 1), torch.transpose(self.hidden[1], 0, 1))
 
         lstm_out, self.hidden = self.lstm(x, self.hidden)
 
