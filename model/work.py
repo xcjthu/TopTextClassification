@@ -39,7 +39,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
                 else:
                     data[key] = Variable(data[key])
 
-        results = net(data, criterion)
+        results = net(data, criterion, config, use_gpu)
 
         outputs, loss, accu = results["x"], results["loss"], results["accu"]
 
@@ -134,7 +134,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
             optimizer.zero_grad()
 
-            results = net(data, criterion)
+            results = net(data, criterion, config, use_gpu)
 
             outputs, loss, accu = results["x"], results["loss"], results["accu"]
 

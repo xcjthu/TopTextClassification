@@ -1,7 +1,9 @@
 from model.model.fnn import FNN
+from model.model.LSTM import LSTM
 
 model_list = {
-    "FNN": FNN
+    "FNN": FNN,
+    "LSTM": LSTM
 }
 
 
