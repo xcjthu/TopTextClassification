@@ -26,6 +26,25 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
 
     # TODO
     # Here to read data
+    while True:
+        data = valid_dataset.fetch_data()
+        if data is None:
+            break
+        cnt += 1
+
+        for key in data.keys():
+            if isinstance(data[key], torch.Tensor):
+                if torch.cuda.is_available() and use_gpu:
+                    data[key] = Variable(data[key].cuda())
+                else:
+                    data[key] = Variable(data[key])
+
+        results = net(data, criterion)
+
+        outputs, loss, accu = results["x"], results["loss"], results["accu"]
+
+        running_loss += loss.item()
+        running_acc += accu.item()
 
     if writer is None:
         pass
@@ -100,8 +119,39 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             print_info("Epoch %d, with learing rate %f" % (epoch_num + 1, float(g['lr'])))
             break
 
-        # TODO
-        # Here to read data to train
+        while True:
+            cnt += 1
+            data = train_dataset.fetch_data()
+            if data is None:
+                break
+
+            for key in data.keys():
+                if isinstance(data[key], torch.Tensor):
+                    if torch.cuda.is_available() and use_gpu:
+                        data[key] = Variable(data[key].cuda())
+                    else:
+                        data[key] = Variable(data[key])
+
+            optimizer.zero_grad()
+
+            results = net(data, criterion)
+
+            outputs, loss, accu = results["x"], results["loss"], results["accu"]
+
+            loss.backward()
+
+            running_loss += loss.item()
+            running_acc += accu.item()
+            gb_loss += loss.item()
+            gb_acc += accu.item()
+            gb_cnt += 1
+            optimizer.step()
+
+            if cnt % output_time == 0:
+                print_info("epoch = %d, cnt = %d, loss = %.5f" % (epoch_num + 1, cnt, running_loss / output_time))
+                running_loss = 0
+                print_info("epoch = %d, cnt = %d, accu = %.5f" % (epoch_num + 1, cnt, running_acc / output_time))
+                running_acc = 0
 
         writer.add_scalar(config.get("output", "model_name") + " train loss", gb_loss / gb_cnt, epoch_num + 1)
         writer.add_scalar(config.get("output", "model_name") + " train accuracy", gb_acc / gb_cnt, epoch_num + 1)
