@@ -17,7 +17,7 @@ class AYPredictionFormatter:
 
     def check(self, data, config):
         data = json.loads(data)
-        if ',' in data['WS']['QTXX']['AY'] or data['WS']['QTXX']['AY'] == "":
+        if ',' in data['WS']['QTXX']['AY']['@value'] or data['WS']['QTXX']['AY']['@value'] == "":
             return None
 
         return data
@@ -81,14 +81,17 @@ class AYPredictionFormatter:
             pjjgtmp = [v[0] for v in line['WS']['PJJG']['@value']]
             pjjg.append(self.pad(pjjgtmp, config.getint('train', 'pjjg_length'), transformer))
 
-            tmp = np.zeros(len(self.labelToId))
+            # tmp = np.zeros(len(self.labelToId))
             try:
-                tmp[self.labelToId[line['WS']['QTXX']['AY']['@value']]] = 1
+                label.append(self.labelToId[line['WS']['QTXX']['AY']['@value']])
+                # tmp[self.labelToId[line['WS']['QTXX']['AY']['@value']]] = 1
             except Exception as e:
-                pass
-            label.append(tmp)
+                print(line['WS']['QTXX']['AY']['@value'])
+                label.append(-1)
+				
+            # label.append(tmp)
 
         matrix = [ss[i] + title[i] + pjjg[i] for i in range(len(data))]
         matrix = torch.Tensor(matrix)
-        label = torch.from_numpy(np.array(label, dtype=np.float32))
+        label = torch.LongTensor(np.array(label, dtype=np.int32))
         return {'input': matrix, 'label': label}
