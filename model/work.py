@@ -9,7 +9,7 @@ from tensorboardX import SummaryWriter
 import shutil
 
 from model.loss import get_loss
-from utils.util import print_info
+from utils.util import print_info, gen_result
 
 
 def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
@@ -23,6 +23,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     running_acc = 0
     running_loss = 0
     cnt = 0
+    acc_result = []
 
     while True:
         data = valid_dataset.fetch_data(config)
@@ -40,6 +41,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
         results = net(data, criterion, config, use_gpu)
 
         outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
+        acc_result = results["accuracy_result"]
 
         running_loss += loss.item()
         running_acc += accu.item()
@@ -53,6 +55,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     print_info("Valid result:")
     print_info("Average loss = %.5f" % (running_loss / cnt))
     print_info("Average accu = %.5f" % (running_acc / cnt))
+    gen_result(acc_result, True)
 
     net.train()
 

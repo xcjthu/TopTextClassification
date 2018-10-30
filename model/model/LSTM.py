@@ -44,11 +44,11 @@ class LSTM(nn.Module):
                                 self.hidden_dim)))
 
     def init_multi_gpu(self, device):
-        self.lstm = nn.DataParallel(self.lstm)
-        self.fc = nn.DataParallel(self.fc)
-        self.transpose = nn.DataParallel(self.transpose)
+        self.lstm = nn.DataParallel(self.lstm, device_ids=device)
+        self.fc = nn.DataParallel(self.fc, device_ids=device)
+        self.transpose = nn.DataParallel(self.transpose, device_ids=device)
 
-    def forward(self, data, criterion, config, usegpu):
+    def forward(self, data, criterion, config, usegpu, acc_result=None):
         x = data["input"]
         labels = data["label"]
 
@@ -63,6 +63,7 @@ class LSTM(nn.Module):
         y = self.fc(lstm_out)
 
         loss = criterion(y, labels)
-        accu = calc_accuracy(y, labels, config)
+        accu, acc_result = calc_accuracy(y, labels, config, acc_result)
 
-        return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y}
+        return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y,
+                "accuracy_result": acc_result}
