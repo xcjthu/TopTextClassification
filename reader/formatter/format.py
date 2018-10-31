@@ -88,7 +88,7 @@ class AYPredictionFormatter:
             except Exception as e:
                 print(line['WS']['QTXX']['AY']['@value'])
                 label.append(-1)
-				
+
             # label.append(tmp)
 
         matrix = [ss[i] + title[i] + pjjg[i] for i in range(len(data))]
