@@ -35,7 +35,7 @@ class TextCNN(nn.Module):
 		self.relu = nn.DataParallel(self.relu)
 		# pass
 
-	def forward(self, data, criterion, config, usegpu):
+	def forward(self, data, criterion, config, usegpu, acc_result=None):
 		x = data['input']
 		labels = data['label']
 
@@ -61,5 +61,8 @@ class TextCNN(nn.Module):
 		y = self.fc(conv_out)
 		
 		loss = criterion(y, labels)
-		accu = calc_accuracy(y, labels, config)
-		return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y}
+		# accu = calc_accuracy(y, labels, config)
+		accu, acc_result = calc_accuracy(y, labels, config, acc_result)
+		# return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y}
+		return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y, "accuracy_result": acc_result}
+

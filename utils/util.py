@@ -52,8 +52,6 @@ def calc_accuracy(outputs, label, config, result=None):
 
         return torch.Tensor([1.0 * total / len(outputs) / len(outputs[0])]), result
     else:
-        pre, prediction = torch.max(outputs, 1)
-        prediction = prediction.view(-1)
 
         if not (result is None):
             id1 = torch.max(outputs, dim=1)[1]
@@ -69,6 +67,8 @@ def calc_accuracy(outputs, label, config, result=None):
                 else:
                     result[it_is]["FP"] += 1
                     result[should_be]["FN"] += 1
+        pre, prediction = torch.max(outputs, 1)
+        prediction = prediction.view(-1)
 
         return torch.mean(torch.eq(prediction, label).float()), result
 
