@@ -38,7 +38,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
                 else:
                     data[key] = Variable(data[key])
 
-        results = net(data, criterion, config, use_gpu)
+        results = net(data, criterion, config, use_gpu, acc_result)
 
         outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
         acc_result = results["accuracy_result"]
