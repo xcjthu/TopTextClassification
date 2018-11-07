@@ -16,10 +16,13 @@ class AYPredictionFormatter:
             self.idToLabel[len(self.labelToId) - 1] = labelName
 
     def check(self, data, config):
+        # print('check')
         data = json.loads(data)
-        if ',' in data['WS']['QTXX']['AY']['@value'] or data['WS']['QTXX']['AY']['@value'] == "":
+        if data['WS']['QTXX']['AY']['@value'] == "":
             return None
-
+        if config.get('train', 'type_of_loss') != 'multi_label_cross_entropy_loss' and ',' in data['WS']['QTXX']['AY']['@value']:
+            return None
+        # print('check good')
         return data
 
     def pad(self, text, length, transformer):
@@ -33,6 +36,7 @@ class AYPredictionFormatter:
         return ans
 
     def format(self, data, config, transformer, mode):
+        #print('format')	
         ss = []
         title = []
         pjjg = []
@@ -81,17 +85,27 @@ class AYPredictionFormatter:
             pjjgtmp = [v[0] for v in line['WS']['PJJG']['@value']]
             pjjg.append(self.pad(pjjgtmp, config.getint('train', 'pjjg_length'), transformer))
 
-            # tmp = np.zeros(len(self.labelToId))
-            try:
+            if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
+                tmp = np.zeros(len(self.labelToId))
+                try:
+                    tmplabels = line['WS']['QTXX']['AY']['@value'].split(',')
+                    for i in tmplabels:
+                        tmp[self.labelToId[i]] = 1
+                    # label.append(self.labelToId[line['WS']['QTXX']['AY']['@value']])
+                    # tmp[self.labelToId[line['WS']['QTXX']['AY']['@value']]] = 1
+                except Exception as e:
+                    print(line['WS']['QTXX']['AY']['@value'])
+                    # label.append(-1)
+                label.append(tmp)
+            else:
                 label.append(self.labelToId[line['WS']['QTXX']['AY']['@value']])
-                # tmp[self.labelToId[line['WS']['QTXX']['AY']['@value']]] = 1
-            except Exception as e:
-                print(line['WS']['QTXX']['AY']['@value'])
-                label.append(-1)
 
             # label.append(tmp)
 
         matrix = [ss[i] + title[i] + pjjg[i] for i in range(len(data))]
         matrix = torch.Tensor(matrix)
-        label = torch.LongTensor(np.array(label, dtype=np.int32))
+        if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
+            label = torch.Tensor(np.array(label))
+        else:
+            label = torch.LongTensor(np.array(label, dtype=np.int32))
         return {'input': matrix, 'label': label}

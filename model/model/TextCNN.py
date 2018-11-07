@@ -23,6 +23,13 @@ class TextCNN(nn.Module):
         self.fc = nn.Linear(self.feature_len, self.output_dim)
         self.relu = nn.ReLU()
 
+        self.sigmoid = nn.Sigmoid()
+
+        if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
+            self.multi = True
+        else:
+            self.multi = False
+
     def init_hidden(self, config, usegpu):
         pass
 
@@ -33,6 +40,7 @@ class TextCNN(nn.Module):
         # self.convs = nn.ModuleList(self.convs)
         self.fc = nn.DataParallel(self.fc)
         self.relu = nn.DataParallel(self.relu)
+        self.sigmoid = nn.DataParallel(self.sigmoid)
 
     # pass
 
@@ -60,6 +68,9 @@ class TextCNN(nn.Module):
         # self.attention = torch.cat(self.attention, dim=1)
 
         y = self.fc(conv_out)
+        if self.multi:
+            y = self.sigmoid(y)
+		
 
         loss = criterion(y, labels)
         # accu = calc_accuracy(y, labels, config)

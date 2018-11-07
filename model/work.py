@@ -27,6 +27,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
 
     while True:
         data = valid_dataset.fetch_data(config)
+        # print('fetch data')
         if data is None:
             break
         cnt += 1
@@ -37,9 +38,10 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
                     data[key] = Variable(data[key].cuda())
                 else:
                     data[key] = Variable(data[key])
-
+       
         results = net(data, criterion, config, use_gpu, acc_result)
-
+        # print('forward')
+        
         outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
         acc_result = results["accuracy_result"]
 

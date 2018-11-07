@@ -43,6 +43,7 @@ class reader():
 
     def always_read_data(self, config, data_queue, file_queue, idx):
         cnt = config.getint("reader", "max_queue_size")
+        # print('read data', cnt)
 
         put_needed = False
         while True:
@@ -99,7 +100,11 @@ class reader():
 
     def fetch_data(self, config):
         while True:
+            # print('fetch_data_in')
+            # print(self.num_process)
             data = self.data_queue.get()
+            # print(data)
+
             if data is None:
                 self.none_cnt += 1
                 if self.none_cnt == self.num_process:
@@ -122,6 +127,7 @@ def init_train_dataset(config):
 
 
 def init_valid_dataset(config):
+    print(config.get('data', 'valid_file_list'))
     return create_dataset(get_file_list(config.get("data", "valid_data_path"), config.get("data", "valid_file_list")),
                           config, config.getint("reader", "valid_reader_num"), "valid")
 

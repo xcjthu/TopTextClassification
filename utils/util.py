@@ -29,9 +29,15 @@ def calc_accuracy(outputs, label, config, result=None):
 
         outputs = outputs.data
         labels = label.data
+        
+        if result is None:
+            result = []
 
         total = 0
         nr_classes = outputs.size(1)
+
+        while (len(result) < nr_classes):
+            result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
 
         for i in range(nr_classes):
             outputs1 = (outputs[:, i] >= 0.5).long()
@@ -42,8 +48,8 @@ def calc_accuracy(outputs, label, config, result=None):
             if result is None:
                 continue
 
-            if len(result) < i:
-                result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
+            # if len(result) < i:
+            #    result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
 
             result[i]["TP"] += int((labels1 * outputs1).sum())
             result[i]["FN"] += int((labels1 * (1 - outputs1)).sum())
@@ -54,11 +60,16 @@ def calc_accuracy(outputs, label, config, result=None):
     else:
 
         if not (result is None):
+            #print(label)
             id1 = torch.max(outputs, dim=1)[1]
-            id2 = torch.max(label, dim=1)[1]
+            #id2 = torch.max(label, dim=1)[1]
+            id2 = label
+            nr_classes = outputs.size(1)
+            while len(result) < nr_classes:
+                result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
             for a in range(0, len(id1)):
-                if len(result) < a:
-                    result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
+                # if len(result) < a:
+                #    result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
 
                 it_is = int(id1[a])
                 should_be = int(id2[a])
