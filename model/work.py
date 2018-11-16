@@ -5,7 +5,7 @@ import torch.optim as optim
 import numpy as np
 import json
 from torch.optim import lr_scheduler
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 import shutil
 from timeit import default_timer as timer
 
@@ -87,9 +87,10 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
         shutil.rmtree(
             os.path.join(config.get("output", "tensorboard_path"), config.get("output", "model_name")), True)
 
-    writer = SummaryWriter(
-        os.path.join(config.get("output", "tensorboard_path"), config.get("output", "model_name")),
-        config.get("output", "model_name"))
+    # writer = SummaryWriter(
+    #    os.path.join(config.get("output", "tensorboard_path"), config.get("output", "model_name")),
+    #    config.get("output", "model_name"))
+    writer = None
 
     criterion = get_loss(task_loss_type)
 
@@ -164,8 +165,8 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
         train_loss /= train_cnt
         train_acc /= train_cnt
 
-        writer.add_scalar(config.get("output", "model_name") + " train loss", train_loss, epoch_num + 1)
-        writer.add_scalar(config.get("output", "model_name") + " train accuracy", train_acc, epoch_num + 1)
+        # writer.add_scalar(config.get("output", "model_name") + " train loss", train_loss, epoch_num + 1)
+        # writer.add_scalar(config.get("output", "model_name") + " train accuracy", train_acc, epoch_num + 1)
 
         if not os.path.exists(model_path):
             os.makedirs(model_path)
