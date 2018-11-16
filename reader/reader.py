@@ -145,7 +145,7 @@ def init_valid_dataset(config):
 
 def init_dataset(config):
     init_transformer(config)
-    in
+    init_formatter(config)
     train_dataset = init_train_dataset(config)
     valid_dataset = init_valid_dataset(config)
 
