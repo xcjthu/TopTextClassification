@@ -20,7 +20,8 @@ class AYPredictionFormatter:
         data = json.loads(data)
         if data['WS']['QTXX']['AY']['@value'] == "":
             return None
-        if config.get('train', 'type_of_loss') != 'multi_label_cross_entropy_loss' and ',' in data['WS']['QTXX']['AY']['@value']:
+        if config.get('train', 'type_of_loss') != 'multi_label_cross_entropy_loss' and ',' in data['WS']['QTXX']['AY'][
+            '@value']:
             return None
         # print('check good')
         return data
@@ -36,7 +37,7 @@ class AYPredictionFormatter:
         return ans
 
     def format(self, data, config, transformer, mode):
-        #print('format')	
+        # print('format')
         ss = []
         title = []
         pjjg = []

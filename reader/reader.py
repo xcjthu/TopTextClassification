@@ -3,8 +3,19 @@ import multiprocessing
 import random
 
 from utils.util import print_info, get_file_list
-from reader.formatter.format import AYPredictionFormatter
+from reader.formatter.AYYC import AYPredictionFormatter
+from reader.formatter.AJLX import AJLXPredictionFormatter
 from word2vec.word2vec import init_transformer
+
+
+def generate_formatter(config):
+    global formatter
+    if config.get("data", "formatter") == "AYYC":
+        formatter = AYPredictionFormatter(config)
+    elif config.get("data", "formatter") == "AJLX":
+        formatter = AJLXPredictionFormatter(config)
+    else:
+        raise NotImplementedError
 
 
 class reader():
@@ -134,8 +145,6 @@ def init_valid_dataset(config):
 
 def init_dataset(config):
     init_transformer(config)
-    global formatter
-    formatter = AYPredictionFormatter(config)
     train_dataset = init_train_dataset(config)
     valid_dataset = init_valid_dataset(config)
 

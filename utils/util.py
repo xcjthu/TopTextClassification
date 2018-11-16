@@ -3,6 +3,21 @@ import torch
 import os
 
 
+def time_to_str(t, mode='min'):
+    if mode == 'min':
+        t = int(t) / 60
+        hr = t // 60
+        min = t % 60
+        return '%2d hr %02d min' % (hr, min)
+    elif mode == 'sec':
+        t = int(t)
+        min = t // 60
+        sec = t % 60
+        return '%2d min %02d sec' % (min, sec)
+    else:
+        raise NotImplementedError
+
+
 def print_time():
     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 
@@ -29,7 +44,7 @@ def calc_accuracy(outputs, label, config, result=None):
 
         outputs = outputs.data
         labels = label.data
-        
+
         if result is None:
             result = []
 
@@ -60,9 +75,9 @@ def calc_accuracy(outputs, label, config, result=None):
     else:
 
         if not (result is None):
-            #print(label)
+            # print(label)
             id1 = torch.max(outputs, dim=1)[1]
-            #id2 = torch.max(label, dim=1)[1]
+            # id2 = torch.max(label, dim=1)[1]
             id2 = label
             nr_classes = outputs.size(1)
             while len(result) < nr_classes:

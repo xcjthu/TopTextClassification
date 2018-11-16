@@ -55,26 +55,19 @@ class TextCNN(nn.Module):
         gram = self.min_gram
         # self.attention = []
         for conv in self.convs:
-            y = self.relu(conv(x))  # .view(config.getint("train", "batch_size"), config.getint("model", "filters"), -1)
-            # self.attention.append(F.pad(y, (0, gram - 1)))
-            # print(y.shape)
+            y = self.relu(conv(x))
             y = torch.max(y, dim=2)[0].view(self.batch_size, -1)
-            # y = F.max_pool1d(y, kernel_size = x.shape[2]).view(self.batch_size, -1)
 
             conv_out.append(y)
             gram += 1
 
         conv_out = torch.cat(conv_out, dim=1)
-        # self.attention = torch.cat(self.attention, dim=1)
 
         y = self.fc(conv_out)
         if self.multi:
             y = self.sigmoid(y)
-		
 
         loss = criterion(y, labels)
-        # accu = calc_accuracy(y, labels, config)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)
-        # return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y}
         return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y,
                 "accuracy_result": acc_result}

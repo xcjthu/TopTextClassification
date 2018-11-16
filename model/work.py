@@ -7,14 +7,13 @@ import json
 from torch.optim import lr_scheduler
 from tensorboardX import SummaryWriter
 import shutil
+from timeit import default_timer as timer
 
 from model.loss import get_loss
-from utils.util import print_info, gen_result
+from utils.util import gen_result, print_info, time_to_str
 
 
 def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
-    print_info("------------------------")
-    print_info("valid begin")
     net.eval()
 
     task_loss_type = config.get("train", "type_of_loss")
@@ -38,10 +37,10 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
                     data[key] = Variable(data[key].cuda())
                 else:
                     data[key] = Variable(data[key])
-       
+
         results = net(data, criterion, config, use_gpu, acc_result)
         # print('forward')
-        
+
         outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
         acc_result = results["accuracy_result"]
 
@@ -54,15 +53,17 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
         writer.add_scalar(config.get("output", "model_name") + " valid loss", running_loss / cnt, epoch)
         writer.add_scalar(config.get("output", "model_name") + " valid accuracy", running_acc / cnt, epoch)
 
-    print_info("Valid result:")
-    print_info("Average loss = %.5f" % (running_loss / cnt))
-    print_info("Average accu = %.5f" % (running_acc / cnt))
-    gen_result(acc_result, True)
+    # print_info("Valid result:")
+    # print_info("Average loss = %.5f" % (running_loss / cnt))
+    # print_info("Average accu = %.5f" % (running_acc / cnt))
+    # gen_result(acc_result, True)
 
     net.train()
 
-    print_info("valid end")
-    print_info("------------------------")
+    return running_loss / cnt, running_acc / cnt
+
+    # print_info("valid end")
+    # print_info("------------------------")
 
 
 def train_net(net, train_dataset, valid_dataset, use_gpu, config):
@@ -106,20 +107,23 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
     gamma = config.getfloat("train", "gamma")
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
-    print_info("training process start!")
+    print('** start training here! **')
+    print('----------------|----------TRAIN-----------|----------VALID-----------|----------------|')
+    print('  lr    epoch   |   loss           top-1   |   loss           top-1   |      time      |')
+    print('----------------|--------------------------|--------------------------|----------------|')
+    start = timer()
+
     for epoch_num in range(trained_epoch, epoch):
-        running_loss = 0
-        running_acc = 0
         cnt = 0
 
-        gb_cnt = 0
-        gb_loss = 0
-        gb_acc = 0
+        train_cnt = 0
+        train_loss = 0
+        train_acc = 0
 
         exp_lr_scheduler.step(epoch_num)
-
+        lr = 0
         for g in optimizer.param_groups:
-            print_info("Epoch %d, with learing rate %f" % (epoch_num + 1, float(g['lr'])))
+            lr = float(g['lr'])
             break
 
         while True:
@@ -142,28 +146,36 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
 
             loss.backward()
+            train_loss += loss.item()
+            train_acc += accu.item()
+            train_cnt += 1
 
-            running_loss += loss.item()
-            running_acc += accu.item()
-            gb_loss += loss.item()
-            gb_acc += accu.item()
-            gb_cnt += 1
+            loss = loss.item()
+            accu = accu.item()
             optimizer.step()
 
             if cnt % output_time == 0:
-                print_info("epoch = %d, cnt = %d, loss = %.5f" % (epoch_num + 1, cnt, running_loss / output_time))
-                running_loss = 0
-                print_info("epoch = %d, cnt = %d, accu = %.5f" % (epoch_num + 1, cnt, running_acc / output_time))
-                running_acc = 0
+                print('\r', end='', flush=True)
+                print('%.4f   % 3d    |  %.4f          % 2.2f   |   ????           ?????   |  %s  |' % (
+                    lr, epoch_num + 1, train_loss / train_cnt, train_acc / train_cnt * 100,
+                    time_to_str((timer() - start))), end='',
+                      flush=True)
 
-        writer.add_scalar(config.get("output", "model_name") + " train loss", gb_loss / gb_cnt, epoch_num + 1)
-        writer.add_scalar(config.get("output", "model_name") + " train accuracy", gb_acc / gb_cnt, epoch_num + 1)
+        train_loss /= train_cnt
+        train_acc /= train_cnt
+
+        writer.add_scalar(config.get("output", "model_name") + " train loss", train_loss, epoch_num + 1)
+        writer.add_scalar(config.get("output", "model_name") + " train accuracy", train_acc, epoch_num + 1)
 
         if not os.path.exists(model_path):
             os.makedirs(model_path)
         torch.save(net.state_dict(), os.path.join(model_path, "model-%d.pkl" % (epoch_num + 1)))
 
-        if (epoch_num + 1) % test_time == 0:
-            valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
+        valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
+        print('\r', end='', flush=True)
+        print('%.4f   % 3d    |  %.4f          %.2f   |  %.4f          % 2.2f   |  %s  |' % (
+            lr, epoch_num + 1, train_loss, train_acc * 100, valid_loss, valid_accu * 100,
+            time_to_str((timer() - start))))
 
-    print_info("training is finished!")
+
+print_info("training is finished!")
