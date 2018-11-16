@@ -25,7 +25,7 @@ class AJLXPredictionFormatter:
         label = []
         for temp_data in data:
             ss = []
-            res = list(jieba.cut(temp_data["text"]))
+            res = temp_data["text"]
             for a in range(0, len(res)):
                 if a == self.max_len:
                     break
@@ -34,7 +34,7 @@ class AJLXPredictionFormatter:
                 ss.append(transformer.load("BLANK"))
 
             input.append(ss)
-            label.append(temp_data["type"])
+            label.append(self.map_list[temp_data["type"]])
 
         input = torch.Tensor(input)
         label = torch.LongTensor(np.array(label, dtype=np.int32))
