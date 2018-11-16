@@ -174,7 +174,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
         valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
         print('\r', end='', flush=True)
-        print('%.4f   % 3d    |  %.4f         %.2f   |  %.4f         % 2.2f   |  %s  |' % (
+        print('%.4f   % 3d    |  %.4f          %.2f   |  %.4f         % 2.2f   |  %s  |' % (
             lr, epoch_num + 1, train_loss, train_acc * 100, valid_loss, valid_accu * 100,
             time_to_str((timer() - start))))
 
