@@ -1,7 +1,7 @@
 import json
 import torch
 import numpy as np
-from cutter.thulac_cutter import Thulac
+import jieba
 
 
 class AJLXPredictionFormatter:
@@ -13,19 +13,20 @@ class AJLXPredictionFormatter:
             "执行": 3
         }
         self.max_len = config.getint("data", "max_len")
-        self.thulac = Thulac(config.get("cutter", "thulac_model"), config.get("cutter", "thulac_dict"))
 
     def check(self, data, config):
         data = json.loads(data)
+        if len(data["text"]) == 0:
+            return None
         return data
 
     def format(self, data, config, transformer, mode):
         ss = []
-        text = self.thulac.cut(data["text"])
-        for a in range(0, len(text)):
+        res = jieba.cut(data["text"])
+        for a in range(0, len(res)):
             if a == self.max_len:
                 break
-            ss.append(transformer.load(text[a][0]))
+            ss.append(transformer.load(res[a]))
         while len(ss) < self.max_len:
             ss.append(transformer.load("BLANK"))
 
