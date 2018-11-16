@@ -8,7 +8,7 @@ from reader.formatter.AJLX import AJLXPredictionFormatter
 from word2vec.word2vec import init_transformer
 
 
-def generate_formatter(config):
+def init_formatter(config):
     global formatter
     if config.get("data", "formatter") == "AYYC":
         formatter = AYPredictionFormatter(config)
@@ -145,6 +145,7 @@ def init_valid_dataset(config):
 
 def init_dataset(config):
     init_transformer(config)
+    in
     train_dataset = init_train_dataset(config)
     valid_dataset = init_valid_dataset(config)
 
