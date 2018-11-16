@@ -33,6 +33,7 @@ model_name = config.get("model", "name")
 net = get_model(model_name, config)
 
 device = []
+print_info("CUDA:%s" % str(torch.cuda.is_available()))
 if torch.cuda.is_available() and use_gpu:
     device_list = args.gpu.split(",")
     for a in range(0, len(device_list)):
