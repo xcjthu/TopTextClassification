@@ -21,16 +21,21 @@ class AJLXPredictionFormatter:
         return data
 
     def format(self, data, config, transformer, mode):
-        ss = []
-        res = jieba.cut(data["text"])
-        for a in range(0, len(res)):
-            if a == self.max_len:
-                break
-            ss.append(transformer.load(res[a]))
-        while len(ss) < self.max_len:
-            ss.append(transformer.load("BLANK"))
+        input = []
+        label = []
+        for temp_data in data:
+            ss = []
+            res = jieba.cut(temp_data["text"])
+            for a in range(0, len(res)):
+                if a == self.max_len:
+                    break
+                ss.append(transformer.load(res[a]))
+            while len(ss) < self.max_len:
+                ss.append(transformer.load("BLANK"))
 
-        ss = torch.Tensor(ss)
-        label = torch.LongTensor(np.array(data["type"], dtype=np.int32))
+            input.append(ss)
+            label.append(temp_data["type"])
 
-        return {'input': ss, 'label': label}
+        input = torch.Tensor(input)
+        label = torch.LongTensor(np.array(label, dtype=np.int32))
+        return {'input': input, 'label': label}
