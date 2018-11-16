@@ -157,7 +157,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
             if cnt % output_time == 0:
                 print('\r', end='', flush=True)
-                print('%.4f   % 3d    |  %.4f         % 2.2f   |   ????          ?????   |  %s  |' % (
+                print('%.4f   % 3d    |  %.4f         % 2.2f   |   ????           ?????   |  %s  |' % (
                     lr, epoch_num + 1, train_loss / train_cnt, train_acc / train_cnt * 100,
                     time_to_str((timer() - start))), end='',
                       flush=True)
