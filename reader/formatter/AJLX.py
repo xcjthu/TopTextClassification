@@ -25,7 +25,7 @@ class AJLXPredictionFormatter:
         label = []
         for temp_data in data:
             ss = []
-            res = jieba.cut(temp_data["text"])
+            res = list(jieba.cut(temp_data["text"]))
             for a in range(0, len(res)):
                 if a == self.max_len:
                     break
