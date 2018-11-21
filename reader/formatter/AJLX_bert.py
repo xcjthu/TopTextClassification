@@ -34,7 +34,7 @@ class AJLXBertPredictionFormatter:
             ss = ss[0:self.max_len]
 
             while len(ss) < self.max_len:
-                ss.append("。")
+                ss = ss + "。"
 
             indexed_tokens = self.tokenizer.convert_tokens_to_ids(ss)
             tokens_tensor = torch.tensor([indexed_tokens])
