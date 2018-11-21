@@ -46,12 +46,11 @@ class AJLXBertPredictionFormatter:
                 ss = ss + ["[PAD]"]
 
             indexed_tokens = self.convert(ss)
-            print(indexed_tokens)
             tokens_tensor = torch.tensor([indexed_tokens])
 
             input.append(tokens_tensor)
             label.append(self.map_list[temp_data["type"]])
 
-        input = torch.Tensor(input)
+        input = torch.stack(input)
         label = torch.LongTensor(np.array(label, dtype=np.int32))
         return {'input': input, 'label': label}
