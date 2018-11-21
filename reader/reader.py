@@ -5,6 +5,7 @@ import random
 from utils.util import print_info, get_file_list
 from reader.formatter.AYYC import AYPredictionFormatter
 from reader.formatter.AJLX import AJLXPredictionFormatter
+from reader.formatter.AJLX_bert import AJLXBertPredictionFormatter
 from word2vec.word2vec import init_transformer
 
 
@@ -14,6 +15,8 @@ def init_formatter(config):
         formatter = AYPredictionFormatter(config)
     elif config.get("data", "formatter") == "AJLX":
         formatter = AJLXPredictionFormatter(config)
+    elif config.get("data", "formatter") == "AJLXBert":
+        formatter = AJLXBertPredictionFormatter(config)
     else:
         raise NotImplementedError
 

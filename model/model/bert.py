@@ -13,8 +13,8 @@ class Bert(nn.Module):
         self.output_dim = config.getint("model", "output_dim")
         self.batch_size = config.getint('train', 'batch_size')
 
-        self.bert = BertModel.from_pretrained('bert-base-uncased')
-        self.fc = nn.Linear(1000, self.output_dim)
+        self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
+        self.fc = nn.Linear(768, self.output_dim)
 
         self.sigmoid = nn.Sigmoid()
 
@@ -30,7 +30,7 @@ class Bert(nn.Module):
         x = data['input']
         labels = data['label']
 
-        y = self.bert(x)
+        encode, y = self.bert(x)
         print(y)
 
         y = self.fc(y)
