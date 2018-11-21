@@ -23,20 +23,29 @@ class AJLXBertPredictionFormatter:
             return None
         return data
 
+    def conver(self, tokens):
+        ids = []
+        for token in tokens:
+            if token in self.tokenizer.vocab.keys():
+                ids.append(self.tokenizer.vocab[token])
+            else:
+                ids.append(self.tokenizer.vocab["[UNK]")
+        return ids
+
     def format(self, data, config, transformer, mode):
         input = []
         label = []
         for temp_data in data:
-            ss = ""
+            ss = []
             res = temp_data["text"]
             for a in range(0, len(res)):
-                ss = ss + res[a]
+                ss = ss + [res[a]]
             ss = ss[0:self.max_len]
 
             while len(ss) < self.max_len:
-                ss = ss + "。"
+                ss = ss + ["[PAD]"]
 
-            indexed_tokens = self.tokenizer.convert_tokens_to_ids(ss)
+            indexed_tokens = self.conver(ss)
             tokens_tensor = torch.tensor([indexed_tokens])
 
             input.append(tokens_tensor)
