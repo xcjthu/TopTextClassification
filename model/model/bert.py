@@ -31,7 +31,6 @@ class Bert(nn.Module):
         labels = data['label']
 
         encode, y = self.bert(x)
-        print(y)
 
         y = self.fc(y)
         if self.multi:
