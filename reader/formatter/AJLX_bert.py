@@ -51,6 +51,6 @@ class AJLXBertPredictionFormatter:
             input.append(tokens_tensor)
             label.append(self.map_list[temp_data["type"]])
 
-        input = torch.stack(input)
+        input = torch.cat(input, dim=0)
         label = torch.LongTensor(np.array(label, dtype=np.int32))
         return {'input': input, 'label': label}
