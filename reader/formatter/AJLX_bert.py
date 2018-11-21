@@ -29,7 +29,7 @@ class AJLXBertPredictionFormatter:
             if token in self.tokenizer.vocab.keys():
                 ids.append(self.tokenizer.vocab[token])
             else:
-                ids.append(self.tokenizer.vocab["[UNK]")
+                ids.append(self.tokenizer.vocab["[UNK]"])
         return ids
 
     def format(self, data, config, transformer, mode):
