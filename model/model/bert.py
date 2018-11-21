@@ -24,7 +24,7 @@ class Bert(nn.Module):
             self.multi = False
 
     def init_multi_gpu(self, device):
-        pass
+        self.bert = nn.DataParallel(self.bert, device_ids=device)
 
     def forward(self, data, criterion, config, usegpu, acc_result=None):
         x = data['input']
