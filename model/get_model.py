@@ -1,9 +1,11 @@
 from model.model.LSTM import LSTM
 from model.model.TextCNN import TextCNN
+from model.model.bert import Bert
 
 model_list = {
     "LSTM": LSTM,
-    "TextCNN": TextCNN
+    "TextCNN": TextCNN,
+    "Bert": Bert
 }
 
 
