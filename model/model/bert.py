@@ -31,7 +31,6 @@ class Bert(nn.Module):
         labels = data['label']
 
         encode, y = self.bert(x)
-
         y = self.fc(y)
         if self.multi:
             y = self.sigmoid(y)
