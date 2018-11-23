@@ -44,5 +44,5 @@ word_dic = {}
 for a in range(0, len(word_set)):
     word_dic[word_set[a]] = a
 
-json.dump(word_dic, file=open("/data/disk3/private/zhx/exam/data/embedding/word2id.txt", "w"), indent=2,
+json.dump(word_dic, open("/data/disk3/private/zhx/exam/data/embedding/word2id.txt", "w"), indent=2,
           ensure_ascii=False)
