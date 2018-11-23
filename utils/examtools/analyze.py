@@ -12,6 +12,7 @@ analyze_result = {
 
 file_list = os.listdir(data_path)
 for filename in file_list:
+    print(filename)
     file = open(os.path.join(data_path, filename), "r")
     for line in file:
         d = json.loads(line)
@@ -22,6 +23,8 @@ for filename in file_list:
         if not (l in analyze_result["statement_len"].keys()):
             analyze_result["statement_len"][l] = 0
         analyze_result["statement_len"][l] += 1
+        if not ("option_list" in d.keys()):
+            d["option_list"] = d["option"]
 
         for option in d["option_list"]:
             l = len(d["option_list"][option])
