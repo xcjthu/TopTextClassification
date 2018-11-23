@@ -7,7 +7,8 @@ analyze_result = {
     "total": 0,
     "num": [0, 0, 0, 0, 0],
     "statement_len": {},
-    "answer_len": {}
+    "answer_len": {},
+    "option_len": {}
 }
 
 error_file = open("error.txt", "w")
@@ -30,6 +31,11 @@ for filename in file_list:
             analyze_result["statement_len"][l] += 1
             if not ("option_list" in d.keys()):
                 d["option_list"] = d["option"]
+
+            l = len(d["option_list"])
+            if not (l in analyze_result["option_len"].keys()):
+                analyze_result["option_len"][l] = 0
+            analyze_result["option_len"][l] += 1
 
             for option in d["option_list"]:
                 l = len(d["option_list"][option])
