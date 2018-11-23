@@ -10,6 +10,8 @@ analyze_result = {
     "answer_len": {}
 }
 
+error_file = open("error.txt", "w")
+
 file_list = os.listdir(data_path)
 for filename in file_list:
     print(filename)
@@ -35,6 +37,7 @@ for filename in file_list:
                     analyze_result["answer_len"][l] = 0
                 analyze_result["answer_len"][l] += 1
         except Exception as e:
+            print(filename, cnt, file=error_file)
             print(cnt)
 
 json.dump(analyze_result, open("analyze_result.txt", "w"), indent=2, sort_keys=True, ensure_ascii=False)
