@@ -13,8 +13,11 @@ analyze_result = {
 file_list = os.listdir(data_path)
 for filename in file_list:
     print(filename)
+    cnt = 0
     file = open(os.path.join(data_path, filename), "r")
     for line in file:
+        cnt += 1
+        print(cnt)
         d = json.loads(line)
         analyze_result["total"] += 1
         analyze_result["num"][len(d["answer"])] += 1
