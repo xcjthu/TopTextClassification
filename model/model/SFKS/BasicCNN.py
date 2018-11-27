@@ -57,7 +57,7 @@ class BasicCNN(nn.Module):
         self.answer_encoder = CNNEnocoder(config, self.hidden_size, True)
 
         self.embedding = nn.Embedding(self.word_num, self.word_size)
-        self.bilinear = nn.Bilinear(self.hidden_size, self.output_dim, 1)
+        self.bilinear = nn.Bilinear(self.hidden_size, self.hidden_size, 1)
 
         self.sigmoid = nn.Sigmoid()
 
