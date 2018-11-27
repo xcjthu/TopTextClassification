@@ -11,6 +11,8 @@ class SFKSWordFormatter:
 
     def check(self, data, config):
         data = json.loads(data)
+        if not("answer" in data.keys()):
+            return None
         if len(data["answer"]) == 0:
             return None
         if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
