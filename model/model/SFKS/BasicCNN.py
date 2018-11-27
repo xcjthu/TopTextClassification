@@ -83,7 +83,7 @@ class BasicCNN(nn.Module):
             ans_list.append(self.bilinear(statement, temp))
 
         y = torch.cat(ans_list, dim=1)
-        y = torch.sigmoid(y)
+        # y = torch.sigmoid(y)
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)

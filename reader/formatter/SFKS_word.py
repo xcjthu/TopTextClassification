@@ -14,7 +14,7 @@ class SFKSWordFormatter:
         if not ("answer" in data.keys()):
             # print("gg1")
             return None
-        if len(data["answer"]) == 0:
+        if len(data["answer"]) != 1:
             # print("gg2")
             return None
         if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
@@ -49,20 +49,20 @@ class SFKSWordFormatter:
             statement.append(self.lookup(temp_data["statement"]))
             answer.append([self.lookup(temp_data["option_list"]["A"]), self.lookup(temp_data["option_list"]["B"]),
                            self.lookup(temp_data["option_list"]["C"]), self.lookup(temp_data["option_list"]["D"])])
-            label_x = [0, 0, 0, 0]
+            label_x = 0
             if "A" in temp_data["answer"]:
-                label_x[0] = 1
+                label_x = 0
             if "B" in temp_data["answer"]:
-                label_x[1] = 1
+                label_x = 1
             if "C" in temp_data["answer"]:
-                label_x[2] = 1
+                label_x = 2
             if "D" in temp_data["answer"]:
-                label_x[3] = 1
+                label_x = 3
 
             label.append(label_x)
 
         statement = torch.tensor(statement, dtype=torch.long)
         answer = torch.tensor(answer, dtype=torch.long)
-        label = torch.tensor(label, dtype=torch.float)
+        label = torch.tensor(label, dtype=torch.long)
 
         return {"statement": statement, "answer": answer, "label": label}
