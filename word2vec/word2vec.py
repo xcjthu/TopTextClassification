@@ -23,7 +23,8 @@ class Word2vec:
 
 def init_transformer(config):
     global transformer
-    transformer = Word2vec(config.get("data", "word2vec"))
+    if config.get("data", "need_word2vec"):
+        transformer = Word2vec(config.get("data", "word2vec"))
 
 
 def load(word):
