@@ -75,9 +75,8 @@ class BasicCNN(nn.Module):
 
         statement = self.embedding(statement)
         answer = self.embedding(answer)
-        print(statement)
 
-        statement = self.statement_encoder(statement)
+        statement = self.statement_encoder(statement, config)
         ans_list = []
         for a in range(0, 4):
             temp = answer[:, a]
