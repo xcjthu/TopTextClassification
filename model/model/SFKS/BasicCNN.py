@@ -80,6 +80,9 @@ class BasicCNN(nn.Module):
         ans_list = []
         for a in range(0, 4):
             temp = answer[:, a]
+            temp = self.answer_encoder(temp, config)
+            print(statement.size())
+            print(temp.size())
             ans_list.append(self.bilinear(statement, temp))
 
         y = torch.Tensor(ans_list)
