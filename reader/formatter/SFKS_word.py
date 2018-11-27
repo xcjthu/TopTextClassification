@@ -11,7 +11,7 @@ class SFKSWordFormatter:
 
     def check(self, data, config):
         data = json.loads(data)
-        if not("answer" in data.keys()):
+        if not ("answer" in data.keys()):
             return None
         if len(data["answer"]) == 0:
             return None
@@ -58,6 +58,6 @@ class SFKSWordFormatter:
 
         statement = torch.tensor(statement, dtype=torch.long)
         answer = torch.tensor(answer, dtype=torch.long)
-        label = torch.tensor(label, dtype=torch.long)
+        label = torch.tensor(label, dtype=torch.float)
 
         return {"statement": statement, "answer": answer, "label": label}
