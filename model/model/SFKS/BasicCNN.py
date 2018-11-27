@@ -51,12 +51,13 @@ class BasicCNN(nn.Module):
         self.word_size = config.getint("data", "vec_size")
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
         self.output_dim = config.getint("model", "output_dim")
+        self.hidden_size = config.getint("model", "hidden_size")
 
-        self.statement_encoder = CNNEnocoder(config, config.getint("model", "hidden_size"), True)
-        self.answer_encoder = CNNEnocoder(config, config.getint("model", "hidden_size"), True)
+        self.statement_encoder = CNNEnocoder(config, self.hidden_size, True)
+        self.answer_encoder = CNNEnocoder(config, self.hidden_size, True)
 
         self.embedding = nn.Embedding(self.word_num, self.word_size)
-        self.bilinear = nn.Bilinear(self.output_dim, self.output_dim, 1)
+        self.bilinear = nn.Bilinear(self.hidden_size, self.output_dim, 1)
 
         self.sigmoid = nn.Sigmoid()
 
