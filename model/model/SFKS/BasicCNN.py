@@ -52,8 +52,8 @@ class BasicCNN(nn.Module):
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
         self.output_dim = config.getint("model", "output_dim")
 
-        self.statement_encoder = CNNEnocoder(config, self.output_dim, True)
-        self.answer_encoder = CNNEnocoder(config, self.output_dim, True)
+        self.statement_encoder = CNNEnocoder(config, config.getint("model", "hidden_size"), True)
+        self.answer_encoder = CNNEnocoder(config, config.getint("model", "hidden_size"), True)
 
         self.embedding = nn.Embedding(self.word_num, self.word_size)
         self.bilinear = nn.Bilinear(self.output_dim, self.output_dim, 1)
@@ -81,11 +81,9 @@ class BasicCNN(nn.Module):
         for a in range(0, 4):
             temp = answer[:, a]
             temp = self.answer_encoder(temp, config)
-            print(statement.size())
-            print(temp.size())
             ans_list.append(self.bilinear(statement, temp))
 
-        y = torch.Tensor(ans_list)
+        y = torch.cat(ans_list, dim=1)
         y = self.sigmoid(y)
 
         loss = criterion(y, labels)
