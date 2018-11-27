@@ -80,7 +80,7 @@ class reader():
         try:
             p = file_queue.get(timeout=1)
             self.temp_file = open(p, "r")
-            # print_info("Loading file from " + str(p))
+            print_info("Loading file from " + str(p))
         except Exception as e:
             self.temp_file = None
         self.lock.release()
