@@ -71,19 +71,20 @@ class BasicCNN(nn.Module):
     def forward(self, data, criterion, config, usegpu, acc_result=None):
         statement = data['statement']
         answer = data["answer"]
+        labels = data["label"]
 
         statement = self.embedding(statement)
         answer = self.embedding(answer)
         print(statement)
 
-        gg
+        statement = self.statement_encoder(statement)
+        ans_list = []
+        for a in range(0, 4):
+            temp = answer[:, a]
+            ans_list.append(self.bilinear(statement, temp))
 
-        x = x.view(self.batch_size, 1, -1, self.data_size)
-        # print(x, labels)
-
-        y = self.fc(conv_out)
-        if self.multi:
-            y = self.sigmoid(y)
+        y = torch.Tensor(ans_list)
+        y = self.sigmoid(y)
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)

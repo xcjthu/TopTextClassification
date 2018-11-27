@@ -1,9 +1,11 @@
 from model.model.LSTM import LSTM
 from model.model.TextCNN import TextCNN
+from model.model.SFKS.BasicCNN import BasicCNN
 
 model_list = {
     "LSTM": LSTM,
-    "TextCNN": TextCNN
+    "TextCNN": TextCNN,
+    "SFKSCNN": BasicCNN
 }
 
 

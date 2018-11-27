@@ -15,7 +15,7 @@ def init_formatter(config):
         formatter = AYPredictionFormatter(config)
     elif config.get("data", "formatter") == "AJLX":
         formatter = AJLXPredictionFormatter(config)
-    elif config.get("data", "formatter") == "SFKX_word":
+    elif config.get("data", "formatter") == "SFKS_word":
         formatter = SFKSWordFormatter(config)
     else:
         raise NotImplementedError
