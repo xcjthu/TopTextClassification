@@ -59,8 +59,6 @@ class BasicCNN(nn.Module):
         self.embedding = nn.Embedding(self.word_num, self.word_size)
         self.bilinear = nn.Bilinear(self.hidden_size, self.hidden_size, 1)
 
-        self.sigmoid = nn.Sigmoid()
-
         if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
             self.multi = True
         else:
@@ -85,7 +83,7 @@ class BasicCNN(nn.Module):
             ans_list.append(self.bilinear(statement, temp))
 
         y = torch.cat(ans_list, dim=1)
-        y = self.sigmoid(y)
+        y = torch.sigmoid(y)
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)

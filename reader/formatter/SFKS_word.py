@@ -12,15 +12,20 @@ class SFKSWordFormatter:
     def check(self, data, config):
         data = json.loads(data)
         if not ("answer" in data.keys()):
+            print("gg1")
             return None
         if len(data["answer"]) == 0:
+            print("gg2")
             return None
         if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
+            print("gg3")
             return None
         for option in data["option_list"]:
             if len(data["option_list"][option]) == 0 or len(data["option_list"][option]) > self.max_len:
+                print("gg4")
                 return None
         if len(data["option_list"]) != 4:
+            print("gg5")
             return None
         return data
 
