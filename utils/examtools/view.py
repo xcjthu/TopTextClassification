@@ -20,7 +20,7 @@ if __name__ == "__main__":
     for filename in os.listdir(path):
         if filename.startswith("type"):
             continue
-        if filename.startswith("xuefa"):
+        if not (filename.startswith("xuefa")) or filename.find("related") != -1:
             continue
         f = open(os.path.join(path, filename), "r")
         op = random.randint(1, 5)
