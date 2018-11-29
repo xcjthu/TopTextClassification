@@ -18,6 +18,8 @@ if __name__ == "__main__":
     data1 = [[], []]
     data2 = [[], []]
     for filename in os.listdir(path):
+        if filename.startswith("type"):
+            continue
         if filename.startswith("xuefa"):
             continue
         f = open(os.path.join(path, filename), "r")
