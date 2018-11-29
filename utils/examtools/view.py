@@ -49,5 +49,5 @@ if __name__ == "__main__":
 
     dump(data1[0], os.path.join(path, "type1_train.json"))
     dump(data1[1], os.path.join(path, "type1_test.json"))
-    dump(data1[0], os.path.join(path, "type2_train.json"))
+    dump(data2[0], os.path.join(path, "type2_train.json"))
     dump(data2[1], os.path.join(path, "type2_test.json"))
