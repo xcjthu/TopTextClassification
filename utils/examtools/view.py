@@ -20,10 +20,10 @@ if __name__ == "__main__":
             data = json.loads(line)
             if check(data["statement"]):
                 cnt1 += 1
-                print(json.dumps(data, ensure_ascii=False))
-                if cnt1 == 10:
-                    gg
             else:
                 cnt2 += 1
+                print(json.dumps(data, ensure_ascii=False))
+                if cnt2 == 10:
+                    gg
 
     print(cnt1, cnt2)
