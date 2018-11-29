@@ -31,7 +31,10 @@ for filename in os.listdir(input_data_path):
             for option in data["option_list"]:
                 data["option_list"][option] = cut(data["option_list"][option])
 
-            print(json.dumps(data, ensure_ascii=False), file=output_file)
+            if "analyse" in data.keys():
+                data["analyse"] = cut(data["analyse"])
+
+            print(json.dumps(data, ensure_ascii=False, sort_keys=True), file=output_file)
 
         except Exception as e:
             pass
