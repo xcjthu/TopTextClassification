@@ -41,6 +41,7 @@ if __name__ == "__main__":
 
 
     def dump(d, f):
+        print(len(d))
         f = open(f, "w")
         for x in d:
             print(json.dumps(x, ensure_ascii=False, sort_keys=True), file=f)
