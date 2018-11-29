@@ -36,5 +36,5 @@ if __name__ == "__main__":
     print(cnt1, cnt2)
     json.dump(data1[0], open(os.path.join(path, "type1_train.json"), "w"), ensure_ascii=False)
     json.dump(data1[1], open(os.path.join(path, "type1_test.json"), "w"), ensure_ascii=False)
-    json.dump(data2[0], open(os.path.join(path, "type1_train.json"), "w"), ensure_ascii=False)
-    json.dump(data2[1], open(os.path.join(path, "type1_test.json"), "w"), ensure_ascii=False)
+    json.dump(data2[0], open(os.path.join(path, "type2_train.json"), "w"), ensure_ascii=False)
+    json.dump(data2[1], open(os.path.join(path, "type2_test.json"), "w"), ensure_ascii=False)
