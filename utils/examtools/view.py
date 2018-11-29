@@ -18,7 +18,7 @@ if __name__ == "__main__":
         f = open(os.path.join(path, filename), "r")
         for line in f:
             data = json.loads(line)
-            if check(data["content"]):
+            if check(data["statement"]):
                 cnt1 += 1
             else:
                 cnt2 += 1
