@@ -20,6 +20,9 @@ if __name__ == "__main__":
             data = json.loads(line)
             if check(data["statement"]):
                 cnt1 += 1
+                print(json.dumps(data))
+                if cnt1 == 10:
+                    break
             else:
                 cnt2 += 1
 
