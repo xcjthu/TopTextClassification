@@ -34,7 +34,16 @@ if __name__ == "__main__":
                 data2[op].append(data)
 
     print(cnt1, cnt2)
-    json.dump(data1[0], open(os.path.join(path, "type1_train.json"), "w"), ensure_ascii=False)
-    json.dump(data1[1], open(os.path.join(path, "type1_test.json"), "w"), ensure_ascii=False)
-    json.dump(data2[0], open(os.path.join(path, "type2_train.json"), "w"), ensure_ascii=False)
-    json.dump(data2[1], open(os.path.join(path, "type2_test.json"), "w"), ensure_ascii=False)
+
+
+    def dump(d, f):
+        f = open(f, "w")
+        for x in d:
+            print(json.dumps(x, ensure_ascii=False, sort_keys=True), file=f)
+        f.close()
+
+
+    dump(data1[0], os.path.join(path, "type1_train.json"))
+    dump(data1[1], os.path.join(path, "type1_test.json"))
+    dump(data1[0], os.path.join(path, "type2_train.json"))
+    dump(data2[1], os.path.join(path, "type2_test.json"))
