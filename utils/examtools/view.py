@@ -17,7 +17,9 @@ if __name__ == "__main__":
     cnt2 = 0
     data1 = [[], []]
     data2 = [[], []]
-    for filename in ["xuefa_data_1.json", "xuefa_data_2.json", "xuefa_data_3.json"]:
+    for filename in os.listdir(path):
+        if filename.startswith("xuefa"):
+            continue
         f = open(os.path.join(path, filename), "r")
         op = random.randint(1, 5)
         if op == 1:
