@@ -57,9 +57,9 @@ if __name__ == "__main__":
             d = json.loads(line)
             type1 = map_dic[d["subject"]]
             if check(d):
-                type2 = 0
-            else:
                 type2 = 1
+            else:
+                type2 = 0
 
             if random.randint(1, 5) == 1:
                 type3 = 1
