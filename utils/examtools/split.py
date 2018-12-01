@@ -21,7 +21,7 @@ def dump(data, filename):
     print(filename, len(data))
     f = open(os.path.join(output_path, filename), "w")
     for d in data:
-        print(json.dumps(d, ensure_ascii=False), file=f)
+        print(json.dumps(d, ensure_ascii=False, sort_keys=True), file=f)
 
 
 map_dic = {
