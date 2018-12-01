@@ -18,6 +18,7 @@ def check(d):
 
 
 def dump(data, filename):
+    print(filename, len(data))
     f = open(os.path.join(output_path, filename), "w")
     for d in data:
         print(json.dumps(d, ensure_ascii=False), file=f)
@@ -75,4 +76,4 @@ if __name__ == "__main__":
                 else:
                     x = "test"
 
-            dump(data[a][b][c], "%d_%d_%s.json" % (a, b, x))
+                dump(data[a][b][c], "%d_%d_%s.json" % (a, b, x))
