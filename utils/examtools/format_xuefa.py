@@ -10,7 +10,7 @@ if __name__ == "__main__":
         for line in f:
             d = json.loads(line)
             d["option_list"] = d["option"]
-            d.pop("option_list")
+            d.pop("option")
             data.append(d)
         f.close()
         f = open(os.path.join(pre_path, filename), "w")
