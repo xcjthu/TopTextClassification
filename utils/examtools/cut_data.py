@@ -25,10 +25,6 @@ def cut_file(path):
             data = json.loads(line)
             data["statement"] = cut(data["statement"])
 
-            if not ("option_list" in data.keys()):
-                data["option_list"] = data["option"]
-                data.pop("option")
-
             for option in data["option_list"]:
                 data["option_list"][option] = cut(data["option_list"][option])
 
