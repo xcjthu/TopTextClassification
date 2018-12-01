@@ -15,9 +15,10 @@ def cut(content):
     return content
 
 
-for filename in os.listdir(input_data_path):
-    input_file = open(os.path.join(input_data_path, filename), "r")
-    output_file = open(os.path.join(output_data_path, filename), "w")
+def cut_file(path):
+    os.makedirs(os.path.join(output_data_path, "/".join(path.split("/")[:-1])), exist_ok=True)
+    input_file = open(os.path.join(input_data_path, path), "r")
+    output_file = open(os.path.join(output_data_path, path), "w")
 
     for line in input_file:
         try:
@@ -41,6 +42,19 @@ for filename in os.listdir(input_data_path):
 
     input_file.close()
     output_file.close()
+
+
+def dfs_search(path):
+    real_path = os.path.join(input_data_path, path)
+    for filename in os.listdir(real_path):
+        file_path = os.path.join(real_path, filename)
+        if os.path.isdir(file_path):
+            dfs_search(os.path.join(path, filename))
+        else:
+            cut_file(os.path.join(path, filename))
+
+
+dfs_search("")
 
 word_set = ["PAD", "UNK"] + list(word_set)
 word_dic = {}

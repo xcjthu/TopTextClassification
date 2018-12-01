@@ -2,7 +2,7 @@ import os
 import json
 import random
 
-pre_path = "/data/disk3/private/zhx/exam/data/origin_data"
+pre_path = "/data/disk3/private/zhx/exam/data/origin_data/学法"
 file_list = ["xuefa_data_1.json", "xuefa_data_2.json", "xuefa_data_3.json"]
 output_path = "/data/disk3/private/zhx/exam/data/format"
 
