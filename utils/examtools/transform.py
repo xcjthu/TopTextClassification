@@ -2,6 +2,7 @@ import os
 import json
 import win32com
 from win32com import client as wc
+import shutil
 
 doc_path = r"D:\university\work\nlp\law\司法考试大纲\司法考试大纲"
 output_dir = "data"
@@ -35,5 +36,25 @@ def dfs_search(path):
             solve_file(os.path.join(path, filename))
 
 
+def dfs_search2(path):
+    now_path = os.path.join(doc_path, path)
+    for filename in os.listdir(now_path):
+        filepath = os.path.join(now_path, filename)
+        if filepath.find("~") != -1:
+            print(filepath)
+            os.remove(filepath)
+            continue
+
+        if os.path.isdir(filepath):
+            dfs_search2(os.path.join(path, filename))
+        else:
+            if filepath.endswith("docx"):
+                pathx = "\\".join(
+                    filepath.replace(r"D:\university\work\nlp\law\司法考试大纲\司法考试大纲", "docx").split("\\")[:-1])
+                os.makedirs(pathx, exist_ok=True)
+                shutil.copyfile(filepath, filepath.replace(r"D:\university\work\nlp\law\司法考试大纲\司法考试大纲", "docx"))
+
+
 if __name__ == "__main__":
     dfs_search("")
+    dfs_search2("")

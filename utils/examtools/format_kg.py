@@ -3,7 +3,7 @@ import json
 import win32com
 from docx import Document
 
-doc_path = r"D:\university\work\nlp\law\司法考试大纲\司法考试大纲"
+doc_path = r"docx"
 output_dir = "data"
 
 number_dic = {
@@ -176,7 +176,7 @@ def solve_file(filepath):
         document = Document(filepath)
         result = parse_file(document.paragraphs)
         if len(result) == 0:
-            print("\\".join(filepath.split("\\")[7:]))
+            print("\\".join(filepath.split("\\")[0:]))
         # print(filepath)
         json.dump(result, open(outfilepath, "w", encoding="utf8"), indent=2, ensure_ascii=False)
     else:
