@@ -110,12 +110,13 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
     print('** start training here! **')
     print('----------------|----------TRAIN-----------|----------VALID-----------|----------------|')
-    print('  lr    epoch   |   loss           top-1   |   loss           top-1   |      time      |')
+    print('  lr    epoch   |   loss           top-1   |   loss           top-1   |      time      | Forward num')
     print('----------------|--------------------------|--------------------------|----------------|')
     start = timer()
 
     for epoch_num in range(trained_epoch, epoch):
         cnt = 0
+        total = 0
 
         train_cnt = 0
         train_loss = 0
@@ -155,11 +156,13 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             accu = accu.item()
             optimizer.step()
 
+            total += config.getint("batch_size")
+
             if cnt % output_time == 0:
                 print('\r', end='', flush=True)
-                print('%.4f   % 3d    |  %.4f         % 2.2f   |   ????           ?????   |  %s  |' % (
+                print('%.4f   % 3d    |  %.4f         % 2.2f   |   ????           ?????   |  %s  | %d' % (
                     lr, epoch_num + 1, train_loss / train_cnt, train_acc / train_cnt * 100,
-                    time_to_str((timer() - start))), end='',
+                    time_to_str((timer() - start)), total), end='',
                       flush=True)
 
         train_loss /= train_cnt
@@ -174,9 +177,9 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
         valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
         print('\r', end='', flush=True)
-        print('%.4f   % 3d    |  %.4f          %.2f   |  %.4f         % 2.2f   |  %s  |' % (
+        print('%.4f   % 3d    |  %.4f          %.2f   |  %.4f         % 2.2f   |  %s  | %d' % (
             lr, epoch_num + 1, train_loss, train_acc * 100, valid_loss, valid_accu * 100,
-            time_to_str((timer() - start))))
+            time_to_str((timer() - start)), total))
 
 
 print_info("training is finished!")
