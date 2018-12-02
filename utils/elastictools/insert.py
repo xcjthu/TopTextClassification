@@ -86,5 +86,4 @@ if __name__ == "__main__":
             print(type2)
             for type3 in os.listdir(os.path.join(path, type1, type2)):
                 data = json.load(open(os.path.join(path, type1, type2, type3), "r"))
-                cnt = 0
                 dfs_insert(type1, type2, type3, data)
