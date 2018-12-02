@@ -156,7 +156,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             accu = accu.item()
             optimizer.step()
 
-            total += config.getint("batch_size")
+            total += config.getint("train", "batch_size")
 
             if cnt % output_time == 0:
                 print('\r', end='', flush=True)
