@@ -63,7 +63,7 @@ def work(filename):
                 response = search("law", "data", request_body)
                 d["reference"][option] = []
                 for a in range(0, 10):
-                    d["reference"][option].append(response["hits"]["hits"]["content"])
+                    d["reference"][option].append(response["hits"]["hits"][a]["_source"]["content"])
 
         data.append(d)
 
