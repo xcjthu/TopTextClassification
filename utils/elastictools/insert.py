@@ -46,8 +46,8 @@ def dfs_insert(type1, type2, type3, data):
     for x in data:
         if type(x) is list:
             dfs_insert(type1, type2, type3, x)
-
-        temp = temp + x + " "
+        else:
+            temp = temp + x + " "
 
     insert_doc(index_name, doc_type, {"content": temp, "type1": type1, "type2": type2, "type3": type3}, tx)
 
