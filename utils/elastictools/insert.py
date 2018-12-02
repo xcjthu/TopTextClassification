@@ -3,6 +3,8 @@ import json
 import os
 
 index_name = "law"
+doc_type = "data"
+
 doc_type_map_dic = {
     "国际法": 4,
     "刑法": 2,
@@ -54,12 +56,10 @@ if __name__ == "__main__":
             "type": "date"
         }
 
-    mappingx = {"mappings": {}}
-    for key in doc_type_map_dic.keys():
-        mappingx["mappings"][key] = {"properties": mapping}
+    mapping = {"mappings": {doc_type: {"properties": mapping}}}
 
-    print(json.dumps(mappingx, indent=2))
-    create_index(index_name, json.dumps(mappingx))
+    print(json.dumps(mapping, indent=2))
+    create_index(index_name, json.dumps(mapping))
 
     for type1 in os.listdir(path):
         for type2 in os.listdir(os.path.join(path, type1)):
