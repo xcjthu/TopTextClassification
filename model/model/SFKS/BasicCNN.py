@@ -55,9 +55,10 @@ class BasicCNN(nn.Module):
 
         self.statement_encoder = CNNEnocoder(config, self.hidden_size, True)
         self.answer_encoder = CNNEnocoder(config, self.hidden_size, True)
+        self.analyse_encoder = CNNEnocoder(config, self.hidden_size, True)
 
         self.embedding = nn.Embedding(self.word_num, self.word_size)
-        self.bilinear = nn.Bilinear(self.hidden_size, self.hidden_size, 1)
+        self.bilinear = nn.Bilinear(2 * self.hidden_size, self.hidden_size, 1)
 
         if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
             self.multi = True
@@ -71,11 +72,15 @@ class BasicCNN(nn.Module):
         statement = data['statement']
         answer = data["answer"]
         labels = data["label"]
+        analyse = data["analyse"]
 
         statement = self.embedding(statement)
         answer = self.embedding(answer)
+        analyse = self.embedding(analyse)
 
         statement = self.statement_encoder(statement, config)
+        analyse = self.analyse_encoder(analyse, config)
+        statement = torch.cat([statement, analyse], dim=1)
         ans_list = []
         for a in range(0, 4):
             temp = answer[:, a]

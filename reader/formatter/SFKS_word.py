@@ -27,6 +27,9 @@ class SFKSWordFormatter:
         if len(data["option_list"]) != 4:
             # print("gg5")
             return None
+        if not ("analyse" in data.keys()):
+            return None
+
         return data
 
     def lookup(self, data):
@@ -45,6 +48,7 @@ class SFKSWordFormatter:
         statement = []
         answer = []
         label = []
+        analyse = []
         for temp_data in data:
             statement.append(self.lookup(temp_data["statement"]))
             answer.append([self.lookup(temp_data["option_list"]["A"]), self.lookup(temp_data["option_list"]["B"]),
@@ -59,10 +63,12 @@ class SFKSWordFormatter:
             if "D" in temp_data["answer"]:
                 label_x = 3
 
+            analyse.append(self.lookup(temp_data["analyse"]))
+
             label.append(label_x)
 
         statement = torch.tensor(statement, dtype=torch.long)
         answer = torch.tensor(answer, dtype=torch.long)
         label = torch.tensor(label, dtype=torch.long)
 
-        return {"statement": statement, "answer": answer, "label": label}
+        return {"statement": statement, "answer": answer, "label": label, "analyse": analyse}

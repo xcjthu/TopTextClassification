@@ -31,6 +31,11 @@ def cut_file(path):
             if "analyse" in data.keys():
                 data["analyse"] = cut(data["analyse"])
 
+            if "reference" in data.keys:
+                for option in data["reference"]:
+                    for a in range(0, len(data["reference"][option])):
+                        data["reference"][option][a] = cut(data["reference"][option][a])
+
             print(json.dumps(data, ensure_ascii=False, sort_keys=True), file=output_file)
 
         except Exception as e:
