@@ -1,29 +1,33 @@
-from elastic.elastic import create_index, delete_index
+from elastic.elastic import create_index, delete_index, insert_doc
 import json
 import os
 
 index_name = "law"
 doc_type = "data"
 
+unknown_list = ["知识产权法",
+                "劳动与社会保障法",
+                "环境资源法"]
+
 doc_type_map_dic = {
-    "国际法": 4,
-    "刑法": 2,
-    "刑事诉讼法【最新更新】": 2,
-    "司法制度和法律职业道德": 1,
-    "法制史": 5,
-    "民法": 3,
-    "民诉与仲裁【最新更新】": 3,
-    "国际经济法": 4,
-    "法理学": 1,
-    "法考冲刺试题": 0,
-    "法考真题(按年度)": 0,
-    "国际私法": 4,
-    "社会主义法治理念": 1,
-    "商法": 3,
-    "民诉与仲裁【更新中】": 3,
-    "行政法与行政诉讼法": 2,
-    "宪法": 1,
-    "经济法": 4
+    "国际法": "国际法",
+    "刑法": "刑法",
+    "刑事诉讼法【最新更新】": "刑事诉讼法",
+    "司法制度和法律职业道德": "司法制度和法律职业道德",
+    "法制史": "目录和中国法律史",
+    "民法": "民法",
+    "民诉与仲裁【最新更新】": "民事诉讼法",
+    "国际经济法": "国际经济法",
+    "法理学": "法理学",
+    "法考冲刺试题": -1,
+    "法考真题(按年度)": -1,
+    "国际私法": "国际私法",
+    "社会主义法治理念": "中国特色社会主义法治理论",
+    "商法": "商法",
+    "民诉与仲裁【更新中】": "民事诉讼法",
+    "行政法与行政诉讼法": "行政法与行政诉讼法",
+    "宪法": "宪法",
+    "经济法": "经济法"
 }
 
 text = ["content"]
@@ -31,6 +35,18 @@ keyword = ["type1", "type2", "type3"]
 date_type = []
 
 path = "../examtools/data"
+
+
+def dfs_insert(type1, type2, type3, data):
+    temp = ""
+    for x in data:
+        if type(x) is list:
+            dfs_insert(type1, type2, type3, x)
+
+        temp = temp + x + " "
+
+    insert_doc(index_name, doc_type, {"content": temp, "type1": type1, "type2": type2, "type3": type3})
+
 
 if __name__ == "__main__":
     try:
@@ -65,4 +81,5 @@ if __name__ == "__main__":
         for type2 in os.listdir(os.path.join(path, type1)):
             print(type2)
             for type3 in os.listdir(os.path.join(path, type1, type2)):
-                pass
+                data = json.load(open(os.path.join(path, type1, type2, type3), "r"))
+                dfs_insert(type1, type2, type3, data)
