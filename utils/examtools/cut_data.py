@@ -16,6 +16,7 @@ def cut(content):
 
 
 def cut_file(path):
+    print(path)
     os.makedirs(os.path.join(output_data_path, "/".join(path.split("/")[:-1])), exist_ok=True)
     input_file = open(os.path.join(input_data_path, path), "r")
     output_file = open(os.path.join(output_data_path, path), "w")
@@ -31,7 +32,7 @@ def cut_file(path):
             if "analyse" in data.keys():
                 data["analyse"] = cut(data["analyse"])
 
-            if "reference" in data.keys:
+            if "reference" in data.keys():
                 for option in data["reference"]:
                     for a in range(0, len(data["reference"][option])):
                         data["reference"][option][a] = cut(data["reference"][option][a])
