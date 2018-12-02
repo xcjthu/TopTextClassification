@@ -65,7 +65,7 @@ class BasicCNN(nn.Module):
         else:
             self.multi = False
 
-        self.fc = nn.Linear(2 * self.hidden_size, 4)
+        self.fc = nn.Linear(self.hidden_size, 4)
 
     def init_multi_gpu(self, device):
         pass
@@ -89,7 +89,7 @@ class BasicCNN(nn.Module):
             temp = self.answer_encoder(temp, config)
             ans_list.append(self.bilinear(statement, temp))
 
-        y = self.fc(statement)  # torch.cat(ans_list, dim=1)
+        y = self.fc(analyse)  # torch.cat(ans_list, dim=1)
         # y = torch.sigmoid(y)
 
         loss = criterion(y, labels)
