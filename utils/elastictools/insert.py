@@ -35,9 +35,13 @@ keyword = ["type1", "type2", "type3"]
 date_type = []
 
 path = "../examtools/data"
+cnt = 0
 
 
 def dfs_insert(type1, type2, type3, data):
+    global cnt
+    cnt += 1
+    tx = cnt
     temp = ""
     for x in data:
         if type(x) is list:
@@ -45,7 +49,7 @@ def dfs_insert(type1, type2, type3, data):
 
         temp = temp + x + " "
 
-    insert_doc(index_name, doc_type, {"content": temp, "type1": type1, "type2": type2, "type3": type3})
+    insert_doc(index_name, doc_type, {"content": temp, "type1": type1, "type2": type2, "type3": type3}, tx)
 
 
 if __name__ == "__main__":
@@ -82,4 +86,5 @@ if __name__ == "__main__":
             print(type2)
             for type3 in os.listdir(os.path.join(path, type1, type2)):
                 data = json.load(open(os.path.join(path, type1, type2, type3), "r"))
+                cnt = 0
                 dfs_insert(type1, type2, type3, data)
