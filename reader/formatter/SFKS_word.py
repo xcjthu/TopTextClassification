@@ -41,6 +41,7 @@ class SFKSWordFormatter:
                 lookup_id.append(self.word2id[word])
         while len(lookup_id) < self.max_len:
             lookup_id.append(self.word2id["PAD"])
+        lookup_id = list[0:self.max_len]
 
         return lookup_id
 
