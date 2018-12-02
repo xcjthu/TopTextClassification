@@ -1,36 +1,79 @@
 import json
 import os
 
-content = "担任法官"
-path = r"data"
+from elastic.elastic import search
+
+path = "/data/disk3/private/zhx/exam/data/format/"
+
+doc_type_map_dic = {
+    "国际法": "国际法",
+    "刑法": "刑法",
+    "刑事诉讼法【最新更新】": "刑事诉讼法",
+    "司法制度和法律职业道德": "司法制度和法律职业道德",
+    "法制史": "目录和中国法律史",
+    "民法": "民法",
+    "民诉与仲裁【最新更新】": "民事诉讼法",
+    "国际经济法": "国际经济法",
+    "法理学": "法理学",
+    "法考冲刺试题": -1,
+    "法考真题(按年度)": -1,
+    "国际私法": "国际私法",
+    "社会主义法治理念": "中国特色社会主义法治理论",
+    "商法": "商法",
+    "民诉与仲裁【更新中】": "民事诉讼法",
+    "行政法与行政诉讼法": "行政法与行政诉讼法",
+    "宪法": "宪法",
+    "经济法": "经济法"
+}
 
 
-def work(data, content):
-    for x in data:
-        if type(x) is list:
-            if work(x, content):
-                return True
-        else:
-            if x.find(content) != -1:
-                return True
+def work(filename):
+    print(filename)
+    data = []
+    f = open(filename, "r")
+    for line in f:
+        d = json.loads(line)
+        if doc_type_map_dic[d["subject"]] != -1:
+            type2 = doc_type_map_dic[d["subject"]]
 
-    return False
+            d["reference"] = {}
+            for option in d["option_list"]:
+                s = d["statement"] + " " + d["option_list"][option]
+                request_body = {
+                    "query": {
+                        "bool": {
+                            "should": [
+                                {
+                                    "match": {
+                                        "content": s
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "type2": {
+                                            "value": type2
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
 
+                response = json.loads(search("law", "data", request_body))
+                d["reference"][option] = []
+                for a in range(0, 10):
+                    d["reference"][option].append(response["hits"]["hits"]["content"])
 
-def lookup(filepath, content):
-    data = json.load(open(filepath, "r", encoding="utf8"))
-    if work(data, content):
-        print(filepath)
+        data.append(d)
 
-
-def dfs_search(filepath):
-    for filename in os.listdir(filepath):
-        path = os.path.join(filepath, filename)
-        if os.path.isdir(path):
-            dfs_search(path)
-        else:
-            lookup(path, content)
+    f.close()
+    f = open(filename, "w")
+    for d in data:
+        print(json.dumps(d, sort_keys=True, ensure_ascii=False), file=f)
+    f.close()
 
 
 if __name__ == "__main__":
-    dfs_search(path)
+    for filename in os.listdir(path):
+        work(os.path.join(path, filename))
