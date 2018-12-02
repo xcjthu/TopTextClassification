@@ -70,5 +70,6 @@ class SFKSWordFormatter:
         statement = torch.tensor(statement, dtype=torch.long)
         answer = torch.tensor(answer, dtype=torch.long)
         label = torch.tensor(label, dtype=torch.long)
+        analyse = torch.tensor(analyse, dtype=torch.long)
 
         return {"statement": statement, "answer": answer, "label": label, "analyse": analyse}
