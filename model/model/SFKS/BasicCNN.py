@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import json
 
 from utils.util import calc_accuracy, gen_result
+from model.model.SFKS.attention import Attention
 
 
 class CNNEnocoder(nn.Module):
@@ -25,13 +26,13 @@ class CNNEnocoder(nn.Module):
 
     def forward(self, x, config):
         l = len(x[0])
-        x = x.view(config.getint("train", "batch_size"), 1, -1, config.getint("data", "vec_size"))
+        bs = x.size()[0]
+        x = x.view(bs, 1, -1, config.getint("data", "vec_size"))
         conv_out = []
         gram = config.getint("model", "min_gram")
         for conv in self.convs:
             y = F.relu(conv(x)).view(config.getint("train", "batch_size"), config.getint("model", "filters"), -1)
-            y = F.max_pool1d(y, kernel_size=l - gram + 1).view(
-                config.getint("train", "batch_size"), -1)
+            y = F.max_pool1d(y, kernel_size=l - gram + 1).view(bs, -1)
             conv_out.append(y)
             gram += 1
 
@@ -52,44 +53,46 @@ class BasicCNN(nn.Module):
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
         self.output_dim = config.getint("model", "output_dim")
         self.hidden_size = config.getint("model", "hidden_size")
+        self.bs = config.getint("train", "batch_size")
 
         self.statement_encoder = CNNEnocoder(config, self.hidden_size, True)
-        self.answer_encoder = CNNEnocoder(config, self.hidden_size, True)
-        self.analyse_encoder = CNNEnocoder(config, self.hidden_size, True)
+        self.reference_encoder = CNNEnocoder(config, self.hidden_size, True)
+
+        self.fc = nn.Linear(self.hidden_size * 4, 4)
 
         self.embedding = nn.Embedding(self.word_num, self.word_size)
-        self.bilinear = nn.Bilinear(2 * self.hidden_size, self.hidden_size, 1)
+        self.attention = Attention(config)
 
         if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
             self.multi = True
         else:
             self.multi = False
 
-        self.fc = nn.Linear(self.hidden_size, 4)
-
     def init_multi_gpu(self, device):
         pass
 
     def forward(self, data, criterion, config, usegpu, acc_result=None):
         statement = data['statement']
-        answer = data["answer"]
+        reference = data["reference"]
         labels = data["label"]
-        analyse = data["analyse"]
+
+        statement = statement.view(4 * self.bs, -1)
+        reference = reference.view(4 * 10 * self.bs, -1)
 
         statement = self.embedding(statement)
-        answer = self.embedding(answer)
-        analyse = self.embedding(analyse)
+        reference = self.embedding(reference)
 
-        statement = self.statement_encoder(statement, config)
-        analyse = self.analyse_encoder(analyse, config)
-        statement = torch.cat([statement, analyse], dim=1)
-        ans_list = []
-        for a in range(0, 4):
-            temp = answer[:, a]
-            temp = self.answer_encoder(temp, config)
-            ans_list.append(self.bilinear(statement, temp))
+        statement = self.statement_encoder(statement)
+        reference = self.reference_encoder(reference)
 
-        y = self.fc(analyse)  # torch.cat(ans_list, dim=1)
+        statement = statement.view(self.bs * 4, 1, -1)
+        reference = reference.view(self.bs * 4, 10, -1)
+
+        result = self.attention(statement, reference)
+
+        result = result.view(self.bs, -1)
+
+        y = self.fc(result)  # torch.cat(ans_list, dim=1)
         # y = torch.sigmoid(y)
 
         loss = criterion(y, labels)

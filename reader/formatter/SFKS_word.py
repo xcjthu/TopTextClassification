@@ -27,7 +27,7 @@ class SFKSWordFormatter:
         if len(data["option_list"]) != 4:
             # print("gg5")
             return None
-        if not ("analyse" in data.keys()):
+        if not ("reference" in data.keys()):
             return None
 
         return data
@@ -47,13 +47,16 @@ class SFKSWordFormatter:
 
     def format(self, data, config, transformer, mode):
         statement = []
-        answer = []
         label = []
-        analyse = []
+        reference = []
         for temp_data in data:
-            statement.append(self.lookup(temp_data["statement"]))
-            answer.append([self.lookup(temp_data["option_list"]["A"]), self.lookup(temp_data["option_list"]["B"]),
-                           self.lookup(temp_data["option_list"]["C"]), self.lookup(temp_data["option_list"]["D"])])
+            statement.append([
+                self.lookup(temp_data["statement"] + ["UNK"] + temp_data["option_list"]["A"]),
+                self.lookup(temp_data["statement"] + ["UNK"] + temp_data["option_list"]["B"]),
+                self.lookup(temp_data["statement"] + ["UNK"] + temp_data["option_list"]["C"]),
+                self.lookup(temp_data["statement"] + ["UNK"] + temp_data["option_list"]["D"]),
+            ])
+
             label_x = 0
             if "A" in temp_data["answer"]:
                 label_x = 0
@@ -64,13 +67,17 @@ class SFKSWordFormatter:
             if "D" in temp_data["answer"]:
                 label_x = 3
 
-            analyse.append(self.lookup(temp_data["analyse"]))
-
             label.append(label_x)
 
-        statement = torch.tensor(statement, dtype=torch.long)
-        answer = torch.tensor(answer, dtype=torch.long)
-        label = torch.tensor(label, dtype=torch.long)
-        analyse = torch.tensor(analyse, dtype=torch.long)
+            temp_ref = []
+            for option in ["A", "B", "C", "D"]:
+                temp_ref.append([])
+                for a in range(0, 10):
+                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a]))
+            reference.append(temp_ref)
 
-        return {"statement": statement, "answer": answer, "label": label, "analyse": analyse}
+        statement = torch.tensor(statement, dtype=torch.long)
+        label = torch.tensor(label, dtype=torch.long)
+        reference = torch.tensor(reference, dtype=torch.long)
+
+        return {"statement": statement, "label": label, "reference": reference}
