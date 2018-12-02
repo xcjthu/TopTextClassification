@@ -54,12 +54,12 @@ if __name__ == "__main__":
             "type": "date"
         }
 
-    mapping = {"mappings": {}}
+    mappingx = {"mappings": {}}
     for key in doc_type_map_dic.keys():
-        mapping["mappings"][key] = {"properties": mapping}
+        mappingx["mappings"][key] = {"properties": mapping}
 
-    print(json.dumps(mapping, indent=2))
-    create_index(index_name, json.dumps(mapping))
+    print(json.dumps(mappingx, indent=2))
+    create_index(index_name, json.dumps(mappingx))
 
     for type1 in os.listdir(path):
         for type2 in os.listdir(os.path.join(path, type1)):
