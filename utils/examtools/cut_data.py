@@ -39,7 +39,8 @@ def cut_file(path):
             print(json.dumps(data, ensure_ascii=False, sort_keys=True), file=output_file)
 
         except Exception as e:
-            pass
+            print(e)
+            raise e
 
     input_file.close()
     output_file.close()
