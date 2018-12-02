@@ -60,7 +60,7 @@ def work(filename):
                     }
                 }
 
-                response = json.loads(search("law", "data", request_body))
+                response = search("law", "data", request_body)
                 d["reference"][option] = []
                 for a in range(0, 10):
                     d["reference"][option].append(response["hits"]["hits"]["content"])
