@@ -3,7 +3,7 @@ import os
 
 from elastic.elastic import search
 
-path = "/data/disk3/private/zhx/exam/data/format/"
+path = "/data/disk3/private/zhx/exam/data/origin_data/format/"
 
 doc_type_map_dic = {
     "国际法": "国际法",
