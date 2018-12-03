@@ -82,8 +82,8 @@ class BasicCNN(nn.Module):
         statement = self.embedding(statement)
         reference = self.embedding(reference)
 
-        statement = self.statement_encoder(statement)
-        reference = self.reference_encoder(reference)
+        statement = self.statement_encoder(statement, config)
+        reference = self.reference_encoder(reference, config)
 
         statement = statement.view(self.bs * 4, 1, -1)
         reference = reference.view(self.bs * 4, 10, -1)
