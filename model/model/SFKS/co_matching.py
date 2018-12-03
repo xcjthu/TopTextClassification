@@ -136,9 +136,9 @@ class CoMatching(nn.Module):
             a = self.embedding(a)
             p = self.embedding(p)
 
-
-        a = a.view(bs * 4, -1, self.word_size)
-        p = p.view(bs * 4, -1, self.word_size)
+        a = a.contiguous().view(bs * 4, -1, self.word_size)
+        p = p.contiguous().view(bs * 4, -1, self.word_size)
+        q = q.contiguous()
 
         hp = self.lstm_p(p, config)
         hq = self.lstm_q(q, config)
@@ -210,8 +210,9 @@ class CoMatching2(nn.Module):
             a = self.embedding(a)
             p = self.embedding(p)
 
-        a = a.view(bs * 4, -1, self.word_size)
-        p = p.view(bs * 4 * 10, -1, self.word_size)
+        a = a.contiguous().view(bs * 4, -1, self.word_size)
+        p = p.contiguous().view(bs * 4 * 10, -1, self.word_size)
+        q = q.contiguous()
 
         hp = self.lstm_p(p, config)
         hq = self.lstm_q(q, config)
