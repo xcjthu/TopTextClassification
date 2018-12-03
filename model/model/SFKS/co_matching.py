@@ -114,6 +114,11 @@ class CoMatching(nn.Module):
 
         self.co_match = Comatch(config)
 
+        if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
+            self.multi = True
+        else:
+            self.multi = False
+
     def init_multi_gpu(self, device):
         pass
 
@@ -151,6 +156,8 @@ class CoMatching(nn.Module):
             y_list.append(self.predictor(h))
 
         y = torch.cat(y_list, dim=1)
+        if self.multi:
+            y = torch.sigmoid(y)
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)
@@ -181,6 +188,11 @@ class CoMatching2(nn.Module):
         self.predictor = nn.Linear(2 * 10 * self.hidden_size, 1)
 
         self.co_match = Comatch(config)
+
+        if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
+            self.multi = True
+        else:
+            self.multi = False
 
     def init_multi_gpu(self, device):
         pass
@@ -224,6 +236,8 @@ class CoMatching2(nn.Module):
             y_list.append(self.predictor(h))
 
         y = torch.cat(y_list, dim=1)
+        if self.multi:
+            y = torch.sigmoid(y)
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)

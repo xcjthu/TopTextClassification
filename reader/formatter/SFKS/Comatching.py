@@ -14,9 +14,9 @@ class ComatchingFormatter:
         if not ("answer" in data.keys()):
             # print("gg1")
             return None
-        if len(data["answer"]) != 1:
-            # print("gg2")
-            return None
+        # if len(data["answer"]) != 1:
+        # print("gg2")
+        #    return None
         if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
             # print("gg3")
             return None
@@ -58,7 +58,7 @@ class ComatchingFormatter:
                            self.lookup(temp_data["option_list"]["C"]),
                            self.lookup(temp_data["option_list"]["D"])])
 
-            label_x = 0
+            """label_x = 0
             if "A" in temp_data["answer"]:
                 label_x = 0
             if "B" in temp_data["answer"]:
@@ -66,7 +66,17 @@ class ComatchingFormatter:
             if "C" in temp_data["answer"]:
                 label_x = 2
             if "D" in temp_data["answer"]:
-                label_x = 3
+                label_x = 3"""
+
+            label_x = [0, 0, 0, 0]
+            if "A" in temp_data["answer"]:
+                label_x[0] = 1
+            if "B" in temp_data["answer"]:
+                label_x[1] = 1
+            if "C" in temp_data["answer"]:
+                label_x[2] = 1
+            if "D" in temp_data["answer"]:
+                label_x[3] = 1
 
             label.append(label_x)
 
