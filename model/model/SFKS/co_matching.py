@@ -28,8 +28,8 @@ class BiLSTMEncoder(nn.Module):
 
     def init_hidden(self, config, bs):
         self.hidden = (
-            torch.autograd.Variable(torch.zeros(2 * config.getint("model", "num_layers"), bs, self.hidden_dim)),
-            torch.autograd.Variable(torch.zeros(2 * config.getint("model", "num_layers"), bs, self.hidden_dim)))
+            torch.autograd.Variable(torch.zeros(2 * config.getint("model", "num_layers"), bs, self.hidden_dim)).cuda(),
+            torch.autograd.Variable(torch.zeros(2 * config.getint("model", "num_layers"), bs, self.hidden_dim)).cuda())
 
     def init_multi_gpu(self, device):
         self.lstm = nn.DataParallel(self.lstm, device_ids=device)
