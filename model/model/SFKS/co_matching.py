@@ -119,8 +119,8 @@ class CoMatching(nn.Module):
 
         c_list = []
         for a in range(0, 4):
-            p_temp = hp[:, a, :, :].view(bs, -1, self.hidden_size)
-            a_temp = ha[:, a, :, :].view(bs, -1, self.hidden_size)
+            p_temp = hp[:, a, :, :].view(bs, -1, self.hidden_size * 2)
+            a_temp = ha[:, a, :, :].view(bs, -1, self.hidden_size * 2)
             c_list.append(self.co_match(hq, p_temp, a_temp))
 
         c_list = torch.cat(c_list, dim=1)
