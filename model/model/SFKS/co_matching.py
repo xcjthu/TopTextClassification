@@ -59,6 +59,9 @@ class Comatch(nn.Module):
         return torch.cat([a - b, a * b], dim=1)
 
     def forward(self, hq, hp, ha):
+        print(hq.size())
+        print(hp.size())
+        print(ha.size())
         gq = torch.softmax(torch.bmm(self.wg(hq), hp))
         ga = torch.softmax(torch.bmm(self.wg(ha), ha))
 
