@@ -97,7 +97,7 @@ class ComatchingFormatter:
             for option in ["A", "B", "C", "D"]:
                 temp_ref.append([])
                 for a in range(0, 10):
-                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a]))
+                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], transformer))
 
             reference.append(temp_ref)
 
@@ -109,7 +109,6 @@ class ComatchingFormatter:
             statement = torch.tensor(statement, dtype=torch.long)
             reference = torch.tensor(reference, dtype=torch.long)
             answer = torch.tensor(answer, dtype=torch.long)
-
 
         label = torch.tensor(label, dtype=torch.long)
 
