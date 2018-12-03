@@ -146,12 +146,11 @@ class CoMatching(nn.Module):
             a_temp = ha[:, a, :, :].view(bs, -1, self.hidden_size * 2)
             c = self.co_match(hq, p_temp, a_temp)
             H = self.lstm_c(c, config)
-            print(H.size())
             h = torch.max(H, dim=1)[0].view(bs, -1)
-            print(h.size())
             y_list.append(self.predictor(h))
 
-        y = torch.tensor(y_list, dtype=torch.float)
+        y = torch.cat(y_list, dim=1)
+        print(y.size())
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)
