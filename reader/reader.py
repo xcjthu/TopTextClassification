@@ -2,10 +2,11 @@ import time
 import multiprocessing
 import random
 
-from utils.util import print_info, get_file_list
+from utils.util import get_file_list
 from reader.formatter.AYYC import AYPredictionFormatter
 from reader.formatter.AJLX import AJLXPredictionFormatter
-from reader.formatter.SFKS_word import SFKSWordFormatter
+from reader.formatter.SFKS.SFKS_word import SFKSWordFormatter
+from reader.formatter.SFKS.Comatching import ComatchingFormatter
 from word2vec.word2vec import init_transformer
 
 
@@ -17,6 +18,8 @@ def init_formatter(config):
         formatter = AJLXPredictionFormatter(config)
     elif config.get("data", "formatter") == "SFKS_word":
         formatter = SFKSWordFormatter(config)
+    elif config.get("data", "formatter") == "SFKS_comatching":
+        formatter = ComatchingFormatter(config)
     else:
         raise NotImplementedError
 
