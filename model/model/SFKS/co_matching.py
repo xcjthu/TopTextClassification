@@ -121,7 +121,7 @@ class CoMatching(nn.Module):
         q = data["statement"]
         a = data["answer"]
         p = data["reference"]
-        labels = data["labels"]
+        labels = data["label"]
 
         bs = q.size()[0]
 
