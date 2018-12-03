@@ -48,7 +48,7 @@ class BiLSTMEncoder(nn.Module):
 
         lstm_out, self.hidden = self.lstm(x, self.hidden)
 
-        return lstm_out, self.hidden
+        return lstm_out
 
 
 class Comatch(nn.Module):
