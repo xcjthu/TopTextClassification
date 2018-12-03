@@ -38,13 +38,8 @@ class BiLSTMEncoder(nn.Module):
 
     def forward(self, x, config):
         bs = x.size()[0]
-        print(x.size())
         x = x.view(bs, -1, self.data_size)
-        print(x.size())
         self.init_hidden(config, bs)
-        # self.hidden = self.transpose(self.hidden)
-        # x = x.contiguous()
-        # self.hidden = self.hidden.contiguous()
 
         lstm_out, self.hidden = self.lstm(x, self.hidden)
 
@@ -55,8 +50,9 @@ class Comatch(nn.Module):
     def __init__(self, config):
         super(Comatch, self).__init__()
 
-        self.wg = nn.Linear(1, 1)
-        self.wm = nn.Linear(1, 1)
+        hz = config.getint("model", "hidden_size")
+        self.wg = nn.Linear(hz * 2, hz * 2)
+        self.wm = nn.Linear(hz * 2, hz * 2)
         self.relu = nn.ReLU()
 
     def subdim(self, a, b):
@@ -72,7 +68,7 @@ class Comatch(nn.Module):
         mq = self.relu(self.subdim(bar_hq, hp))
         ma = self.relu(self.subdim(bar_ha, hp))
 
-        c = torch.cat([mq, mq], dim=1)
+        c = torch.cat([mq, ma], dim=1)
         return c
 
 
@@ -91,6 +87,8 @@ class CoMatching(nn.Module):
         self.lstm_p = BiLSTMEncoder(config)
         self.lstm_a = BiLSTMEncoder(config)
         self.lstm_q = BiLSTMEncoder(config)
+
+        self.co_match = Comatch(config)
 
     def init_multi_gpu(self, device):
         pass
@@ -112,9 +110,18 @@ class CoMatching(nn.Module):
         hp = self.lstm_p(p, config)
         hq = self.lstm_q(q, config)
         ha = self.lstm_a(a, config)
-        print(hp.size())
-        print(hq.size())
-        print(ha.size())
+
+        hp = hp.view(bs, 4, -1, self.hidden_size)
+        ha = ha.view(bs, 4, -1, self.hidden_size)
+
+        c_list = []
+        for a in range(0, 4):
+            p_temp = hp[:, a, :, :].view(bs, -1, self.hidden_size)
+            a_temp = ha[:, a, :, :].view(bs, -1, self.hidden_size)
+            c_list.append(self.co_match(hq, p_temp, a_temp))
+
+        c_list = torch.cat(c_list, dim=1)
+        print(c_list.size())
         gg
 
         loss = criterion(y, labels)
