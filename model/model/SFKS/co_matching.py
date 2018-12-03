@@ -38,7 +38,9 @@ class BiLSTMEncoder(nn.Module):
 
     def forward(self, x, config):
         bs = x.size()[0]
+        print(x.size())
         x = x.view(bs, -1, self.data_size)
+        print(x.size())
         self.init_hidden(config, bs)
         # self.hidden = self.transpose(self.hidden)
         # x = x.contiguous()
