@@ -82,4 +82,4 @@ class ComatchingFormatter:
         reference = torch.tensor(reference, dtype=torch.long)
         answer = torch.tensor(answer, dtype=torch.long)
 
-        return {"statement": statement, "label": label, "reference": reference}
+        return {"statement": statement, "label": label, "reference": reference, "answer": answer}
