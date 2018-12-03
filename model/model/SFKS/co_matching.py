@@ -105,6 +105,12 @@ class CoMatching(nn.Module):
         self.lstm_p = BiLSTMEncoder(config)
         self.lstm_a = BiLSTMEncoder(config)
         self.lstm_q = BiLSTMEncoder(config)
+        self.lstm_c = BiLSTMEncoder(config)
+        self.lstm_c.data_size = 4 * self.hidden_size
+        self.lstm_c.lstm = nn.LSTM(self.lstm_c.data_size, self.hidden_dim, batch_first=True,
+                                   num_layers=config.getint("model", "num_layers"), bidirectional=True)
+
+        self.predictor = nn.Linear(2 * self.hidden_size, 1)
 
         self.co_match = Comatch(config)
 
@@ -115,6 +121,7 @@ class CoMatching(nn.Module):
         q = data["statement"]
         a = data["answer"]
         p = data["reference"]
+        labels = data["labels"]
 
         bs = q.size()[0]
 
@@ -132,15 +139,19 @@ class CoMatching(nn.Module):
         hp = hp.contiguous().view(bs, 4, -1, self.hidden_size * 2)
         ha = ha.contiguous().view(bs, 4, -1, self.hidden_size * 2)
 
-        c_list = []
+        y_list = []
+
         for a in range(0, 4):
             p_temp = hp[:, a, :, :].view(bs, -1, self.hidden_size * 2)
             a_temp = ha[:, a, :, :].view(bs, -1, self.hidden_size * 2)
-            c_list.append(self.co_match(hq, p_temp, a_temp))
+            c = self.co_match(hq, p_temp, a_temp)
+            H = self.lstm_c(c, config)
+            print(H.size())
+            h = torch.max(H, dim=1)
+            print(h.size())
+            y_list.append(self.predictor(h))
 
-        c_list = torch.cat(c_list, dim=1)
-        print(c_list.size())
-        gg
+        y = torch.tensor(y_list, dtype=torch.float)
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)
