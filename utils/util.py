@@ -59,8 +59,6 @@ def calc_accuracy(outputs, label, config, result=None):
             labels1 = (labels[:, i].float() >= 0.5).long()
             total += int((labels1 * outputs1).sum())
             total += int(((1 - labels1) * (1 - outputs1)).sum())
-            print(total)
-            gg
 
             if result is None:
                 continue
