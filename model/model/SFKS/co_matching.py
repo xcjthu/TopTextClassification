@@ -72,19 +72,21 @@ class Comatch(nn.Module):
         self.attq = Attention(config)
         self.atta = Attention(config)
 
+        self.wm = nn.Linear(2 * hz, hz)
+
         self.relu = nn.ReLU()
 
     def subdim(self, a, b):
-        return torch.cat([a - b, a * b], dim=1)
+        return torch.cat([a - b, a * b], dim=2)
 
     def forward(self, hq, hp, ha):
         bar_hq = self.attq(hq, hp)
         bar_ha = self.atta(ha, hp)
 
-        mq = self.relu(self.subdim(bar_hq, hp))
-        ma = self.relu(self.subdim(bar_ha, hp))
+        mq = self.relu(self.wm(self.subdim(bar_hq, hp)))
+        ma = self.relu(self.wm(self.subdim(bar_ha, hp)))
 
-        c = torch.cat([mq, ma], dim=1)
+        c = torch.cat([mq, ma], dim=2)
         print(c.size())
         return c
 
