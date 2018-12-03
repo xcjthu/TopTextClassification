@@ -56,9 +56,7 @@ def calc_accuracy(outputs, label, config, result=None):
 
         for i in range(nr_classes):
             outputs1 = (outputs[:, i] >= 0.5).long()
-            labels1 = (labels[:, i] >= 0.5).long()
-            print(outputs1)
-            print(labels1)
+            labels1 = (labels[:, i].float() >= 0.5).long()
             total += int((labels1 * outputs1).sum())
             total += int(((1 - labels1) * (1 - outputs1)).sum())
             print(total)
