@@ -1,5 +1,6 @@
 import os
 import json
+import random
 
 path = "/data/disk3/private/zhx/exam/data/origin_data/format"
 work_list = ["train", "test"]
@@ -12,6 +13,8 @@ if __name__ == "__main__":
                 f = open(os.path.join(path, "%d_%d_%s.json" % (a, b, work)), "r")
                 for line in f:
                     data.append(json.loads(line))
+
+            random.shuffle(data)
 
             f = open(os.path.join(path, "%d_%s.json" % (b, work)), "w")
             for d in data:
