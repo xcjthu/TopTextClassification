@@ -89,7 +89,6 @@ class ComatchingFormatter:
             reference.append(temp_ref)
 
         statement = torch.tensor(statement, dtype=torch.long)
-        print(json.dumps(label, indent = 2))
         label = torch.tensor(label, dtype=torch.long)
         reference = torch.tensor(reference, dtype=torch.long)
         answer = torch.tensor(answer, dtype=torch.long)
