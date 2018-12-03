@@ -156,8 +156,6 @@ class CoMatching(nn.Module):
             y_list.append(self.predictor(h))
 
         y = torch.cat(y_list, dim=1)
-        if self.multi:
-            y = torch.sigmoid(y)
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)
@@ -236,8 +234,6 @@ class CoMatching2(nn.Module):
             y_list.append(self.predictor(h))
 
         y = torch.cat(y_list, dim=1)
-        if self.multi:
-            y = torch.sigmoid(y)
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)

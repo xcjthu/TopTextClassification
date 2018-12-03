@@ -53,8 +53,7 @@ def calc_accuracy(outputs, label, config, result=None):
 
         while len(result) < nr_classes:
             result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
-
-        print(nr_classes)   
+            
         for i in range(nr_classes):
             outputs1 = (outputs[:, i] >= 0.5).long()
             labels1 = (labels[:, i] >= 0.5).long()
