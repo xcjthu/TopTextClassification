@@ -46,27 +46,38 @@ class BiLSTMEncoder(nn.Module):
         return lstm_out
 
 
+class Attention(nn.Module):
+    def __init__(self, config):
+        super(Attention, self).__init__()
+
+        hz = config.getint("model", "hidden_size")
+
+        self.w = nn.Linear(hz * 2, hz * 2)
+
+    def forward(self, hq, hp):
+        gq = torch.bmm(self.wg(hq), torch.transpose(hp, 1, 2))
+        gq = torch.softmax(gq, dim=2)
+
+        bar_hq = torch.bmm(torch.transpose(hq, 1, 2), gq)
+        bar_hq = torch.transpose(bar_hq, 1, 2)
+
+        return bar_hq
+
+
 class Comatch(nn.Module):
     def __init__(self, config):
         super(Comatch, self).__init__()
 
         hz = config.getint("model", "hidden_size")
-        self.wg = nn.Linear(hz * 2, hz * 2)
-        self.wm = nn.Linear(hz * 2, hz * 2)
-        self.relu = nn.ReLU()
+        self.attq = Attention(config)
+        self.atta = Attention(config)
 
     def subdim(self, a, b):
         return torch.cat([a - b, a * b], dim=1)
 
     def forward(self, hq, hp, ha):
-        print(hq.size())
-        print(hp.size())
-        print(ha.size())
-        gq = torch.softmax(torch.bmm(self.wg(hq), hp), dim=2)
-        ga = torch.softmax(torch.bmm(self.wg(ha), ha), dim=2)
-
-        bar_hq = torch.bmm(hq, gq)
-        bar_ha = torch.bmm(ha, ga)
+        bar_hq = self.attq(hq, hp)
+        bar_ha = self.atta(ha, hp)
 
         mq = self.relu(self.subdim(bar_hq, hp))
         ma = self.relu(self.subdim(bar_ha, hp))
