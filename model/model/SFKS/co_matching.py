@@ -72,6 +72,8 @@ class Comatch(nn.Module):
         self.attq = Attention(config)
         self.atta = Attention(config)
 
+        self.relu = nn.ReLU()
+
     def subdim(self, a, b):
         return torch.cat([a - b, a * b], dim=1)
 
@@ -83,6 +85,7 @@ class Comatch(nn.Module):
         ma = self.relu(self.subdim(bar_ha, hp))
 
         c = torch.cat([mq, ma], dim=1)
+        print(c.size())
         return c
 
 
