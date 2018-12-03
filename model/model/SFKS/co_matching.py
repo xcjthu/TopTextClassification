@@ -111,8 +111,8 @@ class CoMatching(nn.Module):
         hq = self.lstm_q(q, config)
         ha = self.lstm_a(a, config)
 
-        hp = hp.view(bs, 4, -1, self.hidden_size)
-        ha = ha.view(bs, 4, -1, self.hidden_size)
+        hp = hp.view(4, -1, self.hidden_size)
+        ha = ha.view(4, -1, self.hidden_size)
 
         c_list = []
         for a in range(0, 4):
