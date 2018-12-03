@@ -72,7 +72,7 @@ class Comatch(nn.Module):
         self.attq = Attention(config)
         self.atta = Attention(config)
 
-        self.wm = nn.Linear(2 * hz, hz)
+        self.wm = nn.Linear(4 * hz, 2 * hz)
 
         self.relu = nn.ReLU()
 
@@ -87,7 +87,6 @@ class Comatch(nn.Module):
         ma = self.relu(self.wm(self.subdim(bar_ha, hp)))
 
         c = torch.cat([mq, ma], dim=2)
-        print(c.size())
         return c
 
 
