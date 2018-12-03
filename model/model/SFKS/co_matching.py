@@ -27,8 +27,9 @@ class BiLSTMEncoder(nn.Module):
         self.transpose = transpose()
 
     def init_hidden(self, config, bs):
-        self.hidden = (torch.autograd.Variable(torch.zeros(bs, config.getint("model", "num_layers"), self.hidden_dim)),
-                       torch.autograd.Variable(torch.zeros(bs, config.getint("model", "num_layers"), self.hidden_dim)))
+        self.hidden = (
+        torch.autograd.Variable(torch.zeros(bs, 2 * config.getint("model", "num_layers"), self.hidden_dim)),
+        torch.autograd.Variable(torch.zeros(bs, 2 * config.getint("model", "num_layers"), self.hidden_dim)))
 
     def init_multi_gpu(self, device):
         self.lstm = nn.DataParallel(self.lstm, device_ids=device)
