@@ -72,8 +72,9 @@ class ComatchingFormatter:
 
             temp_ref = []
             for option in ["A", "B", "C", "D"]:
-                for a in range(0, 1):
-                    temp_ref.append(self.lookup(temp_data["reference"][option][a]))
+                temp_ref.append([])
+                for a in range(0, 10):
+                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a]))
 
             reference.append(temp_ref)
 
