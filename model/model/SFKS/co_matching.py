@@ -104,9 +104,9 @@ class CoMatching(nn.Module):
         a = a.view(bs * 4, -1, self.word_size)
         p = p.view(bs * 4, -1, self.word_size)
 
-        hp = self.lstm_p(p)
-        hq = self.lstm_q(q)
-        ha = self.lstm_a(a)
+        hp = self.lstm_p(p, config)
+        hq = self.lstm_q(q, config)
+        ha = self.lstm_a(a, config)
         print(hp.size())
         print(hq.size())
         print(ha.size())
