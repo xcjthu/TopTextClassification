@@ -129,11 +129,13 @@ class CoMatching(nn.Module):
         labels = data["label"]
 
         bs = q.size()[0]
-
-        q = self.embedding(q)
-        a = self.embedding(a)
         p = p[:, 0]
-        p = self.embedding(p)
+
+        if not (config.getboolean("data", "need_word2vec")):
+            q = self.embedding(q)
+            a = self.embedding(a)
+            p = self.embedding(p)
+
 
         a = a.view(bs * 4, -1, self.word_size)
         p = p.view(bs * 4, -1, self.word_size)
@@ -203,10 +205,10 @@ class CoMatching2(nn.Module):
 
         bs = q.size()[0]
 
-        q = self.embedding(q)
-        a = self.embedding(a)
-        p = p[:, 0]
-        p = self.embedding(p)
+        if not (config.getboolean("data", "need_word2vec")):
+            q = self.embedding(q)
+            a = self.embedding(a)
+            p = self.embedding(p)
 
         a = a.view(bs * 4, -1, self.word_size)
         p = p.view(bs * 4 * 10, -1, self.word_size)
