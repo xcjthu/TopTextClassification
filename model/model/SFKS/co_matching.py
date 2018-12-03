@@ -40,6 +40,7 @@ class BiLSTMEncoder(nn.Module):
         bs = x.size()[0]
         x = x.view(bs, -1, self.data_size)
         self.init_hidden(config, bs)
+        x = x.contiguous()
         self.hidden = self.transpose(self.hidden)
 
         lstm_out, self.hidden = self.lstm(x, self.hidden)
