@@ -62,8 +62,8 @@ class Comatch(nn.Module):
         print(hq.size())
         print(hp.size())
         print(ha.size())
-        gq = torch.softmax(torch.bmm(self.wg(hq), hp))
-        ga = torch.softmax(torch.bmm(self.wg(ha), ha))
+        gq = torch.softmax(torch.bmm(self.wg(hq), hp), dim=2)
+        ga = torch.softmax(torch.bmm(self.wg(ha), ha), dim=2)
 
         bar_hq = torch.bmm(hq, gq)
         bar_ha = torch.bmm(ha, ga)
