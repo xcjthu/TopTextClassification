@@ -147,7 +147,7 @@ class CoMatching(nn.Module):
             c = self.co_match(hq, p_temp, a_temp)
             H = self.lstm_c(c, config)
             print(H.size())
-            h = torch.max(H, dim=1)
+            h = torch.max(H, dim=1)[0].view(bs, -1)
             print(h.size())
             y_list.append(self.predictor(h))
 
