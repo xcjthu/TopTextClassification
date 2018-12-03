@@ -55,7 +55,7 @@ class Attention(nn.Module):
         self.w = nn.Linear(hz * 2, hz * 2)
 
     def forward(self, hq, hp):
-        gq = torch.bmm(self.wg(hq), torch.transpose(hp, 1, 2))
+        gq = torch.bmm(self.w(hq), torch.transpose(hp, 1, 2))
         gq = torch.softmax(gq, dim=2)
 
         bar_hq = torch.bmm(torch.transpose(hq, 1, 2), gq)
