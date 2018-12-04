@@ -11,7 +11,7 @@ model_list = {
     "TextCNN": TextCNN,
     "SFKSCNN": BasicCNN,
     "Comatching": CoMatching,
-    "SeaReader": SeaReader
+    "SeaReader": SeaReader,
     "Comatching2": CoMatching2
 }
 
