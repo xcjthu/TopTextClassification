@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable as Var
 
+
 class Gate(nn.Module):
     def __init__(self, config, input_size):
         super(Gate, self).__init__()
