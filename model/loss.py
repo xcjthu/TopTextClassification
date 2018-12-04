@@ -20,6 +20,7 @@ def get_loss(task_loss_type):
 
 
 def multi_label_cross_entropy_loss(outputs, labels):
+    labels = labels.float()
     temp = F.sigmoid(outputs)
     res = - labels * torch.log(temp) - (1 - labels) * torch.log(1 - temp)
     res = torch.mean(torch.sum(res, dim=1))

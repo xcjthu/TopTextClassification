@@ -3,9 +3,12 @@ import torch
 import numpy as np
 import jieba
 
+from utils.util import check_multi
+
 
 class ComatchingFormatter:
     def __init__(self, config):
+        self.need = config.getboolean("data", "need_word2vec")
         self.word2id = json.load(open(config.get("data", "word2id"), "r"))
         self.max_len = config.getint("data", "max_len")
 
@@ -14,9 +17,9 @@ class ComatchingFormatter:
         if not ("answer" in data.keys()):
             # print("gg1")
             return None
-        if len(data["answer"]) != 1:
-            # print("gg2")
-            return None
+        # if len(data["answer"]) != 1:
+        # print("gg2")
+        #    return None
         if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
             # print("gg3")
             return None
@@ -32,15 +35,24 @@ class ComatchingFormatter:
 
         return data
 
-    def lookup(self, data):
+    def lookup(self, data, transforemer=None):
         lookup_id = []
         for word in data:
             if not (word in self.word2id.keys()):
-                lookup_id.append(self.word2id["UNK"])
+                if self.need:
+                    lookup_id.append(transforemer.load("UNK"))
+                else:
+                    lookup_id.append(self.word2id["UNK"])
             else:
-                lookup_id.append(self.word2id[word])
+                if self.need:
+                    lookup_id.append(transforemer.load(word))
+                else:
+                    lookup_id.append(self.word2id[word])
         while len(lookup_id) < self.max_len:
-            lookup_id.append(self.word2id["PAD"])
+            if self.need:
+                lookup_id.append(transforemer.load("PAD"))
+            else:
+                lookup_id.append(self.word2id["PAD"])
         lookup_id = lookup_id[0:self.max_len]
 
         return lookup_id
@@ -52,34 +64,52 @@ class ComatchingFormatter:
         label = []
 
         for temp_data in data:
-            statement.append(self.lookup(temp_data["statement"]))
-            answer.append([self.lookup(temp_data["option_list"]["A"]),
-                           self.lookup(temp_data["option_list"]["B"]),
-                           self.lookup(temp_data["option_list"]["C"]),
-                           self.lookup(temp_data["option_list"]["D"])])
+            statement.append(self.lookup(temp_data["statement"], transformer))
+            answer.append([self.lookup(temp_data["option_list"]["A"], transformer),
+                           self.lookup(temp_data["option_list"]["B"], transformer),
+                           self.lookup(temp_data["option_list"]["C"], transformer),
+                           self.lookup(temp_data["option_list"]["D"], transformer)])
 
-            label_x = 0
-            if "A" in temp_data["answer"]:
+            if check_multi(config):
+                label_x = [0, 0, 0, 0]
+                if "A" in temp_data["answer"]:
+                    label_x[0] = 1
+                if "B" in temp_data["answer"]:
+                    label_x[1] = 1
+                if "C" in temp_data["answer"]:
+                    label_x[2] = 1
+                if "D" in temp_data["answer"]:
+                    label_x[3] = 1
+            else:
                 label_x = 0
-            if "B" in temp_data["answer"]:
-                label_x = 1
-            if "C" in temp_data["answer"]:
-                label_x = 2
-            if "D" in temp_data["answer"]:
-                label_x = 3
+                if "A" in temp_data["answer"]:
+                    label_x = 0
+                if "B" in temp_data["answer"]:
+                    label_x = 1
+                if "C" in temp_data["answer"]:
+                    label_x = 2
+                if "D" in temp_data["answer"]:
+                    label_x = 3
 
             label.append(label_x)
 
             temp_ref = []
             for option in ["A", "B", "C", "D"]:
-                for a in range(0, 1):
-                    temp_ref.append(self.lookup(temp_data["reference"][option][a]))
+                temp_ref.append([])
+                for a in range(0, 10):
+                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], transformer))
 
             reference.append(temp_ref)
 
-        statement = torch.tensor(statement, dtype=torch.long)
+        if self.need:
+            statement = torch.tensor(statement, dtype=torch.float)
+            reference = torch.tensor(reference, dtype=torch.float)
+            answer = torch.tensor(answer, dtype=torch.float)
+        else:
+            statement = torch.tensor(statement, dtype=torch.long)
+            reference = torch.tensor(reference, dtype=torch.long)
+            answer = torch.tensor(answer, dtype=torch.long)
+
         label = torch.tensor(label, dtype=torch.long)
-        reference = torch.tensor(reference, dtype=torch.long)
-        answer = torch.tensor(answer, dtype=torch.long)
 
         return {"statement": statement, "label": label, "reference": reference, "answer": answer}

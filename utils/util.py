@@ -34,11 +34,16 @@ def get_file_list(file_path, file_name):
     return file_list
 
 
-multi_label = ["multi_label_cross_entropy_loss"]
+def check_multi(config):
+    multi_label = ["multi_label_cross_entropy_loss"]
+    if config.get("train", "type_of_loss") in multi_label:
+        return True
+    else:
+        return False
 
 
 def calc_accuracy(outputs, label, config, result=None):
-    if config.get("train", "type_of_loss") in multi_label:
+    if check_multi(config):
         if len(label[0]) != len(outputs[0]):
             raise ValueError('Input dimensions of labels and outputs must match.')
 
@@ -51,12 +56,12 @@ def calc_accuracy(outputs, label, config, result=None):
         total = 0
         nr_classes = outputs.size(1)
 
-        while (len(result) < nr_classes):
+        while len(result) < nr_classes:
             result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
 
         for i in range(nr_classes):
             outputs1 = (outputs[:, i] >= 0.5).long()
-            labels1 = (labels[:, i] >= 0.5).long()
+            labels1 = (labels[:, i].float() >= 0.5).long()
             total += int((labels1 * outputs1).sum())
             total += int(((1 - labels1) * (1 - outputs1)).sum())
 

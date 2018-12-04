@@ -114,6 +114,11 @@ class CoMatching(nn.Module):
 
         self.co_match = Comatch(config)
 
+        if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
+            self.multi = True
+        else:
+            self.multi = False
+
     def init_multi_gpu(self, device):
         pass
 
@@ -124,13 +129,16 @@ class CoMatching(nn.Module):
         labels = data["label"]
 
         bs = q.size()[0]
+        p = p[:, 0]
 
-        q = self.embedding(q)
-        a = self.embedding(a)
-        p = self.embedding(p)
+        if not (config.getboolean("data", "need_word2vec")):
+            q = self.embedding(q)
+            a = self.embedding(a)
+            p = self.embedding(p)
 
-        a = a.view(bs * 4, -1, self.word_size)
-        p = p.view(bs * 4, -1, self.word_size)
+        a = a.contiguous().view(bs * 4, -1, self.word_size)
+        p = p.contiguous().view(bs * 4, -1, self.word_size)
+        q = q.contiguous()
 
         hp = self.lstm_p(p, config)
         hq = self.lstm_q(q, config)
@@ -147,6 +155,85 @@ class CoMatching(nn.Module):
             c = self.co_match(hq, p_temp, a_temp)
             H = self.lstm_c(c, config)
             h = torch.max(H, dim=1)[0].view(bs, -1)
+            y_list.append(self.predictor(h))
+
+        y = torch.cat(y_list, dim=1)
+
+        loss = criterion(y, labels)
+        accu, acc_result = calc_accuracy(y, labels, config, acc_result)
+        return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y,
+                "accuracy_result": acc_result}
+
+
+class CoMatching2(nn.Module):
+    def __init__(self, config):
+        super(CoMatching2, self).__init__()
+
+        self.word_size = config.getint("data", "vec_size")
+        self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
+        self.output_dim = config.getint("model", "output_dim")
+        self.hidden_size = config.getint("model", "hidden_size")
+        self.bs = config.getint("train", "batch_size")
+
+        self.embedding = nn.Embedding(self.word_num, self.word_size)
+
+        self.lstm_p = BiLSTMEncoder(config)
+        self.lstm_a = BiLSTMEncoder(config)
+        self.lstm_q = BiLSTMEncoder(config)
+        self.lstm_c = BiLSTMEncoder(config)
+        self.lstm_c.data_size = 4 * self.hidden_size
+        self.lstm_c.lstm = nn.LSTM(self.lstm_c.data_size, self.lstm_c.hidden_dim, batch_first=True,
+                                   num_layers=config.getint("model", "num_layers"), bidirectional=True)
+
+        self.predictor = nn.Linear(2 * 10 * self.hidden_size, 1)
+
+        self.co_match = Comatch(config)
+
+        if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
+            self.multi = True
+        else:
+            self.multi = False
+
+    def init_multi_gpu(self, device):
+        pass
+
+    def forward(self, data, criterion, config, usegpu, acc_result=None):
+        q = data["statement"]
+        a = data["answer"]
+        p = data["reference"]
+        labels = data["label"]
+
+        bs = q.size()[0]
+
+        if not (config.getboolean("data", "need_word2vec")):
+            q = self.embedding(q)
+            a = self.embedding(a)
+            p = self.embedding(p)
+
+        a = a.contiguous().view(bs * 4, -1, self.word_size)
+        p = p.contiguous().view(bs * 4 * 10, -1, self.word_size)
+        q = q.contiguous()
+
+        hp = self.lstm_p(p, config)
+        hq = self.lstm_q(q, config)
+        ha = self.lstm_a(a, config)
+
+        hp = hp.contiguous().view(bs, 4, 10, -1, self.hidden_size * 2)
+        ha = ha.contiguous().view(bs, 4, -1, self.hidden_size * 2)
+
+        y_list = []
+
+        for a in range(0, 4):
+            a_temp = ha[:, a, :, :].view(bs, -1, self.hidden_size * 2)
+            h_list = []
+            for b in range(0, 10):
+                p_temp = hp[:, a, b, :, :].view(bs, -1, self.hidden_size * 2)
+                c = self.co_match(hq, p_temp, a_temp)
+                H = self.lstm_c(c, config)
+                h = torch.max(H, dim=1)[0].view(bs, -1)
+                h_list.append(h)
+
+            h = torch.cat(h_list, dim=1)
             y_list.append(self.predictor(h))
 
         y = torch.cat(y_list, dim=1)
