@@ -9,7 +9,7 @@ if __name__ == "__main__":
     for filename in file_list:
         f = open(os.path.join(path, filename), "r")
         for line in f:
-            d = json.loads(f)
+            d = json.loads(line)
             for option in d["reference"]:
                 for r in d["reference"][option]:
                     x = len(r)
