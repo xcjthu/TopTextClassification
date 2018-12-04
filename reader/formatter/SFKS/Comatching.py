@@ -17,9 +17,9 @@ class ComatchingFormatter:
         if not ("answer" in data.keys()):
             # print("gg1")
             return None
-        # if len(data["answer"]) != 1:
-        # print("gg2")
-        #    return None
+        if not (check_multi(config)) and len(data["answer"]) != 1:
+            # print("gg2")
+            return None
         if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
             # print("gg3")
             return None
