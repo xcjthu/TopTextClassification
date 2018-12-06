@@ -158,6 +158,8 @@ class CoMatching(nn.Module):
             y_list.append(self.predictor(h))
 
         y = torch.cat(y_list, dim=1)
+        print(y.size())
+        gg
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)

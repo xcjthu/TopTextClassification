@@ -83,13 +83,13 @@ class ComatchingFormatter:
             else:
                 label_x = 0
                 if "A" in temp_data["answer"]:
-                    label_x = 0
+                    label_x += 1
                 if "B" in temp_data["answer"]:
-                    label_x = 1
+                    label_x += 2
                 if "C" in temp_data["answer"]:
-                    label_x = 2
+                    label_x += 4
                 if "D" in temp_data["answer"]:
-                    label_x = 3
+                    label_x += 8
 
             label.append(label_x)
 
