@@ -2,7 +2,7 @@ import random
 import json
 
 d = []
-f = open("/data/disk3/private/exam/data/origin_data/format/0_train.json", "r")
+f = open("/data/disk3/private/zhx/exam/data/origin_data/format/0_train.json", "r")
 for line in f:
     d.append(json.loads(line))
 
