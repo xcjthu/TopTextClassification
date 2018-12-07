@@ -78,9 +78,9 @@ class SeaReaderFormatter:
 
             reference.append(temp_ref)
 
-        statement = torch.tensor(statement, dtype=torch.long)
+        statement = torch.tensor(statement, dtype=torch.float)
         label = torch.tensor(label, dtype=torch.long)
-        reference = torch.tensor(reference, dtype=torch.long)
-        answer = torch.tensor(answer, dtype=torch.long)
+        reference = torch.tensor(reference, dtype=torch.float)
+        answer = torch.tensor(answer, dtype=torch.float)
 
         return {"statement": statement, "label": label, "reference": reference, "answer": answer}
