@@ -110,7 +110,7 @@ class CoMatching(nn.Module):
         self.lstm_c.lstm = nn.LSTM(self.lstm_c.data_size, self.lstm_c.hidden_dim, batch_first=True,
                                    num_layers=config.getint("model", "num_layers"), bidirectional=True)
 
-        self.predictor = nn.Linear(2 * self.hidden_size, 1)
+        self.predictor = nn.Linear(8 * self.hidden_size, 16)
 
         self.co_match = Comatch(config)
 
@@ -155,9 +155,10 @@ class CoMatching(nn.Module):
             c = self.co_match(hq, p_temp, a_temp)
             H = self.lstm_c(c, config)
             h = torch.max(H, dim=1)[0].view(bs, -1)
-            y_list.append(self.predictor(h))
+            y_list.append(h)
 
         y = torch.cat(y_list, dim=1)
+        y = self.predictor(y)
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)
