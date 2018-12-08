@@ -24,13 +24,13 @@ def cut_file(path):
     for line in input_file:
         try:
             data = json.loads(line)
-            data["statement"] = cut(data["statement"])
+            data["statement"] = cut(data["statement"].replace("\n", ""))
 
             for option in data["option_list"]:
-                data["option_list"][option] = cut(data["option_list"][option])
+                data["option_list"][option] = cut(data["option_list"][option].replace("\n", ""))
 
             if "analyse" in data.keys():
-                data["analyse"] = cut(data["analyse"])
+                data["analyse"] = cut(data["analyse"].replace("\n", ""))
 
             if "reference" in data.keys():
                 for option in data["reference"]:

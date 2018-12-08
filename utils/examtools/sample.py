@@ -11,8 +11,9 @@ def s():
     i = random.randint(0, len(d) - 1)
     x = ["A", "B", "C", "D"][random.randint(0, 3)]
     print(d[i]["subject"], x, d[i]["answer"])
-    print(d[i]["statement"])
-    print(d[i]["option_list"][x])
+    print(d[i]["statement"].replace("\n", ""))
+    print(d[i]["option_list"][x].replace("\n", ""))
+    
     for a in range(0, 10):
         print(a, d[i]["reference"][x][a])
 
