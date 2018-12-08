@@ -10,9 +10,11 @@ for line in f:
 def s():
     i = random.randint(0, len(d) - 1)
     x = ["A", "B", "C", "D"][random.randint(0, 3)]
+    print(d[i]["subject"])
     print(d[i]["statement"])
     print(d[i]["option_list"][x])
-    print(d[i]["reference"][x][0])
+    for a in range(0, 10):
+        print(a, d[i]["reference"][x][a])
 
 
 while True:
