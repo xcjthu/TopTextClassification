@@ -30,7 +30,11 @@ def cut_file(path):
                 data["option_list"][option] = cut(data["option_list"][option].replace("\n", ""))
 
             if "analyse" in data.keys():
-                data["analyse"] = cut(data["analyse"].replace("\n", ""))
+                x = data["analyse"]
+                l = ["\n", "A", "B", "C", "D", "a", "b", "c", "d"]
+                for y in l:
+                    x = x.replace(y, "")
+                data["analyse"] = cut(x)
 
             if "reference" in data.keys():
                 for option in data["reference"]:
