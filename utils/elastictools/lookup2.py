@@ -40,7 +40,7 @@ def work(filename):
 
             d["reference"] = {}
             for option in d["option_list"]:
-                s1 = d["analyze"]
+                s1 = d["analyse"]
                 s2 = d["option_list"][option]
                 request_body = {
                     "query": {
