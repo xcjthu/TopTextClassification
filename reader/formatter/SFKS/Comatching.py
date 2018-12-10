@@ -2,6 +2,7 @@ import json
 import torch
 import numpy as np
 import jieba
+import random
 
 from utils.util import check_multi
 
@@ -27,7 +28,7 @@ class ComatchingFormatter:
         if len(data["option_list"]) != 4:
             # print("gg5")
             return None
-        if not ("analyse" in data.keys()):
+        if not ("reference" in data.keys()):
             return None
 
         return data
@@ -62,6 +63,21 @@ class ComatchingFormatter:
 
         for temp_data in data:
             statement.append(self.lookup(temp_data["statement"], transformer))
+            if config.getboolean("data", "shuffle_option"):
+                for a in range(0, 20):
+                    o1 = ["A", "B", "C", "D"][random.randint(0, 3)]
+                    o2 = ["A", "B", "C", "D"][random.randint(0, 3)]
+                    temp_data["option_list"][o1], temp_data["option_list"][o2] = temp_data["option_list"][o2], \
+                                                                                 temp_data["option_list"][o1]
+                    temp_data["reference"][o1], temp_data["reference"][o2] = temp_data["reference"][o2], \
+                                                                             temp_data["reference"][o1]
+
+                    for b in range(0, len(temp_data["answer"])):
+                        if temp_data["answer"][b] == o1:
+                            temp_data["answer"][b] = o2
+                        elif temp_data["answer"][b] == o2:
+                            temp_data["answer"][b] = o1
+
             answer.append([self.lookup(temp_data["option_list"]["A"], transformer),
                            self.lookup(temp_data["option_list"]["B"], transformer),
                            self.lookup(temp_data["option_list"]["C"], transformer),
@@ -94,8 +110,8 @@ class ComatchingFormatter:
             for option in ["A", "B", "C", "D"]:
                 temp_ref.append([])
                 for a in range(0, 10):
-                    #temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], transformer))
-                    temp_ref[-1].append(self.lookup(temp_data["analyse"], transformer))
+                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], transformer))
+                    # temp_ref[-1].append(self.lookup(temp_data["analyse"], transformer))
 
             reference.append(temp_ref)
 
