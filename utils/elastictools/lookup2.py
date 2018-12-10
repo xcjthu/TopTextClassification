@@ -4,6 +4,8 @@ import os
 from elastic.elastic import search
 
 path = "/data/disk3/private/zhx/exam/data/origin_data/format/"
+output_path = "/data/disk3/private/zhx/exam/data/origin_data/gen/2"
+file_list = ["0_train.json", "1_train.json", "0_test.json", "1_test.json"]
 
 doc_type_map_dic = {
     "国际法": "国际法",
@@ -30,7 +32,7 @@ doc_type_map_dic = {
 def work(filename):
     print(filename)
     data = []
-    f = open(filename, "r")
+    f = open(os.path.join(path, filename), "r")
     for line in f:
         d = json.loads(line)
         if doc_type_map_dic[d["subject"]] != -1:
@@ -38,16 +40,19 @@ def work(filename):
 
             d["reference"] = {}
             for option in d["option_list"]:
-                s = d["statement"] + " " + d["option_list"][option]
+                s1 = d["analyze"]
+                s2 = d["option_list"][option]
                 request_body = {
                     "query": {
                         "bool": {
                             "should": [
                                 {
                                     "match": {
-                                        "content": s
+                                        "content": s1
                                     }
-                                },
+                                }
+                            ],
+                            "must": [
                                 {
                                     "term": {
                                         "type2": {
@@ -68,12 +73,13 @@ def work(filename):
         data.append(d)
 
     f.close()
-    f = open(filename, "w")
+    f = open(os.path.join(output_path, filename), "w")
     for d in data:
         print(json.dumps(d, sort_keys=True, ensure_ascii=False), file=f)
     f.close()
 
 
 if __name__ == "__main__":
-    for filename in os.listdir(path):
-        work(os.path.join(path, filename))
+    os.makedirs(output_path, exist_ok=True)
+    for filename in file_list:
+        work(filename)
