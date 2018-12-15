@@ -15,7 +15,8 @@ class RaceFormatter:
 
     def check(self, data, config):
         data = json.loads(data)
-        if len(data["article"]) == 0 or len(data["article"]) > self.max_len:
+        if len(data["article"]) == 0:
+            #print(len(data["article"]))
             # print("gg3")
             return None
 
