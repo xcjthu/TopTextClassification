@@ -28,7 +28,7 @@ class ComatchingFormatter:
         if len(data["option_list"]) != 4:
             # print("gg5")
             return None
-        if not ("analyse" in data.keys()):
+        if not ("reference" in data.keys()):
             return None
 
         return data
@@ -110,8 +110,8 @@ class ComatchingFormatter:
             for option in ["A", "B", "C", "D"]:
                 temp_ref.append([])
                 for a in range(0, 10):
-                    # temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], transformer))
-                    temp_ref[-1].append(self.lookup(temp_data["analyse"], transformer))
+                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], transformer))
+                    # temp_ref[-1].append(self.lookup(temp_data["analyse"], transformer))
 
             reference.append(temp_ref)
 
