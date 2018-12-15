@@ -22,9 +22,9 @@ def init_formatter(config):
         formatter = SFKSWordFormatter(config)
     elif config.get("data", "formatter") == "SFKS_comatching":
         formatter = ComatchingFormatter(config)
-    elif config.get("data","formatter") == "SFKS_seareader":
+    elif config.get("data", "formatter") == "SFKS_seareader":
         formatter = SeaReaderFormatter(config)
-    elif config.get("data","formatter") == "RACE":
+    elif config.get("data", "formatter") == "RACE":
         formatter = RaceFormatter(config)
     else:
         raise NotImplementedError

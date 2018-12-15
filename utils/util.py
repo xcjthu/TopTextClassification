@@ -44,7 +44,7 @@ def get_file_list(file_path, file_name):
     file_list = file_name.replace(" ", "").split(",")
     for a in range(0, len(file_list)):
         real_file_list = real_file_list + dfs_search(file_path, file_list[a])
-    return file_list
+    return real_file_list
 
 
 def check_multi(config):
