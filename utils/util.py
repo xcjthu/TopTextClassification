@@ -27,10 +27,23 @@ def print_info(s):
     print("[%s] %s" % (times, s))
 
 
+def dfs_search(pre_path, now_path):
+    path = os.path.join(pre_path, now_path)
+    file_list = []
+    if os.path.isdir(path):
+        for filename in os.listdir(path):
+            file_list = file_list + dfs_search(pre_path, os.path.join(now_path, filename))
+    else:
+        file_list = [path]
+
+    return file_list
+
+
 def get_file_list(file_path, file_name):
+    real_file_list = []
     file_list = file_name.replace(" ", "").split(",")
     for a in range(0, len(file_list)):
-        file_list[a] = os.path.join(file_path, file_list[a])
+        real_file_list = real_file_list + dfs_search(file_path, file_list[a])
     return file_list
 
 
