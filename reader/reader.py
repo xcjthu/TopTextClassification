@@ -25,7 +25,7 @@ def init_formatter(config):
     elif config.get("data","formatter") == "SFKS_seareader":
         formatter = SeaReaderFormatter(config)
     elif config.get("data","formatter") == "RACE":
-        formatter = RACE(config)
+        formatter = RaceFormatter(config)
     else:
         raise NotImplementedError
 
