@@ -150,7 +150,6 @@ def init_train_dataset(config):
 
 
 def init_valid_dataset(config):
-    print(config.get('data', 'valid_file_list'))
     return create_dataset(get_file_list(config.get("data", "valid_data_path"), config.get("data", "valid_file_list")),
                           config, config.getint("reader", "valid_reader_num"), "valid")
 
