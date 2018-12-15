@@ -8,6 +8,7 @@ from reader.formatter.AJLX import AJLXPredictionFormatter
 from reader.formatter.SFKS.SFKS_word import SFKSWordFormatter
 from reader.formatter.SFKS.Comatching import ComatchingFormatter
 from reader.formatter.SFKS.SeaReader import SeaReaderFormatter
+from reader.formatter.race.race import RaceFormatter
 from word2vec.word2vec import init_transformer
 
 
@@ -23,6 +24,8 @@ def init_formatter(config):
         formatter = ComatchingFormatter(config)
     elif config.get("data","formatter") == "SFKS_seareader":
         formatter = SeaReaderFormatter(config)
+    elif config.get("data","formatter") == "RACE":
+        formatter = RACE(config)
     else:
         raise NotImplementedError
 

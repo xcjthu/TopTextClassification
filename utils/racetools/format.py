@@ -1,8 +1,8 @@
 import os
 import json
 
-input_path = "/data/disk3/private/zhx/RACE/origin_data"
-output_path = "/data/disk3/private/zhx/RACE/format_data"
+input_path = "/data/disk3/private/zhx/RACE/data/origin_data"
+output_path = "/data/disk3/private/zhx/RACE/data/format_data"
 
 word_set = set()
 
@@ -59,5 +59,5 @@ if __name__ == "__main__":
     for a in range(0, len(word_set)):
         word_dic[word_set[a]] = a
 
-    json.dump(word_dic, open("/data/disk3/private/zhx/race/data/embedding/word2id.txt", "w"), indent=2,
+    json.dump(word_dic, open("/data/disk3/private/zhx/RACE/data/embedding/word2id.txt", "w"), indent=2,
               ensure_ascii=False)
