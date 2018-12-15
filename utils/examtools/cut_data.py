@@ -34,7 +34,8 @@ def cut_file(path):
                 l = ["\n", "A", "B", "C", "D", "a", "b", "c", "d"]
                 for y in l:
                     x = x.replace(y, "")
-                data["analyse"] = cut(x)
+                data["hide_analyse"] = cut(x)
+                data["analyse"] = cut(data["analyse"    ])
 
             if "reference" in data.keys():
                 for option in data["reference"]:
