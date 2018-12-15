@@ -27,7 +27,7 @@ def work(in_path, out_path):
         problem = {
             "answer": data["answers"][a],
             "option": data["options"][a],
-            "question": data["question"][a],
+            "question": data["questions"][a],
             "article": data["article"]
         }
         add(problem["answer"])
@@ -36,7 +36,7 @@ def work(in_path, out_path):
         add(problem["question"])
         result.append(problem)
 
-    ouf = open(output_path, "w")
+    ouf = open(out_path, "w")
     for data in result:
         print(json.dumps(data, sort_keys=True), file=ouf)
     ouf.close()
