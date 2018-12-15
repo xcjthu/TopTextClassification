@@ -16,6 +16,8 @@ def s():
         print(x, d[i]["option_list"][x])
     input()
     print(d[i]["subject"], x, d[i]["answer"])
+    for x in ["A", "B", "C", "D"]:
+        print(x, d[i]["reference"][x][0])
     # print(d[i]["option_list"][x].replace("\n", ""))
 
     # for a in range(0, 10):
