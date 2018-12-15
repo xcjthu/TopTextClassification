@@ -110,7 +110,7 @@ class CoMatching(nn.Module):
         self.lstm_c.lstm = nn.LSTM(self.lstm_c.data_size, self.lstm_c.hidden_dim, batch_first=True,
                                    num_layers=config.getint("model", "num_layers"), bidirectional=True)
 
-        self.predictor = nn.Linear(8 * self.hidden_size, 16)
+        self.predictor = nn.Linear(8 * self.hidden_size, 4)
 
         self.co_match = Comatch(config)
 
