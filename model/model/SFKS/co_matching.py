@@ -80,7 +80,7 @@ class CoMatch(nn.Module):
     def __init__(self, config):
         super(CoMatch, self).__init__()
         self.emb_dim = config.getint("data", "vec_size")  # 300
-        self.mem_dim = config.getint("model", "hidde_size") #150
+        self.mem_dim = config.getint("model", "hidden_size") #150
         self.dropoutP = config.getfloat("model", "dropout")  # args.dropoutP 0.2
         # self.cuda_bool = args.cuda
 
