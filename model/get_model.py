@@ -3,8 +3,7 @@ from model.model.TextCNN import TextCNN
 from model.model.SFKS.BasicCNN import BasicCNN
 from model.model.SFKS.co_matching import CoMatching
 from model.model.SFKS.SeaReader.SeaReader import SeaReader
-from model.model.SFKS.co_matching import CoMatching, CoMatching2
-
+from model.model.SFKS.co_matching import CoMatching
 
 model_list = {
     "LSTM": LSTM,
@@ -12,7 +11,7 @@ model_list = {
     "SFKSCNN": BasicCNN,
     "Comatching": CoMatching,
     "SeaReader": SeaReader,
-    "Comatching2": CoMatching2
+    # "Comatching2": CoMatching2
 }
 
 
