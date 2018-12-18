@@ -109,8 +109,11 @@ class RaceFormatter:
                 temp = []
 
         if len(temp) != 0:
-            print(sent)
-            raise NotImplementedError
+            pass
+            # print(sent)
+            # raise NotImplementedError
+
+        return result
 
     def format(self, data, config, transformer, mode):
         document = []
