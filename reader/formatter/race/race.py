@@ -10,54 +10,110 @@ from utils.util import check_multi
 class RaceFormatter:
     def __init__(self, config):
         self.need = config.getboolean("data", "need_word2vec")
-        self.word2id = json.load(open(config.get("data", "word2id"), "r"))
-        self.max_len = config.getint("data", "max_len")
+        if self.need:
+            self.word_dim = config.getint("data", "vec_size")
+        else:
+            self.word2id = json.load(open(config.get("data", "word2id"), "r"))
+
+        self.sent_max_len = config.getint("data", "sent_max_len")
+        self.max_sent = config.getint("data", "max_sent")
+
+        self.symbol = [",", ".", "?"]
+        self.last_symbol = [".", "?"]
 
     def check(self, data, config):
         data = json.loads(data)
-        if len(data["article"]) == 0 or len(data["article"]) > self.max_len:
-            # print("gg3")
-            return None
-
         return data
 
-    def lookup(self, data, transforemer=None):
-        data = data.split(" ")
-        lookup_id = []
-        for word in data:
-            word = word.replace("?", "").lower()
-            if not (word in self.word2id.keys()):
-                if self.need:
-                    lookup_id.append(transforemer.load("UNK"))
-                else:
-                    lookup_id.append(self.word2id["UNK"])
-            else:
-                if self.need:
-                    lookup_id.append(transforemer.load(word))
-                else:
-                    lookup_id.append(self.word2id[word])
-        while len(lookup_id) < self.max_len:
+    def transform(self, word, transformer):
+        if not (word in self.word2id.keys()):
             if self.need:
-                lookup_id.append(transforemer.load("PAD"))
+                return transformer.load("UNK")
             else:
-                lookup_id.append(self.word2id["PAD"])
-        lookup_id = lookup_id[0:self.max_len]
+                return self.word2id["UNK"]
+        else:
+            if self.need:
+                return transformer.load(word)
+            else:
+                return self.word2id[word]
 
-        return lookup_id
+    def seq2tensor(self, sents, max_len, transformer=None):
+        sent_len_max = max([len(s) for s in sents])
+        sent_len_max = min(sent_len_max, max_len)
+
+        if self.need:
+            sent_tensor = torch.FloatTensor(len(sents), sent_len_max, self.word_dim).zero_()
+        else:
+            sent_tensor = torch.LongTensor(len(sents), sent_len_max).zero_()
+
+        sent_len = torch.LongTensor(len(sents)).zero_()
+        for s_id, sent in enumerate(sents):
+            sent_len[s_id] = len(sent)
+            for w_id, word in enumerate(sent):
+                if w_id >= sent_len_max: break
+                sent_tensor[s_id][w_id] = self.transform(word, transformer)
+        return [sent_tensor, sent_len]
+
+    def seq2Htensor(self, docs, max_sent, max_sent_len, transformer=None):
+        sent_num_max = max([len(s) for s in docs])
+        sent_num_max = min(sent_num_max, max_sent)
+        sent_len_max = max([len(w) for s in docs for w in s])
+        sent_len_max = min(sent_len_max, max_sent_len)
+
+        if self.need:
+            sent_tensor = torch.FloatTensor(len(docs), sent_num_max, sent_len_max, self.word_dim).zero_()
+        else:
+            sent_tensor = torch.LongTensor(len(docs), sent_num_max, sent_len_max).zero_()
+        sent_len = torch.LongTensor(len(docs), sent_num_max).zero_()
+        doc_len = torch.LongTensor(len(docs)).zero_()
+        for d_id, doc in enumerate(docs):
+            doc_len[d_id] = len(doc)
+            for s_id, sent in enumerate(doc):
+                if s_id >= sent_num_max: break
+                sent_len[d_id][s_id] = len(sent)
+                for w_id, word in enumerate(sent):
+                    if w_id >= sent_len_max: break
+                    sent_tensor[d_id][s_id][w_id] = self.transform(word, transformer)
+        return [sent_tensor, doc_len, sent_len]
+
+    def parse(self, sent):
+        result = sent.split(" ")
+        for a in range(0, len(result)):
+            for symbol in self.symbol:
+                result[a] = result[a].replace(symbol, "")
+
+        return result
+
+    def parseH(self, sent):
+        result = []
+        sent = sent.split(" ")
+        temp = []
+        for word in sent:
+            wordx = word
+            for symbol in self.symbol:
+                wordx = wordx.replace(symbol, "")
+            temp.append(wordx)
+            if word[-1] == "?" or word[-1] == ".":
+                result.append(temp)
+                temp = []
+
+        if len(temp) != 0:
+            print(sent)
+            raise NotImplementedError
 
     def format(self, data, config, transformer, mode):
-        statement = []
-        answer = []
-        reference = []
+        document = []
+        option = []
+        question = []
         label = []
 
         for temp_data in data:
-            statement.append(self.lookup(temp_data["question"], transformer))
+            question.append(self.parse(temp_data["question"]))
 
-            answer.append([self.lookup(temp_data["option"][0], transformer),
-                           self.lookup(temp_data["option"][1], transformer),
-                           self.lookup(temp_data["option"][2], transformer),
-                           self.lookup(temp_data["option"][3], transformer)])
+            option.append([self.parse(temp_data["option"][0]),
+                           self.parse(temp_data["option"][1]),
+                           self.parse(temp_data["option"][2]),
+                           self.parse(temp_data["option"][3])])
 
             if temp_data["answer"] == "A":
                 label_x = 0
@@ -70,23 +126,22 @@ class RaceFormatter:
 
             label.append(label_x)
 
-            temp_ref = []
-            for option in ["A", "B", "C", "D"]:
-                temp_ref.append([])
-                for a in range(0, 1):
-                    temp_ref[-1].append(self.lookup(temp_data["article"], transformer))
+            document.append(self.parseH(data["article"]))
 
-            reference.append(temp_ref)
-
-        if self.need:
-            statement = torch.tensor(statement, dtype=torch.float)
-            reference = torch.tensor(reference, dtype=torch.float)
-            answer = torch.tensor(answer, dtype=torch.float)
-        else:
-            statement = torch.tensor(statement, dtype=torch.long)
-            reference = torch.tensor(reference, dtype=torch.long)
-            answer = torch.tensor(answer, dtype=torch.long)
+        document = self.seq2Htensor(document, self.max_sent, self.sent_max_len, transformer)
+        option = self.seq2Htensor(option, self.max_sent, self.sent_max_len, transformer)
+        question = self.seq2tensor(question, self.sent_max_len, transformer)
 
         label = torch.tensor(label, dtype=torch.long)
 
-        return {"statement": statement, "label": label, "reference": reference, "answer": answer}
+        return {
+            "question": question[0],
+            "question_len": question[1],
+            "option": option[0],
+            "option_sent": option[1],
+            "option_len": option[2],
+            "document": document[0],
+            "document_sent": document[1],
+            "document_len": document[2],
+            "label": label
+        }
