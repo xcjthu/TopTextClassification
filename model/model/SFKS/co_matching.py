@@ -99,6 +99,8 @@ class CoMatch(nn.Module):
 
         self.drop_module = nn.Dropout(self.dropoutP)
 
+        self.more = config.getboolean("model", "one_more_softmax")
+
     def forward(self, inputs):
         documents, questions, options = inputs
         d_word, d_h_len, d_l_len = documents
@@ -143,6 +145,8 @@ class CoMatch(nn.Module):
 
         o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
         output = self.rank_module(o_rep).squeeze(2)
+        if self.more:
+            output = torch.nn.functional.log_softmax(output)
 
         return output
 
