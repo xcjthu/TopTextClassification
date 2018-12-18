@@ -80,7 +80,7 @@ class CoMatch(nn.Module):
     def __init__(self, config):
         super(CoMatch, self).__init__()
         self.emb_dim = config.getint("data", "vec_size")  # 300
-        self.mem_dim = config.getint("model", "hidden_size") #150
+        self.mem_dim = config.getint("model", "hidden_size")  # 150
         self.dropoutP = config.getfloat("model", "dropout")  # args.dropoutP 0.2
         # self.cuda_bool = args.cuda
 
@@ -142,7 +142,7 @@ class CoMatch(nn.Module):
         h_hidden_pool, _ = h_hidden.max(1)
 
         o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
-        output = torch.nn.functional.log_softmax(self.rank_module(o_rep).squeeze(2))
+        output = self.rank_module(o_rep).squeeze(2)
 
         return output
 

@@ -115,23 +115,35 @@ class ComatchingFormatter:
         for temp_data in data:
             question.append(self.parse(temp_data["statement"]))
 
-            option.append([self.parse(temp_data["option_list"]["A"]),
-                           self.parse(temp_data["option_list"]["B"]),
-                           self.parse(temp_data["option_list"]["C"]),
-                           self.parse(temp_data["option_list"]["D"])])
-
-            if "A" in temp_data["answer"]:
+            if config.get_boolean("data", "multi_choice"):
                 label_x = 0
-            if "B" in temp_data["answer"]:
-                label_x = 1
-            if "C" in temp_data["answer"]:
-                label_x = 2
-            if "D" in temp_data["answer"]:
-                label_x = 3
+                if "A" in temp_data["answer"]:
+                    label_x += 1
+                if "B" in temp_data["answer"]:
+                    label_x += 2
+                if "C" in temp_data["answer"]:
+                    label_x += 4
+                if "D" in temp_data["answer"]:
+                    label_x += 8
+            else:
+                option.append([self.parse(temp_data["option_list"]["A"]),
+                               self.parse(temp_data["option_list"]["B"]),
+                               self.parse(temp_data["option_list"]["C"]),
+                               self.parse(temp_data["option_list"]["D"])])
+
+                label_x = 0
+                if "A" in temp_data["answer"]:
+                    label_x = 0
+                if "B" in temp_data["answer"]:
+                    label_x = 1
+                if "C" in temp_data["answer"]:
+                    label_x = 2
+                if "D" in temp_data["answer"]:
+                    label_x = 3
+
+                document.append(self.parseH(temp_data["analyse"]))
 
             label.append(label_x)
-
-            document.append(self.parseH(temp_data["analyse"]))
 
         document = self.seq2Htensor(document, self.max_sent, self.sent_max_len, transformer)
         option = self.seq2Htensor(option, self.max_sent, self.sent_max_len, transformer)
