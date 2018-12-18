@@ -18,8 +18,8 @@ class RaceFormatter:
         self.sent_max_len = config.getint("data", "sent_max_len")
         self.max_sent = config.getint("data", "max_sent")
 
-        self.symbol = [",", ".", "?"]
-        self.last_symbol = [".", "?"]
+        self.symbol = [",", ".", "?", "\""]
+        self.last_symbol = [".", "?", "\""]
 
     def check(self, data, config):
         data = json.loads(data)
@@ -77,10 +77,15 @@ class RaceFormatter:
         return [sent_tensor, doc_len, sent_len]
 
     def parse(self, sent):
-        result = sent.split(" ")
-        for a in range(0, len(result)):
+        result = []
+        sent = sent.split(" ")
+        for word in sent:
             for symbol in self.symbol:
-                result[a] = result[a].replace(symbol, "")
+                word = word.replace(symbol, "")
+            if len(word) == 0:
+                continue
+
+            result.append(word)
 
         return result
 
@@ -92,8 +97,14 @@ class RaceFormatter:
             wordx = word
             for symbol in self.symbol:
                 wordx = wordx.replace(symbol, "")
+            if len(wordx) == 0:
+                continue
             temp.append(wordx)
-            if word[-1] == "?" or word[-1] == ".":
+            last = False
+            for symbol in self.last_symbol:
+                if word[-1] == symbol:
+                    last = True
+            if last:
                 result.append(temp)
                 temp = []
 
