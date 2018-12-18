@@ -115,7 +115,7 @@ class ComatchingFormatter:
         for temp_data in data:
             question.append(self.parse(temp_data["statement"]))
 
-            if config.get_boolean("data", "multi_choice"):
+            if config.getboolean("data", "multi_choice"):
                 label_x = 0
                 if "A" in temp_data["answer"]:
                     label_x += 1
