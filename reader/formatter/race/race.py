@@ -126,7 +126,7 @@ class RaceFormatter:
 
             label.append(label_x)
 
-            document.append(self.parseH(data["article"]))
+            document.append(self.parseH(temp_data["article"]))
 
         document = self.seq2Htensor(document, self.max_sent, self.sent_max_len, transformer)
         option = self.seq2Htensor(option, self.max_sent, self.sent_max_len, transformer)
