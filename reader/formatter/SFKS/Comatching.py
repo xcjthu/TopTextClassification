@@ -116,6 +116,10 @@ class ComatchingFormatter:
             question.append(self.parse(temp_data["statement"]))
 
             if config.getboolean("data", "multi_choice"):
+                option.append([self.parse(temp_data["option_list"]["A"]),
+                               self.parse(temp_data["option_list"]["B"]),
+                               self.parse(temp_data["option_list"]["C"]),
+                               self.parse(temp_data["option_list"]["D"])])
 
                 label_x = [0, 0, 0, 0]
                 if "A" in temp_data["answer"]:
