@@ -116,6 +116,29 @@ class ComatchingFormatter:
             question.append(self.parse(temp_data["statement"]))
 
             if config.getboolean("data", "multi_choice"):
+                option.append([self.parse(["没有"]),
+                               self.parse(temp_data["option_list"]["A"]),
+                               self.parse(temp_data["option_list"]["B"]),
+                               self.parse(temp_data["option_list"]["A"] + temp_data["option_list"]["B"]),
+                               self.parse(temp_data["option_list"]["C"]),
+                               self.parse(temp_data["option_list"]["A"] + temp_data["option_list"]["C"]),
+                               self.parse(temp_data["option_list"]["B"] + temp_data["option_list"]["C"]),
+                               self.parse(temp_data["option_list"]["A"] + temp_data["option_list"]["B"] +
+                                          temp_data["option_list"]["C"]), self.parse(["没有"]),
+                               self.parse(temp_data["option_list"]["D"]),
+                               self.parse(temp_data["option_list"]["A"] + temp_data["option_list"]["D"]),
+                               self.parse(temp_data["option_list"]["B"] + temp_data["option_list"]["D"]),
+                               self.parse(temp_data["option_list"]["A"] + temp_data["option_list"]["B"] +
+                                          temp_data["option_list"]["D"]),
+                               self.parse(temp_data["option_list"]["C"] + temp_data["option_list"]["D"]),
+                               self.parse(temp_data["option_list"]["A"] + temp_data["option_list"]["C"] +
+                                          temp_data["option_list"]["D"]),
+                               self.parse(temp_data["option_list"]["B"] + temp_data["option_list"]["C"] +
+                                          temp_data["option_list"]["D"]),
+                               self.parse(temp_data["option_list"]["A"] + temp_data["option_list"]["B"] +
+                                          temp_data["option_list"]["C"] + temp_data["option_list"]["D"]),
+                               ])
+
                 label_x = 0
                 if "A" in temp_data["answer"]:
                     label_x += 1
@@ -125,6 +148,8 @@ class ComatchingFormatter:
                     label_x += 4
                 if "D" in temp_data["answer"]:
                     label_x += 8
+
+                document.append(self.parseH(temp_data["analyse"]))
             else:
                 option.append([self.parse(temp_data["option_list"]["A"]),
                                self.parse(temp_data["option_list"]["B"]),
