@@ -23,7 +23,7 @@ class ComatchingFormatter:
 
     def check(self, data, config):
         data = json.loads(data)
-        if config.getboolean("data", "multi_choice") or len(data["answer"]) != 1:
+        if not(config.getboolean("data", "multi_choice")) and len(data["answer"]) != 1:
             return None
         return data
 
