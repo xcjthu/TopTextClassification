@@ -16,7 +16,7 @@ else:
     import config as config
 
 problem_collection = ""
-fenxi_collection = ""
+kaodian_collection = ""
 
 
 def init_problem():
@@ -38,6 +38,40 @@ def init_problem():
 
     global problem_collection
     problem_collection = nltk.text.TextCollection(problem_data)
+
+
+datax = []
+
+
+def dfs_insert(type1, type2, type3, data):
+    global cnt
+    cnt += 1
+    tx = cnt
+    temp = ""
+    for x in data:
+        if type(x) is list:
+            dfs_insert(type1, type2, type3, x)
+        else:
+            temp = temp + x + " "
+
+    datax.append(temp)
+
+
+def init_kaodian():
+    path = "../examtools/data"
+    for type1 in os.listdir(path):
+        for type2 in os.listdir(os.path.join(path, type1)):
+            print(type2)
+            for type3 in os.listdir(os.path.join(path, type1, type2)):
+                data = json.load(open(os.path.join(path, type1, type2, type3), "r"))
+                dfs_insert(type1, type2, type3, data)
+
+    kaodian_data = []
+    for x in datax:
+        kaodian_data.append(list(jieba.cut(x)))
+
+    global kaodian_collection
+    kaodian_collection = nltk.text.TextCollection(kaodian_data)
 
 
 def get(data, collection):
@@ -74,8 +108,10 @@ def root():
             }
         })["hits"]["hits"]
         problem = get(request.args["query"], problem_collection)
+        kaodian = get(request.args["query"], kaodian_collection)
         return render_template("main.html", text=json.dumps(data, indent=2, ensure_ascii=False, sort_keys=True),
                                problem=json.dumps(problem, ensure_ascii=False),
+                               kaodian=json.dumps(kaodian, ensure_ascii=False),
                                query=str(request.args["query"])).replace("\n", "<br>")
     else:
         return render_template("main.html").replace("\n", "<br>")
