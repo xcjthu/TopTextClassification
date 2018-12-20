@@ -44,9 +44,6 @@ datax = []
 
 
 def dfs_insert(type1, type2, type3, data):
-    global cnt
-    cnt += 1
-    tx = cnt
     temp = ""
     for x in data:
         if type(x) is list:
