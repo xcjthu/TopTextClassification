@@ -118,4 +118,6 @@ def root():
 
 
 if __name__ == "__main__":
+    init_kaodian()
+    init_problem()
     app.run(host=config.host, port=config.port, debug=config.debug, threaded=True)
