@@ -3,7 +3,7 @@ import logging
 import os
 import json
 
-import elastic.elastic
+from elastic.elastic import search
 import elasticsearch.exceptions
 
 app = Flask(__name__)
@@ -17,7 +17,8 @@ else:
 @app.route("/")
 def root():
     if "query" in request.args:
-        data = elastic.search("law", "data", {
+        print(request.args)
+        data = search("law", "data", {
             "query": {
                 "bool": {
                     "should": [
@@ -27,19 +28,11 @@ def root():
                             }
                         }
                     ],
-                    "must": [
-                        {
-                            "term": {
-                                "type2": {
-                                    "value": "经济法"
-                                }
-                            }
-                        }
-                    ]
                 }
             }
         })["hits"]["hits"]
-        return render_template("main.html", text=json.dumps(data, indent=2, ensure_ascii=False, sort_keys=True))
+        print(data)
+        return render_template("main.html", text=json.dumps(data, indent=2, ensure_ascii=False, sort_keys=True),query=str(request.args["query"])).replace("\n","<br>")
     else:
         return render_template("main.html")
 
