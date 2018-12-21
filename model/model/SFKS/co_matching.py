@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.autograd import Variable
+import numpy as np
 
 import json
 from utils.util import calc_accuracy
@@ -188,7 +189,15 @@ class CoMatching2(nn.Module):
         y = []
         for a in range(0, 4):
             q, ql = data["question"], data["question_len"]
-            o, oh, ol = data["option"][:, a], data["option_sent"][:, a], data["option_len"][:, a]
+            o, oh, ol = data["option"][:, a], data["option_sent"], data["option_len"][:, a]
+
+            arr = []
+            for a in range(0, q.size()[0]):
+                arr.append(1)
+            oh = Variable(torch.LongTensor(np.array(arr,dtype=np.long))).cuda()
+
+            print(o.size(),oh.size(),ol.size())
+
             d, dh, dl = data["document" + str(a)], data["document_sent" + str(a)], data["document_len" + str(a)]
             label = data["label"]
 
