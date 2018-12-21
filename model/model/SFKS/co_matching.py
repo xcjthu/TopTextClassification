@@ -194,11 +194,11 @@ class CoMatching2(nn.Module):
             arr = []
             for b in range(0, q.size()[0]):
                 arr.append(1)
-            oh = Variable(torch.LongTensor(np.array(arr,dtype=np.long))).cuda()
+            oh = Variable(torch.LongTensor(np.array(arr, dtype=np.long))).cuda()
 
-            o = o.view(o.size()[0],1,-1)
+            o = o.view(o.size()[0], 1, -1)
             oh = oh.view(o.size()[0])
-            ol = ol.view(o.size()[0],-1)
+            ol = ol.view(o.size()[0], -1)
 
             d, dh, dl = data["document" + str(a)], data["document_sent" + str(a)], data["document_len" + str(a)]
             label = data["label"]

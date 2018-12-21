@@ -342,7 +342,7 @@ class ComatchingFormatter2:
             "document2": document[2][0],
             "document_sent2": document[2][1],
             "document_len2": document[2][2],
-            "document3": document[2][0],
-            "document_sent3": document[2][1],
-            "document_len3": document[2][2],
+            "document3": document[3][0],
+            "document_sent3": document[3][1],
+            "document_len3": document[3][2],
         }
