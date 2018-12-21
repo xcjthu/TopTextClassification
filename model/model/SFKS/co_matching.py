@@ -192,11 +192,13 @@ class CoMatching2(nn.Module):
             o, oh, ol = data["option"][:, a], data["option_sent"], data["option_len"][:, a]
 
             arr = []
-            for a in range(0, q.size()[0]):
+            for b in range(0, q.size()[0]):
                 arr.append(1)
             oh = Variable(torch.LongTensor(np.array(arr,dtype=np.long))).cuda()
 
-            print(o.size(),oh.size(),ol.size())
+            o = o.view(o.size()[0],1,-1)
+            oh = oh.view(o.size()[0])
+            ol = ol.view(o.size()[0],-1)
 
             d, dh, dl = data["document" + str(a)], data["document_sent" + str(a)], data["document_len" + str(a)]
             label = data["label"]
@@ -205,8 +207,6 @@ class CoMatching2(nn.Module):
             y.append(self.co_match(x))
 
         y = torch.cat(y, dim=1)
-        print(y.size())
-        gg
 
         loss = criterion(y, label)
         accu, acc_result = calc_accuracy(y, label, config, acc_result)
