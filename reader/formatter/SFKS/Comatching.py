@@ -326,6 +326,11 @@ class ComatchingFormatter2:
 
         label = torch.tensor(label, dtype=torch.long)
 
+        arr = []
+        for a in range(0, len(data)):
+            arr.append(1)
+        arr = torch.from_numpy(np.array(arr, dtype=np.long))
+
         return {
             "question": question[0],
             "question_len": question[1],
@@ -345,4 +350,5 @@ class ComatchingFormatter2:
             "document3": document[3][0],
             "document_sent3": document[3][1],
             "document_len3": document[3][2],
+            "arr": arr
         }
