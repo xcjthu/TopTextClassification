@@ -57,7 +57,7 @@ train_dataset, valid_dataset = init_dataset(config)
 
 print_info("Data preparation Done")
 
-print(json.dumps(valid_wrong_net(net, valid_dataset, use_gpu, config, 0)))
+print(json.dumps(valid_wrong_net(net, valid_dataset, use_gpu, config)))
 
 for a in range(0, len(train_dataset.read_process)):
     train_dataset.read_process[a].terminate()
