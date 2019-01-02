@@ -147,7 +147,7 @@ class CoMatch(nn.Module):
         o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
         output = self.rank_module(o_rep).squeeze(2)
         if self.more:
-            output = torch.nn.functional.log_softmax(output)
+            output = torch.nn.functional.log_softmax(output, dim=1)
 
         return output
 
