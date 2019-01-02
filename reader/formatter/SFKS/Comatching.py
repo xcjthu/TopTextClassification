@@ -316,10 +316,10 @@ class ComatchingFormatter2:
                 document[1].append(self.parseH(temp_data["hide_analyse"]))
                 document[2].append(self.parseH(temp_data["hide_analyse"]))
                 document[3].append(self.parseH(temp_data["hide_analyse"]))
-                #document[0].append(self.parseH(temp_data["reference"]["A"][0]))
-                #document[1].append(self.parseH(temp_data["reference"]["B"][0]))
-                #document[2].append(self.parseH(temp_data["reference"]["C"][0]))
-                #document[3].append(self.parseH(temp_data["reference"]["D"][0]))
+                # document[0].append(self.parseH(temp_data["reference"]["A"][0]))
+                # document[1].append(self.parseH(temp_data["reference"]["B"][0]))
+                # document[2].append(self.parseH(temp_data["reference"]["C"][0]))
+                # document[3].append(self.parseH(temp_data["reference"]["D"][0]))
 
             label.append(label_x)
 
