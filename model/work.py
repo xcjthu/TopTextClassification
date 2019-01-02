@@ -43,9 +43,9 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
         results = net(data, criterion, config, use_gpu, acc_result)
 
         for a in range(0, len(results["result"])):
-            if int(results["result"][a].data) != int(data["label"][a].data):
+            if int(results["result"][a]) != int(data["label"][a]):
                 wrong_list.append(
-                    [cnt * config.getint("data", "batch_size") + a, int(torch.max(results["result"][a]).data)])
+                    [cnt * config.getint("train", "batch_size") + a, int(results["result"][a]), int(data["label"][a])])
 
         # print('forward')
 
