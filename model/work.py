@@ -25,6 +25,12 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
     acc_result = []
 
     wrong_list = []
+    mapx = {
+        0: "A",
+        1: "B",
+        2: "C",
+        3: "D"
+    }
 
     while True:
         data = valid_dataset.fetch_data(config)
@@ -45,8 +51,8 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
         for a in range(0, len(results["result"])):
             if int(results["result"][a]) != int(data["label"][a]):
                 wrong_list.append(
-                    [cnt * config.getint("train", "batch_size") + a + 1, int(results["result"][a]),
-                     int(data["label"][a])])
+                    [cnt * config.getint("train", "batch_size") + a + 1, mapx[int(data["label"][a])],
+                     mapx[int(results["result"][a])]])
 
         # print('forward')
 
