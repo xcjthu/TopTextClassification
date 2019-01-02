@@ -220,11 +220,13 @@ class ComatchingFormatter2:
                 sent_tensor[s_id][w_id] = self.transform(word, transformer)
         return [sent_tensor, sent_len]
 
-    def seq2Htensor(self, docs, max_sent, max_sent_len, transformer=None):
+    def seq2Htensor(self, docs, max_sent, max_sent_len, transformer=None, v1=0, v2=0):
         sent_num_max = max([len(s) for s in docs])
         sent_num_max = min(sent_num_max, max_sent)
         sent_len_max = max([len(w) for s in docs for w in s])
         sent_len_max = min(sent_len_max, max_sent_len)
+        sent_num_max = max(sent_num_max, v1)
+        sent_len_max = max(sent_len_max, v2)
 
         if self.need:
             sent_tensor = torch.FloatTensor(len(docs), sent_num_max, sent_len_max, self.word_dim).zero_()
@@ -241,6 +243,14 @@ class ComatchingFormatter2:
                     if w_id >= sent_len_max: break
                     sent_tensor[d_id][s_id][w_id] = self.transform(word, transformer)
         return [sent_tensor, doc_len, sent_len]
+
+    def gen_max(self, docs, max_sent, max_sent_len):
+        sent_num_max = max([len(s) for s in docs])
+        sent_num_max = min(sent_num_max, max_sent)
+        sent_len_max = max([len(w) for s in docs for w in s])
+        sent_len_max = min(sent_len_max, max_sent_len)
+
+        return sent_num_max, sent_len_max
 
     def parse(self, sent):
         result = []
@@ -311,47 +321,42 @@ class ComatchingFormatter2:
                     label_x = 2
                 if "D" in temp_data["answer"]:
                     label_x = 3
-                document[0].append(self.parseH(temp_data["analyse"]))
-                document[1].append(self.parseH(temp_data["analyse"]))
-                document[2].append(self.parseH(temp_data["analyse"]))
-                document[3].append(self.parseH(temp_data["analyse"]))
-                # document[0].append(self.parseH(temp_data["reference"]["A"][0]))
-                # document[1].append(self.parseH(temp_data["reference"]["B"][0]))
-                # document[2].append(self.parseH(temp_data["reference"]["C"][0]))
-                # document[3].append(self.parseH(temp_data["reference"]["D"][0]))
+
+                temp = []
+                for a in range(0, 4):
+                    document[a].append(self.parseH(temp_data["analyse"]))
 
             label.append(label_x)
 
+        v1 = 0
+        v2 = 0
         for a in range(0, 4):
-            document[a] = self.seq2Htensor(document[a], self.max_sent, self.sent_max_len, transformer)
+            v1t, v2t = self.gen_max(document[a], self.max_sent, self.sent_max_len)
+            v1 = max(v1, v1t)
+            v2 = max(v2, v2t)
+
+        for a in range(0, 4):
+            document[a] = self.seq2Htensor(document[a], self.max_sent, self.sent_max_len, transformer, v1, v2)
         option = self.seq2Htensor(option, self.max_sent, self.sent_max_len, transformer)
         question = self.seq2tensor(question, self.sent_max_len, transformer)
 
+        document_sent = torch.stack([document[0][1], document[1][1], document[2][1], document[3][1]])
+        document_len = torch.stack([document[0][2], document[1][2], document[2][2], document[3][2]])
+        document = torch.stack([document[0][0], document[1][0], document[2][0], document[3][0]])
+        document = torch.transpose(document, 0, 1)
+        document_len = torch.transpose(document_len, 0, 1)
+        document_sent = torch.transpose(document_sent, 0, 1)
+
         label = torch.tensor(label, dtype=torch.long)
 
-        arr = []
-        for a in range(0, len(data)):
-            arr.append(1)
-        arr = torch.from_numpy(np.array(arr, dtype=np.long))
-#
         return {
             "question": question[0],
             "question_len": question[1],
             "option": option[0],
             "option_sent": option[1],
             "option_len": option[2],
-            "label": label,
-            "document0": document[0][0],
-            "document_sent0": document[0][1],
-            "document_len0": document[0][2],
-            "document1": document[1][0],
-            "document_sent1": document[1][1],
-            "document_len1": document[1][2],
-            "document2": document[2][0],
-            "document_sent2": document[2][1],
-            "document_len2": document[2][2],
-            "document3": document[3][0],
-            "document_sent3": document[3][1],
-            "document_len3": document[3][2],
-            "arr": arr
+            "document": document,
+            "document_sent": document_sent,
+            "document_len": document_len,
+            "label": label
         }
