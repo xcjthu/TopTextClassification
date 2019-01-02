@@ -1,6 +1,7 @@
 import time
 import multiprocessing
 import random
+import os
 
 from utils.util import get_file_list
 from reader.formatter.AYYC import AYPredictionFormatter
@@ -29,7 +30,7 @@ def init_formatter(config):
         raise NotImplementedError
 
 
-class reader():
+class reader:
     def __init__(self, file_list, config, num_process, mode):
         self.file_list = file_list
         self.mode = mode
@@ -61,6 +62,8 @@ class reader():
         if config.getboolean("train", "shuffle") and self.mode == "train":
             random.shuffle(self.file_list)
         for a in range(0, len(self.file_list)):
+            if not (os.path.exists(self.file_list[a])):
+                raise FileNotFoundError
             self.file_queue.put(self.file_list[a])
 
     def always_read_data(self, config, data_queue, file_queue, idx):
