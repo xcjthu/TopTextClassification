@@ -323,25 +323,13 @@ class CoMatching2(nn.Module):
         pass
 
     def forward(self, data, criterion, config, usegpu, acc_result=None):
-        y = []
-        for a in range(0, 4):
-            q, ql = data["question"], data["question_len"]
-            o, oh, ol = data["option"][:, a], data["option_sent"], data["option_len"][:, a]
-            oh = data["arr"]
+        q, ql = data["question"], data["question_len"]
+        o, oh, ol = data["option"], data["option_sent"], data["option_len"]
+        d, dh, dl = data["document"], data["document_sent"], data["document_len"]
+        label = data["label"]
 
-            o = o.view(o.size()[0], 1, -1)
-            oh = oh.view(o.size()[0])
-            ol = ol.view(o.size()[0], -1)
-
-            d, dh, dl = data["document" + str(a)], data["document_sent" + str(a)], data["document_len" + str(a)]
-            label = data["label"]
-
-            x = [[d, dh, dl], [q, ql], [o, oh, ol]]
-            y.append(self.co_match(x))
-
-        y = torch.cat(y, dim=1)
-        y = y.view(y.size()[0], -1)
-        y = self.rank_module(y)
+        x = [[d, dh, dl], [q, ql], [o, oh, ol]]
+        y = self.co_match(x)
 
         loss = criterion(y, label)
         accu, acc_result = calc_accuracy(y, label, config, acc_result)
