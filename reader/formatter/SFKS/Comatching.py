@@ -333,7 +333,7 @@ class ComatchingFormatter2:
         for a in range(0, len(data)):
             arr.append(1)
         arr = torch.from_numpy(np.array(arr, dtype=np.long))
-
+#
         return {
             "question": question[0],
             "question_len": question[1],
