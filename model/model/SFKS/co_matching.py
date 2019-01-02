@@ -253,6 +253,7 @@ class CoMatching2(nn.Module):
         super(CoMatching2, self).__init__()
 
         self.co_match = CoMatch2(config)
+        self.rank_module = nn.Linear(4 * 2 * self.co_match.mem_dim, 4)
 
     def init_multi_gpu(self, device):
         pass
@@ -275,6 +276,8 @@ class CoMatching2(nn.Module):
             y.append(self.co_match(x))
 
         y = torch.cat(y, dim=1)
+        y = y.view(y.size()[0], -1)
+        y = self.rank_module(y)
 
         loss = criterion(y, label)
         accu, acc_result = calc_accuracy(y, label, config, acc_result)
