@@ -176,11 +176,83 @@ class CoMatching(nn.Module):
                 "accuracy_result": acc_result}
 
 
+class CoMatch2(nn.Module):
+    def __init__(self, config):
+        super(CoMatch2, self).__init__()
+        self.emb_dim = config.getint("data", "vec_size")  # 300
+        self.mem_dim = config.getint("model", "hidden_size")  # 150
+        self.dropoutP = config.getfloat("model", "dropout")  # args.dropoutP 0.2
+        # self.cuda_bool = args.cuda
+
+        self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
+
+        self.embs = nn.Embedding(self.word_num, self.emb_dim)
+        # self.embs.weight.data.copy_(corpus.dictionary.embs)
+        # self.embs.weight.requires_grad = False
+
+        self.encoder = MaskLSTM(self.emb_dim, self.mem_dim, dropoutP=self.dropoutP)
+        self.l_encoder = MaskLSTM(self.mem_dim * 8, self.mem_dim, dropoutP=self.dropoutP)
+        self.h_encoder = MaskLSTM(self.mem_dim * 2, self.mem_dim, dropoutP=0)
+
+        self.match_module = MatchNet(self.mem_dim * 2, self.dropoutP)
+        self.rank_module = nn.Linear(self.mem_dim * 2, 1)
+
+        self.drop_module = nn.Dropout(self.dropoutP)
+
+        self.more = config.getboolean("model", "one_more_softmax")
+
+    def forward(self, inputs):
+        documents, questions, options = inputs
+        d_word, d_h_len, d_l_len = documents
+        o_word, o_h_len, o_l_len = options
+        q_word, q_len = questions
+
+        # if self.cuda_bool: d_word, d_h_len, d_l_len, o_word, o_h_len, o_l_len, q_word, q_len = d_word.cuda(), d_h_len.cuda(), d_l_len.cuda(), o_word.cuda(), o_h_len.cuda(), o_l_len.cuda(), q_word.cuda(), q_len.cuda()
+        # d_embs = self.drop_module(Variable(self.embs(d_word), requires_grad=False))
+        # o_embs = self.drop_module(Variable(self.embs(o_word), requires_grad=False))
+        # q_embs = self.drop_module(Variable(self.embs(q_word), requires_grad=False))
+
+        d_embs = self.drop_module(self.embs(d_word))
+        o_embs = self.drop_module(self.embs(o_word))
+        q_embs = self.drop_module(self.embs(q_word))
+
+        d_hidden = self.encoder(
+            [d_embs.view(d_embs.size(0) * d_embs.size(1), d_embs.size(2), self.emb_dim), d_l_len.view(-1)])
+        o_hidden = self.encoder(
+            [o_embs.view(o_embs.size(0) * o_embs.size(1), o_embs.size(2), self.emb_dim), o_l_len.view(-1)])
+        q_hidden = self.encoder([q_embs, q_len])
+
+        d_hidden_3d = d_hidden.view(d_embs.size(0), d_embs.size(1) * d_embs.size(2), d_hidden.size(-1))
+        d_hidden_3d_repeat = d_hidden_3d.repeat(1, o_embs.size(1), 1).view(d_hidden_3d.size(0) * o_embs.size(1),
+                                                                           d_hidden_3d.size(1), d_hidden_3d.size(2))
+
+        do_match = self.match_module([d_hidden_3d_repeat, o_hidden, o_l_len.view(-1)])
+        dq_match = self.match_module([d_hidden_3d, q_hidden, q_len])
+
+        dq_match_repeat = dq_match.repeat(1, o_embs.size(1), 1).view(dq_match.size(0) * o_embs.size(1),
+                                                                     dq_match.size(1), dq_match.size(2))
+
+        co_match = torch.cat([do_match, dq_match_repeat], -1)
+
+        co_match_hier = co_match.view(d_embs.size(0) * o_embs.size(1) * d_embs.size(1), d_embs.size(2), -1)
+
+        l_hidden = self.l_encoder([co_match_hier, d_l_len.repeat(1, o_embs.size(1)).view(-1)])
+        l_hidden_pool, _ = l_hidden.max(1)
+
+        h_hidden = self.h_encoder([l_hidden_pool.view(d_embs.size(0) * o_embs.size(1), d_embs.size(1), -1),
+                                   d_h_len.view(-1, 1).repeat(1, o_embs.size(1)).view(-1)])
+        h_hidden_pool, _ = h_hidden.max(1)
+
+        o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
+
+        return o_rep
+
+
 class CoMatching2(nn.Module):
     def __init__(self, config):
         super(CoMatching2, self).__init__()
 
-        self.co_match = CoMatch(config)
+        self.co_match = CoMatch2(config)
 
     def init_multi_gpu(self, device):
         pass
