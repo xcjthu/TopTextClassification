@@ -259,7 +259,8 @@ class CoMatch2(nn.Module):
         print("q_embs", q_embs.size())
 
         d_hidden = self.encoder(
-            [d_embs.view(d_embs.size(0) * d_embs.size(1), d_embs.size(2), self.emb_dim), d_l_len.view(-1)])
+            [d_embs.view(d_embs.size(0) * d_embs.size(1) * d_embs.size(2), d_embs.size(3), self.emb_dim),
+             d_l_len.view(-1)])
         o_hidden = self.encoder(
             [o_embs.view(o_embs.size(0) * o_embs.size(1), o_embs.size(2), self.emb_dim), o_l_len.view(-1)])
         q_hidden = self.encoder([q_embs, q_len])
