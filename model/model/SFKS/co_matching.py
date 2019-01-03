@@ -272,7 +272,7 @@ class CoMatch2(nn.Module):
         # d_hidden_3d = d_hidden.view(d_embs.size(0), d_embs.size(1) * d_embs.size(2), d_hidden.size(-1))
         # d_hidden_3d_repeat = d_hidden_3d.repeat(1, o_embs.size(1), 1).view(d_hidden_3d.size(0) * o_embs.size(1),
         #                                                                   d_hidden_3d.size(1), d_hidden_3d.size(2))
-        d_hidden_3d_repeat = d_hidden.view(d_word.size()[0] * 4, -1, self.emb_dim)
+        d_hidden_3d_repeat = d_hidden.view(d_word.size()[0] * 4, -1, d_hidden.size()[-1])
 
         #print("d_hidden_3d", d_hidden_3d.size())
         print("d_hidden_3d_repeat", d_hidden_3d_repeat.size())
