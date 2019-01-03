@@ -288,8 +288,7 @@ class CoMatch2(nn.Module):
         print("do_match", do_match.size())
         print("dq_match", dq_match.size())
 
-        dq_match_repeat = dq_match.repeat(1, o_embs.size(1), 1).view(dq_match.size(0) * o_embs.size(1),
-                                                                     dq_match.size(1), dq_match.size(2))
+        dq_match_repeat = dq_match
         print("dq_match_repeat", dq_match_repeat.size())
 
         co_match = torch.cat([do_match, dq_match_repeat], -1)
