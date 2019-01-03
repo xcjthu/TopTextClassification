@@ -303,8 +303,8 @@ class CoMatch2(nn.Module):
         l_hidden_pool, _ = l_hidden.max(1)
         print("l_hidden_pool", l_hidden_pool.size())
 
-        h_hidden = self.h_encoder([l_hidden_pool.view(d_embs.size(0) * o_embs.size(1), d_embs.size(1), -1),
-                                   d_h_len.view(-1, 1).repeat(1, o_embs.size(1)).view(-1)])
+        h_hidden = self.h_encoder([l_hidden_pool.view(d_embs.size(0) * o_embs.size(1), d_embs.size(2), -1),
+                                   d_h_len.view(-1, 1).view(-1)])
         print("h_hidden", h_hidden.size())
         h_hidden_pool, _ = h_hidden.max(1)
         print("h_hidden_pool", h_hidden_pool.size())
