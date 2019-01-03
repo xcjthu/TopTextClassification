@@ -298,7 +298,7 @@ class CoMatch2(nn.Module):
         co_match_hier = co_match.view(d_embs.size(0) * o_embs.size(1) * d_embs.size(2), d_embs.size(3), -1)
         print("co_match_hier", co_match_hier.size())
 
-        l_hidden = self.l_encoder([co_match_hier, d_l_len.repeat(1, o_embs.size(1)).view(-1)])
+        l_hidden = self.l_encoder([co_match_hier, d_l_len.view(-1)])
         print("l_hidden", l_hidden.size())
         l_hidden_pool, _ = l_hidden.max(1)
         print("l_hidden_pool", l_hidden_pool.size())
