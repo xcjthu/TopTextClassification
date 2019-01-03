@@ -269,11 +269,12 @@ class CoMatch2(nn.Module):
         print("o_hidden", o_hidden.size())
         print("q_hidden", q_hidden.size())
 
-        d_hidden_3d = d_hidden.view(d_embs.size(0), d_embs.size(1) * d_embs.size(2), d_hidden.size(-1))
-        d_hidden_3d_repeat = d_hidden_3d.repeat(1, o_embs.size(1), 1).view(d_hidden_3d.size(0) * o_embs.size(1),
-                                                                           d_hidden_3d.size(1), d_hidden_3d.size(2))
+        # d_hidden_3d = d_hidden.view(d_embs.size(0), d_embs.size(1) * d_embs.size(2), d_hidden.size(-1))
+        # d_hidden_3d_repeat = d_hidden_3d.repeat(1, o_embs.size(1), 1).view(d_hidden_3d.size(0) * o_embs.size(1),
+        #                                                                   d_hidden_3d.size(1), d_hidden_3d.size(2))
+        d_hidden_3d_repeat = d_hidden.view(d_word.size()[0] * 4, -1, self.emb_dim)
 
-        print("d_hidden_3d", d_hidden_3d.size())
+        #print("d_hidden_3d", d_hidden_3d.size())
         print("d_hidden_3d_repeat", d_hidden_3d_repeat.size())
 
         do_match = self.match_module([d_hidden_3d_repeat, o_hidden, o_l_len.view(-1)])
