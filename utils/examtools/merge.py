@@ -2,7 +2,7 @@ import os
 import json
 import random
 
-path = "/data/disk3/private/zhx/exam/data/origin_data/format"
+path = "/data/disk1/private/xcj/exam/data/origin_data/"
 work_list = ["train", "test"]
 
 if __name__ == "__main__":

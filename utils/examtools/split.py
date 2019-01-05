@@ -1,14 +1,28 @@
 import os
 import json
 import random
+import jieba
+import jieba.posseg as psg
 
 pre_path = "/data/disk3/private/zhx/exam/data/origin_data/学法"
 file_list = ["xuefa_data_1.json", "xuefa_data_2.json", "xuefa_data_3.json"]
-output_path = "/data/disk3/private/zhx/exam/data/origin_data/format"
+#output_path = "/data/disk3/private/zhx/exam/data/origin_data/format"
+output_path = "/data/disk1/private/xcj/exam/data/origin_data/"
+
+
+def contain_name(sentence):
+    ret = psg.cut(sentence)
+    ret = [x.flag for x in ret]
+    if 'nr' in ret:
+        return True
+    return False
 
 
 def check(d):
-    for x in ["甲", "乙", "丙", "丁", "某", "某某"]:
+    if contain_name(d['statement']):
+        return True
+
+    for x in ["甲", "乙", "丙", "丁", "某", "某某", "A", "B", "C", "D", "O", "P", "S", "Q", "张三", "李四"]:
         if d["statement"].find(x) != -1:
             return True
         for option in d["option_list"].keys():
@@ -77,3 +91,5 @@ if __name__ == "__main__":
                     x = "test"
 
                 dump(data[a][b][c], "%d_%d_%s.json" % (a, b, x))
+
+
