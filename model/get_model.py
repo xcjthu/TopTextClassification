@@ -5,7 +5,6 @@ from model.model.SFKS.co_matching import CoMatching
 from model.model.SFKS.SeaReader.SeaReader import SeaReader
 from model.model.SFKS.co_matching import CoMatching, CoMatching2
 
-
 model_list = {
     "LSTM": LSTM,
     "TextCNN": TextCNN,

@@ -1,12 +1,13 @@
 import time
 import multiprocessing
 import random
+import os
 
 from utils.util import get_file_list
 from reader.formatter.AYYC import AYPredictionFormatter
 from reader.formatter.AJLX import AJLXPredictionFormatter
 from reader.formatter.SFKS.SFKS_word import SFKSWordFormatter
-from reader.formatter.SFKS.Comatching import ComatchingFormatter
+from reader.formatter.SFKS.Comatching import ComatchingFormatter, ComatchingFormatter2
 from reader.formatter.SFKS.SeaReader import SeaReaderFormatter
 from reader.formatter.race.race import RaceFormatter
 from word2vec.word2vec import init_transformer
@@ -14,23 +15,22 @@ from word2vec.word2vec import init_transformer
 
 def init_formatter(config):
     global formatter
-    if config.get("data", "formatter") == "AYYC":
-        formatter = AYPredictionFormatter(config)
-    elif config.get("data", "formatter") == "AJLX":
-        formatter = AJLXPredictionFormatter(config)
-    elif config.get("data", "formatter") == "SFKS_word":
-        formatter = SFKSWordFormatter(config)
-    elif config.get("data", "formatter") == "SFKS_comatching":
-        formatter = ComatchingFormatter(config)
-    elif config.get("data", "formatter") == "SFKS_seareader":
-        formatter = SeaReaderFormatter(config)
-    elif config.get("data", "formatter") == "RACE":
-        formatter = RaceFormatter(config)
+    useable_list = {
+        "AYYC": AYPredictionFormatter,
+        "AJLX": AJLXPredictionFormatter,
+        "SFKS_word": SFKSWordFormatter,
+        "SFKS_comatching": ComatchingFormatter,
+        "SFKS_comatching2": ComatchingFormatter2,
+        "SFKS_seareader": SeaReaderFormatter,
+        "RACE": RaceFormatter,
+    }
+    if config.get("data", "formatter") in useable_list.keys():
+        formatter = useable_list[config.get("data", "formatter")](config)
     else:
         raise NotImplementedError
 
 
-class reader():
+class reader:
     def __init__(self, file_list, config, num_process, mode):
         self.file_list = file_list
         self.mode = mode
@@ -62,6 +62,8 @@ class reader():
         if config.getboolean("train", "shuffle") and self.mode == "train":
             random.shuffle(self.file_list)
         for a in range(0, len(self.file_list)):
+            if not (os.path.exists(self.file_list[a])):
+                raise FileNotFoundError
             self.file_queue.put(self.file_list[a])
 
     def always_read_data(self, config, data_queue, file_queue, idx):

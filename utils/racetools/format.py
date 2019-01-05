@@ -8,8 +8,12 @@ word_set = set()
 
 
 def add(x):
+    symbol = [",", ".", "?", "\""]
     for y in x:
-        word_set.add(y.replace("?", "").lower())
+        for z in symbol:
+            y = y.replace(z, "")
+
+        word_set.add(y.lower())
 
 
 def work(in_path, out_path):

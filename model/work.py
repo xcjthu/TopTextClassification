@@ -13,6 +13,65 @@ from model.loss import get_loss
 from utils.util import gen_result, print_info, time_to_str
 
 
+def valid_wrong_net(net, valid_dataset, use_gpu, config):
+    net.eval()
+
+    task_loss_type = config.get("train", "type_of_loss")
+    criterion = get_loss(task_loss_type)
+
+    running_acc = 0
+    running_loss = 0
+    cnt = 0
+    acc_result = []
+
+    wrong_list = []
+    mapx = {
+        0: "A",
+        1: "B",
+        2: "C",
+        3: "D"
+    }
+
+    while True:
+        data = valid_dataset.fetch_data(config)
+        # print('fetch data')
+        if data is None:
+            break
+        cnt += 1
+
+        for key in data.keys():
+            if isinstance(data[key], torch.Tensor):
+                if torch.cuda.is_available() and use_gpu:
+                    data[key] = Variable(data[key].cuda())
+                else:
+                    data[key] = Variable(data[key])
+
+        results = net(data, criterion, config, use_gpu, acc_result)
+
+        for a in range(0, len(results["result"])):
+            if int(results["result"][a]) != int(data["label"][a]):
+                wrong_list.append(
+                    [cnt * config.getint("train", "batch_size") + a + 1, mapx[int(data["label"][a])],
+                     mapx[int(results["result"][a])]])
+
+        # print('forward')
+
+        outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
+        acc_result = results["accuracy_result"]
+
+        running_loss += loss.item()
+        running_acc += accu.item()
+
+    # print_info("Valid result:")
+    # print_info("Average loss = %.5f" % (running_loss / cnt))
+    # print_info("Average accu = %.5f" % (running_acc / cnt))
+    # gen_result(acc_result, True)
+
+    net.train()
+
+    return wrong_list
+
+
 def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     net.eval()
 
