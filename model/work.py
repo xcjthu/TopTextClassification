@@ -38,6 +38,8 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
         if data is None:
             break
         cnt += 1
+        #print(data["label"])
+        #gg
 
         for key in data.keys():
             if isinstance(data[key], torch.Tensor):
@@ -51,7 +53,7 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
         for a in range(0, len(results["result"])):
             if int(results["result"][a]) != int(data["label"][a]):
                 wrong_list.append(
-                    [cnt * config.getint("train", "batch_size") + a + 1, mapx[int(data["label"][a])],
+                    [(cnt-1) * config.getint("train", "batch_size") + a + 1, mapx[int(data["label"][a])],
                      mapx[int(results["result"][a])]])
 
         # print('forward')
