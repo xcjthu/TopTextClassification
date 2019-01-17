@@ -89,7 +89,7 @@ class CoMatch(nn.Module):
 
         self.embs = nn.Embedding(self.word_num, self.emb_dim)
         if config.getboolean("data", "need_word2vec"):
-            self.embs = generate_embedding(self.embs)
+            self.embs = generate_embedding(self.embs, config)
         # self.embs.weight.data.copy_(corpus.dictionary.embs)
         # self.embs.weight.requires_grad = False
 
@@ -221,7 +221,7 @@ class CoMatch2(nn.Module):
 
         self.embs = nn.Embedding(self.word_num, self.emb_dim)
         if config.getboolean("data", "need_word2vec"):
-            self.embs = generate_embedding(self.embs)
+            self.embs = generate_embedding(self.embs, config)
         # self.embs.weight.data.copy_(corpus.dictionary.embs)
         # self.embs.weight.requires_grad = False
 
