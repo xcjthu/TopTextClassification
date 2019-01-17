@@ -2,6 +2,7 @@ import time
 import torch
 import os
 import json
+import numpy as np
 
 
 def time_to_str(t, mode='min'):
@@ -184,9 +185,9 @@ def generate_embedding(embedding, config):
 
     for word in word_list:
         if word in transformer.model:
-            embedding[word_list[word]] = torch.from_numpy(transformer.load(word))
+            embedding[word_list[word]] = torch.from_numpy(np.array(transformer.load(word),dtype=np.float32))
         else:
             print(word)
-            gg
 
+    gg
     return embedding
