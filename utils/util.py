@@ -1,6 +1,7 @@
 import time
 import torch
 import os
+import json
 
 
 def time_to_str(t, mode='min'):
@@ -173,3 +174,19 @@ def gen_result(res, print=False):
         print_info("Macro recall\t%.3f" % macro_recall)
         print_info("Micro f1\t%.3f" % micro_f1)
         print_info("Macro f1\t%.3f" % macro_f1)
+
+
+def generate_embedding(embedding, config):
+    from word2vec.word2vec import Word2vec
+
+    transformer = Word2vec(config.get("data", "word2vec"))
+    word_list = json.load(open(config.get("data", "word2id"), "r"))
+
+    for word in word_list:
+        if word in transformer.model:
+            embedding[word_list[word]] = torch.from_numpy(transformer.load(word))
+        else:
+            print(word)
+            gg
+
+    return embedding
