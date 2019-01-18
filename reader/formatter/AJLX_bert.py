@@ -2,6 +2,7 @@ import json
 import torch
 import numpy as np
 import jieba
+import os
 from pytorch_pretrained_bert import BertTokenizer
 
 
@@ -15,7 +16,7 @@ class AJLXBertPredictionFormatter:
         }
         self.max_len = config.getint("data", "max_len")
 
-        self.tokenizer = BertTokenizer.from_pretrained('/data/disk3/private/zhx/bert/chinese/vocab.txt')
+        self.tokenizer = BertTokenizer.from_pretrained(os.path.join(config.get("model", "bert_path"), "vocab.txt"))
 
     def check(self, data, config):
         data = json.loads(data)
