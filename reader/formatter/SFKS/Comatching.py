@@ -292,7 +292,8 @@ class ComatchingFormatter2:
 
                 temp = []
                 for a in range(0, 4):
-                    document[a].append(self.parseH(temp_data["reference"][a][0]))
+                    arr = ["A","B","C","D"]
+                    document[a].append(self.parseH(temp_data["reference"][arr[a]][0]))
 
             label.append(label_x)
 

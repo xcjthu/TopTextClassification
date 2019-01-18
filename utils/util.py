@@ -184,14 +184,16 @@ def generate_embedding(embedding, config):
     word_list = json.load(open(config.get("data", "word2id"), "r"))
     embs = np.zeros([len(word_list), config.getint("data", "vec_size")], dtype=np.float32)
     cnt = 0
+    total = 0
 
     for word in word_list:
         if word in transformer.model:
             embs[word_list[word]] = torch.from_numpy(np.array(transformer.load(word), dtype=np.float32))
         else:
             cnt += 1
+        total += 1
 
     embedding.weight.data.copy_(torch.from_numpy(embs))
-    print_info("%d words missing" % cnt)
+    print_info("%d/%d words missing" % (cnt,total))
 
     return embedding
