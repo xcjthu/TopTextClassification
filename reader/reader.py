@@ -10,6 +10,7 @@ from reader.formatter.SFKS.SFKS_word import SFKSWordFormatter
 from reader.formatter.SFKS.Comatching import ComatchingFormatter, ComatchingFormatter2
 from reader.formatter.SFKS.SeaReader import SeaReaderFormatter
 from reader.formatter.race.race import RaceFormatter
+from reader.formatter.AJLX_bert import AJLXBertPredictionFormatter
 from word2vec.word2vec import init_transformer
 
 
@@ -23,6 +24,7 @@ def init_formatter(config):
         "SFKS_comatching2": ComatchingFormatter2,
         "SFKS_seareader": SeaReaderFormatter,
         "RACE": RaceFormatter,
+        "AJLXBert":AJLXBertPredictionFormatter
     }
     if config.get("data", "formatter") in useable_list.keys():
         formatter = useable_list[config.get("data", "formatter")](config)

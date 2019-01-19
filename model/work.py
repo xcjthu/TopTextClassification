@@ -8,6 +8,7 @@ from torch.optim import lr_scheduler
 # from tensorboardX import SummaryWriter
 import shutil
 from timeit import default_timer as timer
+from pytorch_pretrained_bert import BertAdam
 
 from model.loss import get_loss
 from utils.util import gen_result, print_info, time_to_str
@@ -162,6 +163,9 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
     elif optimizer_type == "sgd":
         optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=config.getfloat("train", "momentum"),
                               weight_decay=config.getfloat("train", "weight_decay"))
+    elif optimizer_type == "bert_adam":
+        optimizer = BertAdam(net.parameters(), lr=learning_rate,
+                             weight_decay_rate=config.getfloat("train", "weight_decay"))
     else:
         raise NotImplementedError
 
