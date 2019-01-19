@@ -5,12 +5,13 @@ import os
 
 from utils.util import get_file_list
 from reader.formatter.AYYC import AYPredictionFormatter
-from reader.formatter.AJLX import AJLXPredictionFormatter
+from reader.formatter.AJLX.AJLX import AJLXPredictionFormatter
 from reader.formatter.SFKS.SFKS_word import SFKSWordFormatter
 from reader.formatter.SFKS.Comatching import ComatchingFormatter, ComatchingFormatter2
 from reader.formatter.SFKS.SeaReader import SeaReaderFormatter
 from reader.formatter.race.race import RaceFormatter
-from reader.formatter.AJLX_bert import AJLXBertPredictionFormatter
+from reader.formatter.AJLX.AJLX_bert import AJLXBertPredictionFormatter
+from reader.formatter.SFKS.bert_subject import SFKSBertSubjectFormatter
 from word2vec.word2vec import init_transformer
 
 
@@ -24,7 +25,8 @@ def init_formatter(config):
         "SFKS_comatching2": ComatchingFormatter2,
         "SFKS_seareader": SeaReaderFormatter,
         "RACE": RaceFormatter,
-        "AJLXBert":AJLXBertPredictionFormatter
+        "AJLXBert": AJLXBertPredictionFormatter,
+        "SFKS_Bert_Subject": SFKSBertSubjectFormatter
     }
     if config.get("data", "formatter") in useable_list.keys():
         formatter = useable_list[config.get("data", "formatter")](config)
