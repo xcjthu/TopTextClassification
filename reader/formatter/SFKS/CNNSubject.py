@@ -2,11 +2,9 @@ import json
 import torch
 import numpy as np
 import jieba
-import os
-from pytorch_pretrained_bert import BertTokenizer
 
 
-class SFKSBertSubjectFormatter:
+class SFKS_CNN_Subject:
     def __init__(self, config):
         self.map_list = {
             "国际法": 0,
@@ -28,29 +26,11 @@ class SFKSBertSubjectFormatter:
         }
         self.max_len = config.getint("data", "max_len")
 
-        self.tokenizer = BertTokenizer.from_pretrained(os.path.join(config.get("model", "bert_path"), "vocab.txt"))
-
     def check(self, data, config):
         data = json.loads(data)
-        if len(data["statement"]) == 0:
-            return None
-        if not ("subject" in data.keys()):
+        if len(data["text"]) == 0:
             return None
         return data
-
-    def convert(self, tokens):
-        ids = []
-        for token in tokens:
-            if '\u4e00' <= token <= '\u9fff':
-                if token in self.tokenizer.vocab.keys():
-                    ids.append(self.tokenizer.vocab[token])
-                else:
-                    # print("<<<<<<<<<<<<< %s >>>>>>>>>>>>> " % token)
-                    ids.append(self.tokenizer.vocab["[UNK]"])
-
-        while len(ids) < self.max_len:
-            ids.append(self.tokenizer.vocab["[PAD]"])
-        return ids
 
     def format(self, data, config, transformer, mode):
         input = []
@@ -59,17 +39,17 @@ class SFKSBertSubjectFormatter:
             ss = []
             res = temp_data["statement"] + temp_data["option_list"]["A"] + temp_data["option_list"]["B"] + \
                   temp_data["option_list"]["C"] + temp_data["option_list"]["D"]
+            res = temp_data["text"]
             for a in range(0, len(res)):
-                ss = ss + [res[a]]
-            ss = ss[0:self.max_len]
+                if a == self.max_len:
+                    break
+                ss.append(transformer.load(res[a]))
+            while len(ss) < self.max_len:
+                ss.append(transformer.load("BLANK"))
 
-            indexed_tokens = self.convert(ss)
-
-            tokens_tensor = torch.tensor([indexed_tokens])
-
-            input.append(tokens_tensor)
+            input.append(ss)
             label.append(self.map_list[temp_data["subject"]])
 
-        input = torch.cat(input, dim=0)
+        input = torch.Tensor(input)
         label = torch.LongTensor(np.array(label, dtype=np.int32))
         return {'input': input, 'label': label}
