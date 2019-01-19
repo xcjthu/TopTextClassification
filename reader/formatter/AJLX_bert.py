@@ -27,10 +27,15 @@ class AJLXBertPredictionFormatter:
     def convert(self, tokens):
         ids = []
         for token in tokens:
-            if token in self.tokenizer.vocab.keys():
-                ids.append(self.tokenizer.vocab[token])
-            else:
-                ids.append(self.tokenizer.vocab["[UNK]"])
+            if '\u4e00' <= token <= '\u9fff':
+                if token in self.tokenizer.vocab.keys():
+                    ids.append(self.tokenizer.vocab[token])
+                else:
+                    # print("<<<<<<<<<<<<< %s >>>>>>>>>>>>> " % token)
+                    ids.append(self.tokenizer.vocab["[UNK]"])
+
+        while len(ids) < self.max_len:
+            ids.append(self.tokenizer.vocab["[PAD]"])
         return ids
 
     def format(self, data, config, transformer, mode):
@@ -43,10 +48,8 @@ class AJLXBertPredictionFormatter:
                 ss = ss + [res[a]]
             ss = ss[0:self.max_len]
 
-            while len(ss) < self.max_len:
-                ss = ss + ["[PAD]"]
-
             indexed_tokens = self.convert(ss)
+
             tokens_tensor = torch.tensor([indexed_tokens])
 
             input.append(tokens_tensor)
