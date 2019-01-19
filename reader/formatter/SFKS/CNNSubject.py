@@ -28,7 +28,7 @@ class SFKS_CNN_Subject:
 
     def check(self, data, config):
         data = json.loads(data)
-        if len(data["text"]) == 0:
+        if len(data["statement"]) == 0:
             return None
         return data
 
@@ -39,7 +39,6 @@ class SFKS_CNN_Subject:
             ss = []
             res = temp_data["statement"] + temp_data["option_list"]["A"] + temp_data["option_list"]["B"] + \
                   temp_data["option_list"]["C"] + temp_data["option_list"]["D"]
-            res = temp_data["text"]
             for a in range(0, len(res)):
                 if a == self.max_len:
                     break
