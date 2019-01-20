@@ -57,8 +57,7 @@ train_dataset, valid_dataset = init_dataset(config)
 
 print_info("Data preparation Done")
 
-print(json.dumps(resulting(net, valid_dataset, use_gpu, config), sort_keys=True, ensure_ascii=False),
-      open(args.result, "w"))
+json.dump(resulting(net, valid_dataset, use_gpu, config), open(args.result, "w"), sort_keys=True, ensure_ascii=False)
 
 for a in range(0, len(train_dataset.read_process)):
     train_dataset.read_process[a].terminate()
