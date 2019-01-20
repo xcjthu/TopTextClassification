@@ -167,6 +167,8 @@ class ComatchingFormatter2:
 
     def check(self, data, config):
         data = json.loads(data)
+        if not("answer" in data.keys()):
+           return None
         if not (config.getboolean("data", "multi_choice")) and len(data["answer"]) != 1:
             return None
         return data
