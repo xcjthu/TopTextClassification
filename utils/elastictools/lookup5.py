@@ -4,12 +4,12 @@ import os
 from elastic.elastic import search
 
 # path = "/data/disk3/private/zhx/exam/data/origin_data/format/"
-path = "/data/disk1/private/xcj/exam/data/origin_data/subject"
-output_path = "/data/disk1/private/xcj/exam/data/origin_data/final"
+path = "/data/disk3/private/zhx/exam/data/origin_data/subject"
+output_path = "/data/disk3/private/zhx/exam/data/origin_data/final"
 file_list = ["0_train.json", "1_train.json", "0_test.json", "1_test.json"]
 
 
-def work(s, t, k):
+def workx(s, t, k):
     l = []
     request_body = {
         "query": {
@@ -25,7 +25,7 @@ def work(s, t, k):
         }
     }
     if not (t is None):
-        request_body["must"] = [
+        request_body["query"]["bool"]["must"] = [
             {
                 "term": {
                     "type2": {
@@ -51,8 +51,7 @@ def work(filename):
         d["reference"] = {}
         for option in d["option_list"]:
             query = d["statement"] + " " + d["option_list"][option]
-            d["reference"][option] = work(query, d["subject"][0], 4) + work(query, d["subject"][1], 4) + work(query,
-                                                                                                              None, 4)
+            d["reference"][option] = workx(query, d["subject"][0], 4) + workx(query, d["subject"][1], 4) + workx(query, None, 4)
 
         data.append(d)
 
