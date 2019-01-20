@@ -4,11 +4,13 @@ import random
 import jieba
 import jieba.posseg as psg
 
-pre_path = "/data/disk3/private/zhx/exam/data/origin_data/学法"
-file_list = ["xuefa_data_1.json", "xuefa_data_2.json", "xuefa_data_3.json"]
+#pre_path = "/data/disk3/private/zhx/exam/data/origin_data/学法"
+pre_path = "/home/zhx/"
+file_list = ["all.json"]
+#file_list = ["xuefa_data_1.json", "xuefa_data_2.json", "xuefa_data_3.json"]
 #output_path = "/data/disk3/private/zhx/exam/data/origin_data/format"
-output_path = "/data/disk1/private/xcj/exam/data/origin_data/"
-
+#output_path = "/data/disk1/private/xcj/exam/data/origin_data/"
+output_path = "/data/disk1/private/xcj/exam/data/all_data/gen/"
 
 def contain_name(sentence):
     ret = psg.cut(sentence)
@@ -60,16 +62,12 @@ map_dic = {
 }
 
 if __name__ == "__main__":
-    data = []
-    for a in range(0, 6):
-        data.append([[[], []], [[], []]])
-
+    data = [[[], []], [[], []]]
     for filename in file_list:
         f = open(os.path.join(pre_path, filename), "r")
 
         for line in f:
             d = json.loads(line)
-            type1 = map_dic[d["subject"]]
             if check(d):
                 type2 = 1
             else:
@@ -80,16 +78,15 @@ if __name__ == "__main__":
             else:
                 type3 = 0
 
-            data[type1][type2][type3].append(d)
+            data[type2][type3].append(d)
 
-    for a in range(0, 6):
-        for b in range(0, 2):
-            for c in range(0, 2):
-                if c == 0:
-                    x = "train"
-                else:
-                    x = "test"
 
-                dump(data[a][b][c], "%d_%d_%s.json" % (a, b, x))
+    for b in range(0, 2):
+        for c in range(0, 2):
+            if c == 0:
+                x = "train"
+            else:
+                x = "test"
+            dump(data[b][c], "%d_%s.json" % (b, x))
 
 

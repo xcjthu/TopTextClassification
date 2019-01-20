@@ -2,8 +2,8 @@ import jieba
 import os
 import json
 
-input_data_path = "/data/disk1/private/xcj/exam/data/gen"
-output_data_path = "/data/disk1/private/xcj/exam/data/cut_data/gen"
+input_data_path = "/data/disk1/private/xcj/exam/data/all_data/gen"
+output_data_path = "/data/disk1/private/xcj/exam/data/all_data/cut_data/"
 
 word_set = set()
 
