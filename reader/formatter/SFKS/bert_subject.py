@@ -41,12 +41,11 @@ class SFKSBertSubjectFormatter:
     def convert(self, tokens):
         ids = []
         for token in tokens:
-            if '\u4e00' <= token <= '\u9fff':
-                if token in self.tokenizer.vocab.keys():
-                    ids.append(self.tokenizer.vocab[token])
-                else:
-                    # print("<<<<<<<<<<<<< %s >>>>>>>>>>>>> " % token)
-                    ids.append(self.tokenizer.vocab["[UNK]"])
+            if token in self.tokenizer.vocab.keys():
+                ids.append(self.tokenizer.vocab[token])
+            else:
+                # print("<<<<<<<<<<<<< %s >>>>>>>>>>>>> " % token)
+                ids.append(self.tokenizer.vocab["[UNK]"])
 
         while len(ids) < self.max_len:
             ids.append(self.tokenizer.vocab["[PAD]"])
