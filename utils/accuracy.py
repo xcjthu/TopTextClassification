@@ -88,7 +88,8 @@ def top2(outputs, label, config, result=None):
 
     pre, prediction1 = torch.max(outputs, 1)
     prediction1 = prediction1.view(-1)
-    pre, prediction2 = torch.kthvalue(outputs, 2, 1)
+    prediction2, _ = torch.topk(outputs, 2, 1, largest=True)
+    prediction2 = prediction2[:, 1:]
     prediction2 = prediction2.view(-1)
 
     return torch.mean(torch.eq(prediction1, label).float()), result
