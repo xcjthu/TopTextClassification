@@ -9,11 +9,7 @@ from utils.util import check_multi
 
 class ComatchingFormatter:
     def __init__(self, config):
-        self.need = config.getboolean("data", "need_word2vec")
-        if self.need:
-            self.word_dim = config.getint("data", "vec_size")
-        else:
-            self.word2id = json.load(open(config.get("data", "word2id"), "r"))
+        self.word2id = json.load(open(config.get("data", "word2id"), "r"))
 
         self.sent_max_len = config.getint("data", "sent_max_len")
         self.max_sent = config.getint("data", "max_sent")
@@ -29,24 +25,15 @@ class ComatchingFormatter:
 
     def transform(self, word, transformer):
         if not (word in self.word2id.keys()):
-            if self.need:
-                return transformer.load("UNK")
-            else:
-                return self.word2id["UNK"]
+            return self.word2id["UNK"]
         else:
-            if self.need:
-                return transformer.load(word)
-            else:
-                return self.word2id[word]
+            return self.word2id[word]
 
     def seq2tensor(self, sents, max_len, transformer=None):
         sent_len_max = max([len(s) for s in sents])
         sent_len_max = min(sent_len_max, max_len)
 
-        if self.need:
-            sent_tensor = torch.FloatTensor(len(sents), sent_len_max, self.word_dim).zero_()
-        else:
-            sent_tensor = torch.LongTensor(len(sents), sent_len_max).zero_()
+        sent_tensor = torch.LongTensor(len(sents), sent_len_max).zero_()
 
         sent_len = torch.LongTensor(len(sents)).zero_()
         for s_id, sent in enumerate(sents):
@@ -62,10 +49,7 @@ class ComatchingFormatter:
         sent_len_max = max([len(w) for s in docs for w in s])
         sent_len_max = min(sent_len_max, max_sent_len)
 
-        if self.need:
-            sent_tensor = torch.FloatTensor(len(docs), sent_num_max, sent_len_max, self.word_dim).zero_()
-        else:
-            sent_tensor = torch.LongTensor(len(docs), sent_num_max, sent_len_max).zero_()
+        sent_tensor = torch.LongTensor(len(docs), sent_num_max, sent_len_max).zero_()
         sent_len = torch.LongTensor(len(docs), sent_num_max).zero_()
         doc_len = torch.LongTensor(len(docs)).zero_()
         for d_id, doc in enumerate(docs):
@@ -173,11 +157,7 @@ class ComatchingFormatter:
 
 class ComatchingFormatter2:
     def __init__(self, config):
-        self.need = config.getboolean("data", "need_word2vec")
-        if self.need:
-            self.word_dim = config.getint("data", "vec_size")
-        else:
-            self.word2id = json.load(open(config.get("data", "word2id"), "r"))
+        self.word2id = json.load(open(config.get("data", "word2id"), "r"))
 
         self.sent_max_len = config.getint("data", "sent_max_len")
         self.max_sent = config.getint("data", "max_sent")
@@ -193,24 +173,15 @@ class ComatchingFormatter2:
 
     def transform(self, word, transformer):
         if not (word in self.word2id.keys()):
-            if self.need:
-                return transformer.load("UNK")
-            else:
-                return self.word2id["UNK"]
+            return self.word2id["UNK"]
         else:
-            if self.need:
-                return transformer.load(word)
-            else:
-                return self.word2id[word]
+            return self.word2id[word]
 
     def seq2tensor(self, sents, max_len, transformer=None):
         sent_len_max = max([len(s) for s in sents])
         sent_len_max = min(sent_len_max, max_len)
 
-        if self.need:
-            sent_tensor = torch.FloatTensor(len(sents), sent_len_max, self.word_dim).zero_()
-        else:
-            sent_tensor = torch.LongTensor(len(sents), sent_len_max).zero_()
+        sent_tensor = torch.LongTensor(len(sents), sent_len_max).zero_()
 
         sent_len = torch.LongTensor(len(sents)).zero_()
         for s_id, sent in enumerate(sents):
@@ -228,10 +199,7 @@ class ComatchingFormatter2:
         sent_num_max = max(sent_num_max, v1)
         sent_len_max = max(sent_len_max, v2)
 
-        if self.need:
-            sent_tensor = torch.FloatTensor(len(docs), sent_num_max, sent_len_max, self.word_dim).zero_()
-        else:
-            sent_tensor = torch.LongTensor(len(docs), sent_num_max, sent_len_max).zero_()
+        sent_tensor = torch.LongTensor(len(docs), sent_num_max, sent_len_max).zero_()
         sent_len = torch.LongTensor(len(docs), sent_num_max).zero_()
         doc_len = torch.LongTensor(len(docs)).zero_()
         for d_id, doc in enumerate(docs):
@@ -324,7 +292,8 @@ class ComatchingFormatter2:
 
                 temp = []
                 for a in range(0, 4):
-                    document[a].append(self.parseH(temp_data["analyse"]))
+                    arr = ["A","B","C","D"]
+                    document[a].append(self.parseH(temp_data["reference"][arr[a]][0]))
 
             label.append(label_x)
 

@@ -5,6 +5,7 @@ from model.model.SFKS.co_matching import CoMatching
 from model.model.SFKS.SeaReader.SeaReader import SeaReader
 from model.model.SFKS.co_matching import CoMatching, CoMatching2
 from model.model.SFKS.multi_matching import MultiMatchNet
+from model.model.bert import Bert
 
 model_list = {
     "LSTM": LSTM,
@@ -13,7 +14,8 @@ model_list = {
     "Comatching": CoMatching,
     "SeaReader": SeaReader,
     "Comatching2": CoMatching2,
-    "MultiMatch": MultiMatchNet
+    "MultiMatch": MultiMatchNet,
+    "Bert": Bert
 }
 
 

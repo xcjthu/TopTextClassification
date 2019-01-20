@@ -10,7 +10,7 @@ from torch.autograd import Variable
 import numpy as np
 
 import json
-from utils.util import calc_accuracy
+from utils.util import calc_accuracy, generate_embedding
 
 
 def masked_softmax(vector, seq_lens):
@@ -88,6 +88,8 @@ class CoMatch(nn.Module):
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
 
         self.embs = nn.Embedding(self.word_num, self.emb_dim)
+        if config.getboolean("data", "need_word2vec"):
+            self.embs = generate_embedding(self.embs, config)
         # self.embs.weight.data.copy_(corpus.dictionary.embs)
         # self.embs.weight.requires_grad = False
 
@@ -218,6 +220,8 @@ class CoMatch2(nn.Module):
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
 
         self.embs = nn.Embedding(self.word_num, self.emb_dim)
+        if config.getboolean("data", "need_word2vec"):
+            self.embs = generate_embedding(self.embs, config)
         # self.embs.weight.data.copy_(corpus.dictionary.embs)
         # self.embs.weight.requires_grad = False
 
