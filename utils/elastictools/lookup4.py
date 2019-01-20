@@ -3,8 +3,8 @@ import os
 
 from elastic.elastic import search
 
-path = "/data/disk3/private/zhx/exam/data/origin_data/format/"
-output_path = "/data/disk3/private/zhx/exam/data/origin_data/gen/4"
+path = "/data/disk1/private/xcj/exam/data/origin_data/"
+output_path = "/data/disk1/private/xcj/exam/data/origin_data/gen/4"
 file_list = ["0_train.json", "1_train.json", "0_test.json", "1_test.json"]
 
 doc_type_map_dic = {
