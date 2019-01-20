@@ -46,8 +46,7 @@ def resulting(net, valid_dataset, use_gpu, config):
         results = net(data, criterion, config, use_gpu, acc_result)
 
         for a in range(0, len(results["result"])):
-            if int(results["result"][a]) != int(data["label"][a]):
-                result.append([(cnt - 1) * config.getint("train", "batch_size") + a + 1, int(data["result"][a])])
+            result.append([(cnt - 1) * config.getint("train", "batch_size") + a + 1, data["x"][a].tolist()])
 
         # print('forward')
 
