@@ -39,8 +39,8 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
         if data is None:
             break
         cnt += 1
-        #print(data["label"])
-        #gg
+        # print(data["label"])
+        # gg
 
         for key in data.keys():
             if isinstance(data[key], torch.Tensor):
@@ -54,7 +54,7 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
         for a in range(0, len(results["result"])):
             if int(results["result"][a]) != int(data["label"][a]):
                 wrong_list.append(
-                    [(cnt-1) * config.getint("train", "batch_size") + a + 1, mapx[int(data["label"][a])],
+                    [(cnt - 1) * config.getint("train", "batch_size") + a + 1, mapx[int(data["label"][a])],
                      mapx[int(results["result"][a])]])
 
         # print('forward')
@@ -164,8 +164,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
         optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=config.getfloat("train", "momentum"),
                               weight_decay=config.getfloat("train", "weight_decay"))
     elif optimizer_type == "bert_adam":
-        optimizer = BertAdam(net.parameters(), lr=learning_rate,
-                             weight_decay_rate=config.getfloat("train", "weight_decay"))
+        optimizer = BertAdam(net.parameters(), lr=learning_rate, weight_decay=config.getfloat("train", "weight_decay"))
     else:
         raise NotImplementedError
 
@@ -175,7 +174,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
     print('** start training here! **')
     print('----------------|----------TRAIN-----------|----------VALID-----------|----------------|')
-    print('  lr    epoch   |   loss           top-1   |   loss           top-1   |      time      | Forward num')
+    print('  lr    epoch   |   loss           top-1   |   loss           evalu   |      time      | Forward num')
     print('----------------|--------------------------|--------------------------|----------------|')
     start = timer()
 

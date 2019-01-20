@@ -57,8 +57,8 @@ class SFKSBertSubjectFormatter:
         label = []
         for temp_data in data:
             ss = []
-            res = temp_data["statement"] + temp_data["option_list"]["A"] + temp_data["option_list"]["B"] + \
-                  temp_data["option_list"]["C"] + temp_data["option_list"]["D"]
+            res = temp_data["statement"] + "。" + temp_data["option_list"]["A"] + "。" + temp_data["option_list"][
+                "B"] + "。" + temp_data["option_list"]["C"] + "。" + temp_data["option_list"]["D"]
             for a in range(0, len(res)):
                 ss = ss + [res[a]]
             ss = ss[0:self.max_len]

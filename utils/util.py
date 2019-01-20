@@ -58,65 +58,13 @@ def check_multi(config):
 
 
 def calc_accuracy(outputs, label, config, result=None):
-    if check_multi(config):
-        if len(label[0]) != len(outputs[0]):
-            raise ValueError('Input dimensions of labels and outputs must match.')
-
-        outputs = outputs.data
-        labels = label.data
-
-        if result is None:
-            result = []
-
-        total = 0
-        nr_classes = outputs.size(1)
-
-        while len(result) < nr_classes:
-            result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
-
-        for i in range(nr_classes):
-            outputs1 = (outputs[:, i] >= 0.5).long()
-            labels1 = (labels[:, i].float() >= 0.5).long()
-            total += int((labels1 * outputs1).sum())
-            total += int(((1 - labels1) * (1 - outputs1)).sum())
-
-            if result is None:
-                continue
-
-            # if len(result) < i:
-            #    result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
-
-            result[i]["TP"] += int((labels1 * outputs1).sum())
-            result[i]["FN"] += int((labels1 * (1 - outputs1)).sum())
-            result[i]["FP"] += int(((1 - labels1) * outputs1).sum())
-            result[i]["TN"] += int(((1 - labels1) * (1 - outputs1)).sum())
-
-        return torch.Tensor([1.0 * total / len(outputs) / len(outputs[0])]), result
+    from utils.accuracy import top1, top2
+    if config.get("output", "accuracy_method") == "top1":
+        return top1(outputs, label, config, result)
+    elif config.get("output", "accuracy_method") == "top2":
+        return top2(outputs, label, config, result)
     else:
-
-        if not (result is None):
-            # print(label)
-            id1 = torch.max(outputs, dim=1)[1]
-            # id2 = torch.max(label, dim=1)[1]
-            id2 = label
-            nr_classes = outputs.size(1)
-            while len(result) < nr_classes:
-                result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
-            for a in range(0, len(id1)):
-                # if len(result) < a:
-                #    result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
-
-                it_is = int(id1[a])
-                should_be = int(id2[a])
-                if it_is == should_be:
-                    result[it_is]["TP"] += 1
-                else:
-                    result[it_is]["FP"] += 1
-                    result[should_be]["FN"] += 1
-        pre, prediction = torch.max(outputs, 1)
-        prediction = prediction.view(-1)
-
-        return torch.mean(torch.eq(prediction, label).float()), result
+        raise NotImplementedError
 
 
 def get_value(res):
@@ -194,6 +142,6 @@ def generate_embedding(embedding, config):
         total += 1
 
     embedding.weight.data.copy_(torch.from_numpy(embs))
-    print_info("%d/%d words missing" % (cnt,total))
+    print_info("%d/%d words missing" % (cnt, total))
 
     return embedding
