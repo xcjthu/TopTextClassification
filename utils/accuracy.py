@@ -86,7 +86,7 @@ def top2(outputs, label, config, result=None):
                 result[it_is]["FP"] += 1
                 result[should_be]["FN"] += 1
 
-    prediction, _ = torch.topk(outputs, 2, 1, largest=True)
+    _, prediction = torch.topk(outputs, 2, 1, largest=True)
     prediction1 = prediction[:, 0:1]
     prediction2 = prediction[:, 1:]
 
