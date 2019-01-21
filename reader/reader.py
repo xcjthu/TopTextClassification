@@ -9,7 +9,7 @@ from reader.formatter.AJLX.AJLX import AJLXPredictionFormatter
 from reader.formatter.SFKS.SFKS_word import SFKSWordFormatter
 from reader.formatter.SFKS.Comatching import ComatchingFormatter, ComatchingFormatter2
 from reader.formatter.SFKS.SeaReader import SeaReaderFormatter
-from reader.formatter.race.race import RaceFormatter
+from reader.formatter.race.comatch import RaceComatchFormatter
 from reader.formatter.AJLX.AJLX_bert import AJLXBertPredictionFormatter
 from reader.formatter.SFKS.bert_subject import SFKSBertSubjectFormatter
 from reader.formatter.SFKS.CNNSubject import SFKS_CNN_Subject
@@ -26,7 +26,8 @@ def init_formatter(config):
         "SFKS_comatching": ComatchingFormatter,
         "SFKS_comatching2": ComatchingFormatter2,
         "SFKS_seareader": SeaReaderFormatter,
-        "RACE": RaceFormatter,
+        "RACE_comatch": RaceComatchFormatter,
+        "RACE_comatch2": RaceComatchFormatter2,
         "RACEMMN": RaceMMNFormatter,
         "AJLXBert": AJLXBertPredictionFormatter,
         "SFKS_Bert_Subject": SFKSBertSubjectFormatter,
