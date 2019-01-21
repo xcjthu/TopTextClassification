@@ -276,13 +276,15 @@ class CoMatch2(nn.Module):
         # d_hidden_3d = d_hidden.view(d_embs.size(0), d_embs.size(1) * d_embs.size(2), d_hidden.size(-1))
         # d_hidden_3d_repeat = d_hidden_3d.repeat(1, o_embs.size(1), 1).view(d_hidden_3d.size(0) * o_embs.size(1),
         #                                                                   d_hidden_3d.size(1), d_hidden_3d.size(2))
-        d_hidden_3d_repeat = d_hidden.view(d_word.size()[0] * 4, -1, d_hidden.size()[-1])
+        d_hidden_3d_repeat = d_hidden.view(d_word.size()[0] * o_embs.size(1), -1, d_hidden.size()[-1])
 
         # print("d_hidden_3d", d_hidden_3d.size())
         # print("d_hidden_3d_repeat", d_hidden_3d_repeat.size())
 
-        q_hidden_repeat = q_hidden.repeat(1, 4, 1).view(q_hidden.size()[0] * 4, q_hidden.size()[1], q_hidden.size()[2])
-        q_len_repeat = q_len.repeat(4)
+        q_hidden_repeat = q_hidden.repeat(1, o_embs.size(1), 1).view(q_hidden.size()[0] * o_embs.size(1),
+                                                                     q_hidden.size()[1],
+                                                                     q_hidden.size()[2])
+        q_len_repeat = q_len.repeat(o_embs.size(1))
         # print("q_hidden_repeat", q_hidden_repeat.size())
         # print("q_len_repeat", q_len_repeat.size())
 
@@ -379,26 +381,21 @@ class CoMatch3(nn.Module):
         d_word, d_h_len, d_l_len = documents
         o_word, o_h_len, o_l_len = options
         q_word, q_len = questions
-        # print("d_word", d_word.size())
-        # print("d_h_len", d_h_len.size())
-        # print("d_l_len", d_l_len.size())
-        # print("o_word", o_word.size())
-        # print("o_h_len", o_h_len.size())
-        # print("o_l_len", o_l_len.size())
-        # print("q_word", q_word.size())
-        # print("q_len", q_len.size())
-
-        # if self.cuda_bool: d_word, d_h_len, d_l_len, o_word, o_h_len, o_l_len, q_word, q_len = d_word.cuda(), d_h_len.cuda(), d_l_len.cuda(), o_word.cuda(), o_h_len.cuda(), o_l_len.cuda(), q_word.cuda(), q_len.cuda()
-        # d_embs = self.drop_module(Variable(self.embs(d_word), requires_grad=False))
-        # o_embs = self.drop_module(Variable(self.embs(o_word), requires_grad=False))
-        # q_embs = self.drop_module(Variable(self.embs(q_word), requires_grad=False))
+        print("d_word", d_word.size())
+        print("d_h_len", d_h_len.size())
+        print("d_l_len", d_l_len.size())
+        print("o_word", o_word.size())
+        print("o_h_len", o_h_len.size())
+        print("o_l_len", o_l_len.size())
+        print("q_word", q_word.size())
+        print("q_len", q_len.size())
 
         d_embs = self.drop_module(self.embs(d_word))
         o_embs = self.drop_module(self.embs(o_word))
         q_embs = self.drop_module(self.embs(q_word))
-        # print("d_embs", d_embs.size())
-        # print("o_embs", o_embs.size())
-        # print("q_embs", q_embs.size())
+        print("d_embs", d_embs.size())
+        print("o_embs", o_embs.size())
+        print("q_embs", q_embs.size())
 
         d_hidden = self.encoder(
             [d_embs.view(d_embs.size(0) * d_embs.size(1) * d_embs.size(2), d_embs.size(3), self.emb_dim),
@@ -407,56 +404,56 @@ class CoMatch3(nn.Module):
             [o_embs.view(o_embs.size(0) * o_embs.size(1), o_embs.size(2), self.emb_dim), o_l_len.view(-1)])
         q_hidden = self.encoder([q_embs, q_len])
 
-        # print("d_hidden", d_hidden.size())
-        # print("o_hidden", o_hidden.size())
-        # print("q_hidden", q_hidden.size())
+        print("d_hidden", d_hidden.size())
+        print("o_hidden", o_hidden.size())
+        print("q_hidden", q_hidden.size())
 
         # d_hidden_3d = d_hidden.view(d_embs.size(0), d_embs.size(1) * d_embs.size(2), d_hidden.size(-1))
         # d_hidden_3d_repeat = d_hidden_3d.repeat(1, o_embs.size(1), 1).view(d_hidden_3d.size(0) * o_embs.size(1),
         #                                                                   d_hidden_3d.size(1), d_hidden_3d.size(2))
-        d_hidden_3d_repeat = d_hidden.view(d_word.size()[0] * 4, -1, d_hidden.size()[-1])
+        d_hidden_3d_repeat = d_hidden.view(d_word.size()[0] * o_embs.size(1), -1, d_hidden.size()[-1])
 
-        # print("d_hidden_3d", d_hidden_3d.size())
-        # print("d_hidden_3d_repeat", d_hidden_3d_repeat.size())
+        #print("d_hidden_3d", d_hidden_3d.size())
+        print("d_hidden_3d_repeat", d_hidden_3d_repeat.size())
 
-        q_hidden_repeat = q_hidden.repeat(1, 4, 1).view(q_hidden.size()[0] * 4, q_hidden.size()[1], q_hidden.size()[2])
-        q_len_repeat = q_len.repeat(4)
-        # print("q_hidden_repeat", q_hidden_repeat.size())
-        # print("q_len_repeat", q_len_repeat.size())
+        q_hidden_repeat = q_hidden.repeat(1, o_embs.size(1), 1).view(q_hidden.size()[0] * o_embs.size(1), q_hidden.size()[1], q_hidden.size()[2])
+        q_len_repeat = q_len.repeat(o_embs.size(1))
+        print("q_hidden_repeat", q_hidden_repeat.size())
+        print("q_len_repeat", q_len_repeat.size())
 
         do_match = self.match_module([d_hidden_3d_repeat, o_hidden, o_l_len.view(-1)])
         dq_match = self.match_module([d_hidden_3d_repeat, q_hidden_repeat, q_len_repeat])
 
-        # print("do_match", do_match.size())
-        # print("dq_match", dq_match.size())
+        print("do_match", do_match.size())
+        print("dq_match", dq_match.size())
 
         dq_match_repeat = dq_match
-        # print("dq_match_repeat", dq_match_repeat.size())
+        print("dq_match_repeat", dq_match_repeat.size())
 
         co_match = torch.cat([do_match, dq_match_repeat], -1)
 
-        # print("co_match", co_match.size())
+        print("co_match", co_match.size())
 
         co_match_hier = co_match.view(d_embs.size(0) * o_embs.size(1) * d_embs.size(2), d_embs.size(3), -1)
-        # print("co_match_hier", co_match_hier.size())
+        print("co_match_hier", co_match_hier.size())
 
         l_hidden = self.l_encoder([co_match_hier, d_l_len.view(-1)])
-        # print("l_hidden", l_hidden.size())
+        print("l_hidden", l_hidden.size())
         l_hidden_pool, _ = l_hidden.max(1)
-        # print("l_hidden_pool", l_hidden_pool.size())
+        print("l_hidden_pool", l_hidden_pool.size())
 
         h_hidden = self.h_encoder([l_hidden_pool.view(d_embs.size(0) * o_embs.size(1), d_embs.size(2), -1),
                                    d_h_len.view(-1, 1).view(-1)])
-        # print("h_hidden", h_hidden.size())
+        print("h_hidden", h_hidden.size())
         h_hidden_pool, _ = h_hidden.max(1)
-        # print("h_hidden_pool", h_hidden_pool.size())
+        print("h_hidden_pool", h_hidden_pool.size())
 
         o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
-        # print("o_rep", o_rep.size())
+        print("o_rep", o_rep.size())
         output = self.rank_module(o_rep).squeeze(2)
         if self.more:
             output = torch.nn.functional.log_softmax(output, dim=1)
-        # print("output", output.size())
+        print("output", output.size())
 
         return output
 

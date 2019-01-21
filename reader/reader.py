@@ -7,7 +7,7 @@ from utils.util import get_file_list
 from reader.formatter.AYYC import AYPredictionFormatter
 from reader.formatter.AJLX.AJLX import AJLXPredictionFormatter
 from reader.formatter.SFKS.SFKS_word import SFKSWordFormatter
-from reader.formatter.SFKS.Comatching import ComatchingFormatter, ComatchingFormatter2
+from reader.formatter.SFKS.Comatching import ComatchingFormatter, ComatchingFormatter2, ComatchingFormatter3
 from reader.formatter.SFKS.SeaReader import SeaReaderFormatter
 from reader.formatter.race.comatch import RaceComatchFormatter, RaceComatchFormatter2
 from reader.formatter.AJLX.AJLX_bert import AJLXBertPredictionFormatter
@@ -25,6 +25,7 @@ def init_formatter(config):
         "SFKS_word": SFKSWordFormatter,
         "SFKS_comatching": ComatchingFormatter,
         "SFKS_comatching2": ComatchingFormatter2,
+        "SFKS_comatching3": ComatchingFormatter3,
         "SFKS_seareader": SeaReaderFormatter,
         "RACE_comatch": RaceComatchFormatter,
         "RACE_comatch2": RaceComatchFormatter2,
