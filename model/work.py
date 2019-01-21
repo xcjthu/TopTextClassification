@@ -14,7 +14,7 @@ from model.loss import get_loss
 from utils.util import gen_result, print_info, time_to_str
 
 
-def valid_wrong_net(net, valid_dataset, use_gpu, config):
+def resulting(net, valid_dataset, use_gpu, config):
     net.eval()
 
     task_loss_type = config.get("train", "type_of_loss")
@@ -25,13 +25,7 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
     cnt = 0
     acc_result = []
 
-    wrong_list = []
-    mapx = {
-        0: "A",
-        1: "B",
-        2: "C",
-        3: "D"
-    }
+    result = []
 
     while True:
         data = valid_dataset.fetch_data(config)
@@ -52,10 +46,7 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
         results = net(data, criterion, config, use_gpu, acc_result)
 
         for a in range(0, len(results["result"])):
-            if int(results["result"][a]) != int(data["label"][a]):
-                wrong_list.append(
-                    [(cnt - 1) * config.getint("train", "batch_size") + a + 1, mapx[int(data["label"][a])],
-                     mapx[int(results["result"][a])]])
+            result.append([(cnt - 1) * config.getint("train", "batch_size") + a + 1, results["x"][a].tolist()])
 
         # print('forward')
 
@@ -72,7 +63,7 @@ def valid_wrong_net(net, valid_dataset, use_gpu, config):
 
     net.train()
 
-    return wrong_list
+    return result
 
 
 def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
@@ -174,7 +165,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
     print('** start training here! **')
     print('----------------|----------TRAIN-----------|----------VALID-----------|----------------|')
-    print('  lr    epoch   |   loss           top-1   |   loss           evalu   |      time      | Forward num')
+    print('  lr    epoch   |   loss           evalu   |   loss           evalu   |      time      | Forward num')
     print('----------------|--------------------------|--------------------------|----------------|')
     start = timer()
 

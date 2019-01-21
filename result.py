@@ -1,19 +1,19 @@
 import argparse
 import os
 import torch
-from torch import nn
 import json
 
 from config_reader.parser import ConfigParser
 from model.get_model import get_model
 from reader.reader import init_dataset
-from model.work import valid_wrong_net
+from model.work import resulting
 from utils.util import print_info
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', '-c')
 parser.add_argument('--gpu', '-g')
 parser.add_argument('--model', '-m')
+parser.add_argument('--result', '-r')
 args = parser.parse_args()
 
 configFilePath = args.config
@@ -57,7 +57,7 @@ train_dataset, valid_dataset = init_dataset(config)
 
 print_info("Data preparation Done")
 
-print(json.dumps(valid_wrong_net(net, valid_dataset, use_gpu, config)))
+json.dump(resulting(net, valid_dataset, use_gpu, config), open(args.result, "w"), sort_keys=True, ensure_ascii=False)
 
 for a in range(0, len(train_dataset.read_process)):
     train_dataset.read_process[a].terminate()

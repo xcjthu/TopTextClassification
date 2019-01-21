@@ -4,8 +4,8 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 
-input_data_path = "/data/disk3/private/zhx/exam/data/origin_data/final"
-output_data_path = "/data/disk3/private/zhx/exam/data/cut_data/final"
+input_data_path = "/data/disk3/private/zhx/exam/data/origin_data/no_subject"
+output_data_path = "/data/disk3/private/zhx/exam/data/cut_data/no_subject"
 
 word_set = set()
 
@@ -50,18 +50,7 @@ def cut_file(path):
             for option in data["option_list"]:
                 data["option_list"][option] = cut(data["option_list"][option].replace("\n", ""))
 
-            if "analyse" in data.keys():
-                x = data["analyse"]
-                l = ["\n", "A", "B", "C", "D", "a", "b", "c", "d"]
-                for y in l:
-                    x = x.replace(y, "")
-                data["hide_analyse"] = cut(x)
-                data["analyse"] = cut(data["analyse"])
-
-            if "reference" in data.keys():
-                for option in data["reference"]:
-                    for a in range(0, len(data["reference"][option])):
-                        data["reference"][option][a] = cut(data["reference"][option][a])
+            data["subject"] = 0
 
             print(json.dumps(data, ensure_ascii=False, sort_keys=True), file=output_file)
 
@@ -84,11 +73,3 @@ def dfs_search(path):
 
 
 dfs_search("")
-
-word_set = ["PAD", "UNK"] + list(word_set)
-word_dic = {}
-for a in range(0, len(word_set)):
-    word_dic[word_set[a]] = a
-
-json.dump(word_dic, open("/data/disk3/private/zhx/exam/data/embedding/word2id.txt", "w"), indent=2,
-          ensure_ascii=False)
