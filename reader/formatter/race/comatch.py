@@ -163,6 +163,7 @@ class RaceComatchFormatter:
 
 class RaceComatchFormatter2:
     def __init__(self, config):
+        self.need = config.getboolean("data", "need_word2vec")
         if self.need:
             self.word_dim = config.getint("data", "vec_size")
         else:
