@@ -487,7 +487,7 @@ class ComatchingFormatter3:
         v2 = 50
         option = self.seq2Htensor(option, self.max_sent, self.sent_max_len, transformer)
         question = self.seq2tensor(question, self.sent_max_len, transformer)
-        
+
         for a in range(0, 4):
             for b in range(0, len(document[a])):
                 document[a][b] = self.seq2Htensor(document[a][b], self.max_sent, self.sent_max_len, transformer, v1, v2)
@@ -516,9 +516,9 @@ class ComatchingFormatter3:
         document_len = torch.stack(document_len)
         document_sent = torch.stack(document_sent)
 
-        document = torch.transpose(document ,1,0)
-        document_len = torch.transpose(document_len,1, 0)
-        document_sent = torch.transpose(document_sent,1, 0)
+        document = torch.transpose(document, 1, 0)
+        document_len = torch.transpose(document_len, 1, 0)
+        document_sent = torch.transpose(document_sent, 1, 0)
 
         label = torch.tensor(label, dtype=torch.long)
 
