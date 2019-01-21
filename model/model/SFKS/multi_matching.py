@@ -4,8 +4,9 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.autograd import Variable as Var
 import numpy as np
+import json
 
-from utils.util import calc_accuracy, gen_result, generate_embedding
+from utils.util import calc_accuracy, gen_result
 
 
 class InputLayer(nn.Module):
@@ -20,17 +21,19 @@ class InputLayer(nn.Module):
         bidirectional = True
         self.gru = nn.GRU(self.vecsize, self.hidden_size, batch_first = True, bidirectional = bidirectional)
         
-        self.wh = nn.Linear(self.vecsize, 1, bias = False)
-        self.we = nn.Linear(self.vecsize, 1)
+        self.wh = nn.Linear(self.vecsize, self.vecsize, bias = False)
+        self.we = nn.Linear(self.vecsize, self.vecsize)
 
 
     def forward(self, in_seq):
         gru_out, gru_hidden = self.gru(in_seq)
+        return gru_out
 
         out = self.wh(gru_out) + self.we(in_seq)
 
         reset_gate = F.sigmoid(out)
-        reset_gate = reset_gate.expand(in_seq.shape[0], in_seq.shape[1], in_seq.shape[2])
+
+        # reset_gate = reset_gate.expand(in_seq.shape[0], in_seq.shape[1], in_seq.shape[2])
         return in_seq.mul(reset_gate) + gru_out.mul(1 - reset_gate)
 
 
@@ -41,6 +44,7 @@ class SoftSel(nn.Module):
         self.hidden_size = config.getint('data', 'vec_size')
 
         self.wg = nn.Parameter(Var(torch.Tensor(self.hidden_size, self.hidden_size)))
+        torch.nn.init.xavier_uniform(self.wg, gain=1)
         
     def forward(self, hi1, hi2):
         G = torch.bmm(hi1, self.wg.unsqueeze(0).expand(hi1.shape[0], self.hidden_size, self.hidden_size))
@@ -91,19 +95,19 @@ class EAMatch(nn.Module):
 
         self.match = Match(config)
         self.softsel_QP = SoftSel(config)
-        #self.softsel_AQ = SoftSel(config)
-        #self.softsel_QAA = SoftSel(config)
-        #self.softsel_AQA = SoftSel(config)
+        self.softsel_AQ = SoftSel(config)
+        self.softsel_QAA = SoftSel(config)
+        self.softsel_AQA = SoftSel(config)
 
 
     def forward(self, hq, hp, ha):
         hq_ = self.softsel_QP(hq, hp)
-        #hqa = self.softel_AQ(ha, hq_)
-        #hqa_ = self.softel_QAA(hqa, ha)
-        #ha_ = self.softel_AQA(ha, hqa)
-        hqa = self.softsel_QP(hq, hp)
-        hqa_ = self.softsel_QP(hqa, ha)
-        ha_ = self.softsel_QP(ha, hqa)
+        hqa = self.softsel_AQ(ha, hq_)
+        hqa_ = self.softsel_QAA(hqa, ha)
+        ha_ = self.softsel_AQA(ha, hqa)
+        #hqa = self.softsel_QP(hq, hp)
+        #hqa_ = self.softsel_QP(hqa, ha)
+        #ha_ = self.softsel_QP(ha, hqa)
 
 
         hf = self.match(hqa, hqa_, ha, ha_)
@@ -117,13 +121,16 @@ class QPAMatch(nn.Module):
         
         
         self.softsel_PQ = SoftSel(config)
-        #self.softsel_PA = SoftSel(config)
+        self.softsel_PA = SoftSel(config)
         self.match = Match(config)
 
     def forward(self, hq, hp, ha):
         hpq = self.softsel_PQ(hp, hq)
-        #hpa = self.softsel_PA(hp, ha)
-        hpa = self.softsel_PQ(hp, ha)
+        hpa = self.softsel_PA(hp, ha)
+        #hpa = self.softsel_PQ(hp, ha)
+        
+        #print('\n\n\n', self.softsel_PQ.wg)
+
 
         hf3 = self.match(hpq, hp, hpa, hp)
         return hf3
@@ -157,6 +164,7 @@ class MultiMatchNet(nn.Module):
         option_list = data['answer']
         documents = data['reference']
         labels = data['label']
+
 
         if not config.getboolean("data", "need_word2vec"):
             question = self.embs(question)
