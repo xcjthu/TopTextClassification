@@ -8,8 +8,9 @@ word_set = set()
 
 
 def add(x):
+    x = x.replace("\\n", " ")
     x = x.split(" ")
-    symbol = [",", ".", "?", "\""]
+    symbol = [",", ".", "?", "\"", "(", ")", ":", "_", "$", "\'"]
     for y in x:
         for z in symbol:
             y = y.replace(z, "")
