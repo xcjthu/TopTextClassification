@@ -267,15 +267,17 @@ class ComatchingFormatter2:
 
                 label_x = 0
                 if "A" in temp_data["answer"]:
-                    label_x[0] += 1
+                    label_x += 1
                 if "B" in temp_data["answer"]:
-                    label_x[1] += 2
+                    label_x += 2
                 if "C" in temp_data["answer"]:
-                    label_x[2] += 4
+                    label_x += 4
                 if "D" in temp_data["answer"]:
-                    label_x[3] += 8
+                    label_x += 8
 
-                document.append(self.parseH(temp_data["analyse"]))
+                for a in range(0, 4):
+                    arr = ["A", "B", "C", "D"]
+                    document[a].append(self.parseH(temp_data["reference"][arr[a]][0]))
             else:
                 option.append([self.parse(temp_data["option_list"]["A"]),
                                self.parse(temp_data["option_list"]["B"]),
@@ -446,13 +448,13 @@ class ComatchingFormatter3:
 
                 label_x = 0
                 if "A" in temp_data["answer"]:
-                    label_x[0] += 1
+                    label_x += 1
                 if "B" in temp_data["answer"]:
-                    label_x[1] += 2
+                    label_x += 2
                 if "C" in temp_data["answer"]:
-                    label_x[2] += 4
+                    label_x += 4
                 if "D" in temp_data["answer"]:
-                    label_x[3] += 8
+                    label_x += 8
 
                 document.append(self.parseH(temp_data["analyse"]))
             else:
@@ -485,19 +487,19 @@ class ComatchingFormatter3:
         v2 = 50
         option = self.seq2Htensor(option, self.max_sent, self.sent_max_len, transformer)
         question = self.seq2tensor(question, self.sent_max_len, transformer)
-
+        
         for a in range(0, 4):
-            for b in range(0, self.k):
+            for b in range(0, len(document[a])):
                 document[a][b] = self.seq2Htensor(document[a][b], self.max_sent, self.sent_max_len, transformer, v1, v2)
 
-        ds = []
-        dl = []
-        d = []
         document_sent = []
         document_len = []
         do = []
         for a in range(0, 4):
-            for b in range(0, self.k):
+            d = []
+            ds = []
+            dl = []
+            for b in range(0, len(document[a])):
                 d.append(document[a][b][0])
                 ds.append(document[a][b][1])
                 dl.append(document[a][b][2])
@@ -514,9 +516,9 @@ class ComatchingFormatter3:
         document_len = torch.stack(document_len)
         document_sent = torch.stack(document_sent)
 
-        document = torch.transpose(document, 2, 1).transpose(1, 0)
-        document_len = torch.transpose(document_len, 0, 1).transpose(1, 0)
-        document_sent = torch.transpose(document_sent, 0, 1).transpose(1, 0)
+        document = torch.transpose(document ,1,0)
+        document_len = torch.transpose(document_len,1, 0)
+        document_sent = torch.transpose(document_sent,1, 0)
 
         label = torch.tensor(label, dtype=torch.long)
 
