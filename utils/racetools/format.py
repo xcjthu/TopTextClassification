@@ -8,6 +8,7 @@ word_set = set()
 
 
 def add(x):
+    x = x.split(" ")
     symbol = [",", ".", "?", "\""]
     for y in x:
         for z in symbol:
