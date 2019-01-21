@@ -305,8 +305,6 @@ class RaceComatchFormatter2:
             for a in range(0, 4):
                 document[a].append(self.parseH(temp_data["article"]))
 
-            label.append(label_x)
-
         v1 = 0
         v2 = 0
 

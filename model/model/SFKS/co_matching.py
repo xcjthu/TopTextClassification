@@ -465,7 +465,7 @@ class CoMatching3(nn.Module):
     def __init__(self, config):
         super(CoMatching3, self).__init__()
 
-        self.co_match = CoMatch2(config)
+        self.co_match = CoMatch3(config)
 
     def init_multi_gpu(self, device):
         pass
