@@ -9,7 +9,7 @@ from reader.formatter.AJLX.AJLX import AJLXPredictionFormatter
 from reader.formatter.SFKS.SFKS_word import SFKSWordFormatter
 from reader.formatter.SFKS.Comatching import ComatchingFormatter, ComatchingFormatter2
 from reader.formatter.SFKS.SeaReader import SeaReaderFormatter
-from reader.formatter.race.comatch import RaceComatchFormatter
+from reader.formatter.race.comatch import RaceComatchFormatter, RaceComatchFormatter2
 from reader.formatter.AJLX.AJLX_bert import AJLXBertPredictionFormatter
 from reader.formatter.SFKS.bert_subject import SFKSBertSubjectFormatter
 from reader.formatter.SFKS.CNNSubject import SFKS_CNN_Subject
