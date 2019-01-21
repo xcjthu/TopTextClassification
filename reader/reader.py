@@ -13,6 +13,7 @@ from reader.formatter.race.race import RaceFormatter
 from reader.formatter.AJLX.AJLX_bert import AJLXBertPredictionFormatter
 from reader.formatter.SFKS.bert_subject import SFKSBertSubjectFormatter
 from reader.formatter.SFKS.CNNSubject import SFKS_CNN_Subject
+from reader.formatter.race.race_MMN import RaceMMNFormatter
 from word2vec.word2vec import init_transformer
 
 
@@ -26,6 +27,7 @@ def init_formatter(config):
         "SFKS_comatching2": ComatchingFormatter2,
         "SFKS_seareader": SeaReaderFormatter,
         "RACE": RaceFormatter,
+        "RACEMMN": RaceMMNFormatter,
         "AJLXBert": AJLXBertPredictionFormatter,
         "SFKS_Bert_Subject": SFKSBertSubjectFormatter,
         "SFKS_CNN_Subject": SFKS_CNN_Subject
