@@ -434,8 +434,8 @@ class CoMatch3(nn.Module):
         # print("q_hidden_repeat", q_hidden_repeat.size())
         # print("q_len_repeat", q_len_repeat.size())
 
-        o_hidden_repeat = o_hidden.repeat(1, d_word.size()[2], 1).view(o_hidden.size()[0] * d_word.size()[2],
-                                                                       o_hidden.size()[1], o_hidden.size()[2])
+        o_hidden_repeat = o_hidden.repeat(1, 1, d_word.size()[2], ).view(o_hidden.size()[0] * d_word.size()[2],
+                                                                         o_hidden.size()[1], o_hidden.size()[2])
         o_l_len_repeat = o_l_len.repeat(1, d_word.size()[2]).view(o_l_len.size()[0] * d_word.size()[2],
                                                                   o_l_len.size()[1])
         # print("o_hidden_repeat", o_hidden_repeat.size())
