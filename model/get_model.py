@@ -5,6 +5,7 @@ from model.model.SFKS.co_matching import CoMatching
 from model.model.SFKS.SeaReader.SeaReader import SeaReader
 from model.model.SFKS.co_matching import CoMatching, CoMatching2, CoMatching3
 from model.model.SFKS.multi_matching import MultiMatchNet
+from model.model.SFKS.bert import SFKSBert
 from model.model.bert import Bert
 
 model_list = {
@@ -16,7 +17,8 @@ model_list = {
     "Comatching2": CoMatching2,
     "Comatching3": CoMatching3,
     "MultiMatch": MultiMatchNet,
-    "Bert": Bert
+    "Bert": Bert,
+    "SFKS_bert": SFKSBert
 }
 
 
