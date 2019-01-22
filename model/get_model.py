@@ -7,6 +7,7 @@ from model.model.SFKS.co_matching import CoMatching, CoMatching2, CoMatching3
 from model.model.SFKS.multi_matching import MultiMatchNet
 from model.model.SFKS.bert import SFKSBert
 from model.model.bert import Bert
+from model.model.SFKS.simple import SimpleAndEffective
 
 model_list = {
     "LSTM": LSTM,
@@ -18,7 +19,8 @@ model_list = {
     "Comatching3": CoMatching3,
     "MultiMatch": MultiMatchNet,
     "Bert": Bert,
-    "SFKS_bert": SFKSBert
+    "SFKS_bert": SFKSBert,
+    "SFKSSimpleAndEffective": SimpleAndEffective
 }
 
 
