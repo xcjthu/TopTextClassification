@@ -92,8 +92,9 @@ class SFKSBertPredictionFormatter:
                 txt1, mask1, token1 = self.convert(text, 0)
 
                 ref = []
+                k = [0, 1, 2, 4, 5, 8]
                 for a in range(0, self.k):
-                    res = temp_data["reference"][option][a]
+                    res = temp_data["reference"][option][k[a]]
                     text = []
 
                     for a in range(0, len(res)):

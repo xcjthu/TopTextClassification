@@ -36,12 +36,13 @@ def resulting(net, valid_dataset, use_gpu, config):
         # print(data["label"])
         # gg
 
-        for key in data.keys():
-            if isinstance(data[key], torch.Tensor):
-                if torch.cuda.is_available() and use_gpu:
-                    data[key] = Variable(data[key].cuda())
-                else:
-                    data[key] = Variable(data[key])
+        with torch.no_grad():
+            for key in data.keys():
+                if isinstance(data[key], torch.Tensor):
+                    if torch.cuda.is_available() and use_gpu:
+                        data[key] = Variable(data[key].cuda())
+                    else:
+                        data[key] = Variable(data[key])
 
         results = net(data, criterion, config, use_gpu, acc_result)
 
@@ -220,6 +221,8 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
                     time_to_str((timer() - start)), total), end='',
                       flush=True)
 
+        del data
+
         train_loss /= train_cnt
         train_acc /= train_cnt
 
@@ -230,7 +233,8 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             os.makedirs(model_path)
         torch.save(net.state_dict(), os.path.join(model_path, "model-%d.pkl" % (epoch_num + 1)))
 
-        valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
+        with torch.no_grad():
+            valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
         print('\r', end='', flush=True)
         print('%.4f   % 3d    |  %.4f          %.2f   |  %.4f         % 2.2f   |  %s  | %d' % (
             lr, epoch_num + 1, train_loss, train_acc * 100, valid_loss, valid_accu * 100,
