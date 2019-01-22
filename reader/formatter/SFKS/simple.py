@@ -37,10 +37,10 @@ class SFKSSimpleAndEffectiveFormatter:
             if len(word) == 0:
                 continue
 
-            result.append(self.transform(word,None))
+            result.append(self.transform(word, None))
 
-        while len(result)<self.max_len:
-            result.append(self.transform("PAD",None))
+        while len(result) < self.max_len:
+            result.append(self.transform("PAD", None))
 
         return torch.LongTensor(result[0:self.max_len])
 
@@ -87,7 +87,7 @@ class SFKSSimpleAndEffectiveFormatter:
             label.append(label_x)
 
         label = torch.tensor(label, dtype=torch.long)
-        #for x in question:
+        # for x in question:
         #    print(x.size())
         question = torch.stack(question)
         article = torch.stack(article)
