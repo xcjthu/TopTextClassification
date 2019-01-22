@@ -4,16 +4,21 @@ import json
 input_path = "/data/disk3/private/zhx/RACE/data/origin_data"
 output_path = "/data/disk3/private/zhx/RACE/data/format_data"
 
-word_set = set()
+word_set = {}
 
 
 def add(x):
-    symbol = [",", ".", "?", "\""]
+    x = x.replace("\n", " ")
+    x = x.split(" ")
+    symbol = [",", ".", "?", "\"", "(", ")", ":", "_", "$", "\'", "!"]
     for y in x:
         for z in symbol:
             y = y.replace(z, "")
 
-        word_set.add(y.lower())
+        y = y.lower()
+        if not (y in word_set.keys()):
+            word_set[y] = 0
+        word_set[y] += 1
 
 
 def work(in_path, out_path):
@@ -58,10 +63,15 @@ def dfs_search(in_path, out_path):
 if __name__ == "__main__":
     dfs_search(input_path, output_path)
 
-    word_set = ["PAD", "UNK"] + list(word_set)
+    word_x = ["PAD", "UNK"]
+
+    for word in word_set:
+        if word_set[word] >= 10:
+            word_x.append(word)
+
     word_dic = {}
-    for a in range(0, len(word_set)):
-        word_dic[word_set[a]] = a
+    for a in range(0, len(word_x)):
+        word_dic[word_x[a]] = a
 
     json.dump(word_dic, open("/data/disk3/private/zhx/RACE/data/embedding/word2id.txt", "w"), indent=2,
               ensure_ascii=False)

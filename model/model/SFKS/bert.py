@@ -6,15 +6,15 @@ from pytorch_pretrained_bert import BertModel
 from utils.util import calc_accuracy, print_info
 
 
-class Bert(nn.Module):
+class SFKSBert(nn.Module):
     def __init__(self, config):
-        super(Bert, self).__init__()
+        super(SFKSBert, self).__init__()
         self.data_size = config.getint("data", "vec_size")
         self.output_dim = config.getint("model", "output_dim")
         self.batch_size = config.getint('train', 'batch_size')
 
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
-        self.fc = nn.Linear(768 * 512, self.output_dim)
+        self.rank_module = nn.Linear(768 * config.getint("data", "max_len") * config.getint("data", "topk") * 2, 1)
 
         self.sigmoid = nn.Sigmoid()
 
@@ -27,14 +27,41 @@ class Bert(nn.Module):
         self.bert = nn.DataParallel(self.bert, device_ids=device)
 
     def forward(self, data, criterion, config, usegpu, acc_result=None):
-        x = data['input']
+        text = data["text"]
+        token = data["token"]
+        mask = data["mask"]
+
+        batch = text.size()[0]
+        option = text.size()[1]
+        k = config.getint("data", "topk")
+        option = option // k
+
+        # print(text.size())
+        # print(token.size())
+        # print(mask.size())
+
+        text = text.view(text.size()[0] * text.size()[1], text.size()[2])
+        token = token.view(token.size()[0] * token.size()[1], token.size()[2])
+        mask = mask.view(mask.size()[0] * mask.size()[1], mask.size()[2])
+        # print(text)
+        # print(token)
+        # print(mask)
+
         labels = data['label']
 
-        y, _ = self.bert(x, output_all_encoded_layers=False)
-        y = y.view(y.size()[0], -1)
-        y = self.fc(y)
-        if self.multi:
-            y = self.sigmoid(y)
+        # encode, y = self.bert.forward(text)
+        y, encode = self.bert.forward(text, token, mask, output_all_encoded_layers=False)
+        # print(encode.size())
+        # print(y.size())
+
+        y = y.view(batch * option, -1)
+        y = self.rank_module(y)
+
+        y = y.view(batch, option)
+
+        # print(y.size())
+
+        # gg
 
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y, labels, config, acc_result)
