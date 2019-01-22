@@ -15,29 +15,39 @@ class BiDAF(nn.Module):
 
         self.w1 = nn.Linear(self.word_size, 1)
         self.w2 = nn.Linear(self.word_size, 1)
-        self.w3 = nn.Linear(self.word_size, 1)
-
-        self.softmax = nn.Softmax(dim=2)
 
     def forward(self, h, q):
+        max_len = h.size()[1]
         w1h = self.w1(h)
         w2q = self.w2(q)
-        w3hq = self.w3(torch.bmm(h, q.permute(0, 2, 1)))
+        w3hq = torch.bmm(h, q.permute(0, 2, 1))
 
-        w1h = w1h.repeat(1, 1, self.max_len)
-        w2q = w2q.repeat(1, 1, self.max_len).permute(0, 2, 1)
+        w1h = w1h.repeat(1, 1, max_len)
+        w2q = w2q.repeat(1, 1, max_len).permute(0, 2, 1)
+
+        print("w1h",w1h.size())
+        print("w2q",w2q.size())
+        print("w3hq",w3hq.size())
 
         a = w1h + w2q + w3hq
+        
+        print("a",a.size())
 
-        p = self.softmax(a)
-        c = q * p
+        p = torch.softmax(a,dim=2)
+
+        print("p",p.size())
+        c = torch.bmm(p,q)
+        print("c",c.size())
 
         m = torch.max(a, dim=2)[0]
-        p = self.softmax(m, dim=1)
+        print("m",m.size())
+        p = torch.softmax(m, dim=1)
+        print("p",p.size())
 
-        qc = h * p
+        qc = h * p.view(p.size()[0],p.size()[1],1).repeat(1,1,h.size()[2])
+        print("qc",qc.size())
 
-        return torch.cat([h, c, h * c, qc * c], dim=1)
+        return torch.cat([h, c, h * c, qc * c], dim=2)
 
 
 class GRUEncoder(nn.Module):
@@ -53,7 +63,7 @@ class GRUEncoder(nn.Module):
         self.encoder = nn.GRU(input_size, output_size, layers, batch_first=True, bidirectional=True)
 
     def forward(self, x):
-        hidden = torch.autograd.Variable(torch.zeros(self.batch, self.layers * 2, self.output_size).cuda())
+        hidden = torch.autograd.Variable(torch.zeros(self.layers*2,self.batch, self.output_size).cuda())
 
         o, h = self.encoder(x, hidden)
 
@@ -65,17 +75,18 @@ class SimpleAndEffective(nn.Module):
         super(SimpleAndEffective, self).__init__()
 
         self.hidden_size = config.getint("model", "hidden_size")
-        self.word_size = config.getint("data", "word_size")
+        self.word_size = config.getint("data", "vec_size")
         self.k = config.getint("data", "topk")
-        self.batch = config.getint("data", "batch_size")
+        self.batch = config.getint("train", "batch_size")
         self.layers = config.getint("model", "num_layers")
         self.max_len = config.getint("data", "max_len")
 
-        self.bi_attention = BiDAF(self.hidden)
+        self.bi_attention = BiDAF(2*self.hidden_size)
+        self.bi_attention2 = BiDAF(2*self.hidden_size)
 
-        self.question_encoder = GRUEncoder(self.batch, self.word_size, self.hidden_size, self.layers, self.max_len)
-        self.article_encoder = GRUEncoder(self.batch, self.word_size, self.hidden_size, self.layers, self.max_len)
-        self.encoder = GRUEncoder(self.batch, self.hidden_size * 8, self.hidden_size * 8, self.layers, self.max_len)
+        self.question_encoder = GRUEncoder(self.batch*self.k*4, self.word_size, self.hidden_size, self.layers, self.max_len)
+        self.article_encoder = GRUEncoder(self.batch*self.k*4, self.word_size, self.hidden_size, self.layers, self.max_len)
+        self.encoder = GRUEncoder(self.batch*self.k*4, self.hidden_size * 8, self.hidden_size, self.layers, self.max_len)
 
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
 
@@ -85,7 +96,7 @@ class SimpleAndEffective(nn.Module):
 
         self.relu = nn.ReLU()
 
-        self.rank_module = nn.Linear(self.hidden_size * 8 * self.k, 1)
+        self.rank_module = nn.Linear(self.hidden_size * 8 * self.k * self.max_len, 1)
 
     def forward(self, data, criterion, config, usegpu, acc_result=None):
         question = data["question"]
@@ -102,6 +113,12 @@ class SimpleAndEffective(nn.Module):
         print("question", question.size())
         print("article", article.size())
 
+        question = self.embs(question)
+        article = self.embs(article)
+        
+        print("question", question.size())
+        print("article", article.size())
+
         question = self.question_encoder(question)
         article = self.article_encoder(article)
 
@@ -114,7 +131,9 @@ class SimpleAndEffective(nn.Module):
 
         attention = self.relu(attention)
 
-        attention_x = self.relu(self.encoder(attention))
+        attention_x = self.encoder(attention)
+        attention_x = self.bi_attention2(attention_x,attention_x)
+        attention_x = self.relu(attention_x)
 
         print("attention_x", attention_x.size())
 

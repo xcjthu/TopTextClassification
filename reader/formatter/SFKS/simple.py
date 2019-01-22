@@ -37,9 +37,12 @@ class SFKSSimpleAndEffectiveFormatter:
             if len(word) == 0:
                 continue
 
-            result.append(word)
+            result.append(self.transform(word,None))
 
-        return result
+        while len(result)<self.max_len:
+            result.append(self.transform("PAD",None))
+
+        return torch.LongTensor(result[0:self.max_len])
 
     def format(self, data, config, transformer, mode):
         question = []
@@ -47,8 +50,6 @@ class SFKSSimpleAndEffectiveFormatter:
         label = []
 
         for temp_data in data:
-            question.append(self.parse(temp_data["statement"]))
-
             if config.getboolean("data", "multi_choice"):
                 label_x = 0
                 if "A" in temp_data["answer"]:
@@ -86,6 +87,10 @@ class SFKSSimpleAndEffectiveFormatter:
             label.append(label_x)
 
         label = torch.tensor(label, dtype=torch.long)
+        #for x in question:
+        #    print(x.size())
+        question = torch.stack(question)
+        article = torch.stack(article)
 
         return {
             "question": question,
