@@ -11,6 +11,10 @@ class SeaReaderFormatter:
         self.need = config.getboolean("data", "need_word2vec")
         self.word2id = json.load(open(config.get("data", "word2id"), "r"))
         self.max_len = config.getint("data", "max_len")
+        
+        self.que_len = config.getint('data', 'question_len')
+        self.opt_len = config.getint('data', 'option_len')
+
 
     def check(self, data, config):
         data = json.loads(data)
@@ -35,7 +39,7 @@ class SeaReaderFormatter:
 
         return data
 
-    def lookup(self, data, transforemer=None):
+    def lookup(self, data, max_len, transforemer=None):
         lookup_id = []
         for word in data:
             if not (word in self.word2id.keys()):
@@ -48,14 +52,15 @@ class SeaReaderFormatter:
                     lookup_id.append(transforemer.load(word))
                 else:
                     lookup_id.append(self.word2id[word])
-        while len(lookup_id) < self.max_len:
+        while len(lookup_id) < max_len:
             if self.need:
                 lookup_id.append(transforemer.load("PAD"))
             else:
                 lookup_id.append(self.word2id["PAD"])
-        lookup_id = lookup_id[0:self.max_len]
+        lookup_id = lookup_id[0:max_len]
 
         return lookup_id
+
 
     def format(self, data, config, transformer, mode):
         statement = []
@@ -64,11 +69,11 @@ class SeaReaderFormatter:
         label = []
 
         for temp_data in data:
-            statement.append(self.lookup(temp_data["statement"], transformer))
-            answer.append([self.lookup(temp_data["option_list"]["A"], transformer),
-                           self.lookup(temp_data["option_list"]["B"], transformer),
-                           self.lookup(temp_data["option_list"]["C"], transformer),
-                           self.lookup(temp_data["option_list"]["D"], transformer)])
+            statement.append(self.lookup(temp_data["statement"], self.que_len, transformer))
+            answer.append([self.lookup(temp_data["option_list"]["A"], self.opt_len, transformer),
+                           self.lookup(temp_data["option_list"]["B"], self.opt_len, transformer),
+                           self.lookup(temp_data["option_list"]["C"], self.opt_len, transformer),
+                           self.lookup(temp_data["option_list"]["D"], self.opt_len, transformer)])
 
             if check_multi(config):
                 label_x = [0, 0, 0, 0]
@@ -97,7 +102,7 @@ class SeaReaderFormatter:
             for option in ["A", "B", "C", "D"]:
                 temp_ref.append([])
                 for a in range(0, 10):
-                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], transformer))
+                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], self.max_len, transformer))
 
             reference.append(temp_ref)
 

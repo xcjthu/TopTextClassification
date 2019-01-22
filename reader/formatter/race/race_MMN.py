@@ -6,6 +6,7 @@ import random
 
 from utils.util import check_multi
 
+from gensim.models import Word2Vec
 
 class RaceMMNFormatter:
     def __init__(self, config):
@@ -14,6 +15,10 @@ class RaceMMNFormatter:
             self.word_dim = config.getint("data", "vec_size")
         else:
             self.word2id = json.load(open(config.get("data", "word2id"), "r"))
+
+
+        self.emb = Word2Vec.load('/data/disk1/private/xcj/exam/data/race_embedding/brown.embedding')
+
 
         self.max_len = config.getint('data', 'max_len')
         self.question_len = config.getint('data', 'question_max_len')
@@ -29,21 +34,26 @@ class RaceMMNFormatter:
     def lookup(self, sent, max_len, transformer):
         lookup_id = []
         for word in sent:
-            if not (word in self.word2id.keys()):
+            try:
                 if self.need:
-                    lookup_id.append(transformer.load("UNK"))
-                else:
-                    lookup_id.append(self.word2id["UNK"])
-            else:
-                if self.need:
-                    lookup_id.append(transformer.load(word))
+                    lookup_id.append(self.emb[word])
                 else:
                     lookup_id.append(self.word2id[word])
+            except:
+                if self.need:
+                    lookup_id.append(np.zeros(100))
+                else:
+                    lookup_id.append(self.word2id['UNK'])
+
+
         while len(lookup_id) < max_len:
             if self.need:
-                lookup_id.append(transformer.load('PAD'))
+                lookup_id.append(np.zeros(100))
             else:
                 lookup_id.append(self.word2id['PAD'])
+            
+        
+        #print(lookup_id[:max_len])
 
         return lookup_id[:max_len]
 

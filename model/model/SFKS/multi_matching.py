@@ -9,6 +9,7 @@ import json
 from utils.util import calc_accuracy, gen_result
 
 
+
 class InputLayer(nn.Module):
     def __init__(self, config):
         super(InputLayer, self).__init__()
@@ -17,17 +18,27 @@ class InputLayer(nn.Module):
         #self.hidden_size = config.getint('model', 'hidden_size')
         self.hidden_size = self.vecsize // 2
 
-
         bidirectional = True
         self.gru = nn.GRU(self.vecsize, self.hidden_size, batch_first = True, bidirectional = bidirectional)
         
         self.wh = nn.Linear(self.vecsize, self.vecsize, bias = False)
         self.we = nn.Linear(self.vecsize, self.vecsize)
 
+        self.init_para()
+
+
+    def init_para(self):
+        for name, param in self.gru.named_parameters():
+            if 'weight_ih' in name:
+                torch.nn.init.xavier_uniform_(param.data)
+            elif 'weight_hh' in name:
+                torch.nn.init.orthogonal_(param.data)
+            elif 'bias' in name:
+                param.data.fill_(0)
+
 
     def forward(self, in_seq):
         gru_out, gru_hidden = self.gru(in_seq)
-        return gru_out
 
         out = self.wh(gru_out) + self.we(in_seq)
 
@@ -44,11 +55,13 @@ class SoftSel(nn.Module):
         self.hidden_size = config.getint('data', 'vec_size')
 
         self.wg = nn.Parameter(Var(torch.Tensor(self.hidden_size, self.hidden_size)))
-        torch.nn.init.xavier_uniform(self.wg, gain=1)
+        torch.nn.init.xavier_uniform_(self.wg, gain=1)
         
     def forward(self, hi1, hi2):
-        G = torch.bmm(hi1, self.wg.unsqueeze(0).expand(hi1.shape[0], self.hidden_size, self.hidden_size))
+        G = hi1.matmul(self.wg)
         G = torch.bmm(G, torch.transpose(hi2, 1, 2))
+        #G = torch.bmm(hi1, self.wg.unsqueeze(0).expand(hi1.shape[0], self.hidden_size, self.hidden_size))
+        #G = torch.bmm(G, torch.transpose(hi2, 1, 2))
         
         G = F.softmax(G, dim = 2)
         return torch.bmm(G, hi2)
@@ -68,9 +81,10 @@ class Match(nn.Module):
         
         self.linear_att = nn.Linear(self.hidden_size, 1)
 
+
     def forward(self, hi1, hi2, hi3, hi4):
-        m1 = torch.cat([hi1.mul(hi2), hi1 - hi2], dim = 2)
-        m2 = torch.cat([hi3.mul(hi4), hi3 - hi4], dim = 2)
+        m1 = torch.cat([hi1 + hi2, hi1 - hi2], dim = 2)
+        m2 = torch.cat([hi3 + hi4, hi3 - hi4], dim = 2)
 
         m1 = F.relu(self.match(m1))
         m2 = F.relu(self.match(m2))
@@ -94,21 +108,28 @@ class EAMatch(nn.Module):
 
 
         self.match = Match(config)
+
+        '''
         self.softsel_QP = SoftSel(config)
         self.softsel_AQ = SoftSel(config)
         self.softsel_QAA = SoftSel(config)
         self.softsel_AQA = SoftSel(config)
-
+        '''
+        self.softsel = SoftSel(config)
+        
 
     def forward(self, hq, hp, ha):
+        '''
         hq_ = self.softsel_QP(hq, hp)
         hqa = self.softsel_AQ(ha, hq_)
         hqa_ = self.softsel_QAA(hqa, ha)
         ha_ = self.softsel_AQA(ha, hqa)
-        #hqa = self.softsel_QP(hq, hp)
-        #hqa_ = self.softsel_QP(hqa, ha)
-        #ha_ = self.softsel_QP(ha, hqa)
-
+        '''
+        hq_ = self.softsel(hq, hp)
+        hqa = self.softsel(ha, hq_)
+        hqa_ = self.softsel(hqa, ha)
+        ha_ = self.softsel(ha, hqa)
+        
 
         hf = self.match(hqa, hqa_, ha, ha_)
 
@@ -119,18 +140,24 @@ class QPAMatch(nn.Module):
     def __init__(self, config):
         super(QPAMatch, self).__init__()
         
-        
+        '''
         self.softsel_PQ = SoftSel(config)
         self.softsel_PA = SoftSel(config)
+        '''
+        self.softsel = SoftSel(config)
+        
+
         self.match = Match(config)
 
     def forward(self, hq, hp, ha):
+        '''
         hpq = self.softsel_PQ(hp, hq)
         hpa = self.softsel_PA(hp, ha)
-        #hpa = self.softsel_PQ(hp, ha)
+        '''
+        hpq = self.softsel(hp, hq)
+        hpa = self.softsel(hp, ha)
         
         #print('\n\n\n', self.softsel_PQ.wg)
-
 
         hf3 = self.match(hpq, hp, hpa, hp)
         return hf3
@@ -152,11 +179,11 @@ class MultiMatchNet(nn.Module):
 
         self.input = InputLayer(config)
         self.EAM1 = EAMatch(config)
-        # self.EAM2 = EAMatch(config)
+        #self.EAM2 = EAMatch(config)
 
         self.QPAM = QPAMatch(config)
         self.output_linear0 = nn.Linear(6 * self.hidden_size, 2 * self.hidden_size)
-        self.output_linear1 = nn.Linear(2 * self.hidden_size, 1)
+        self.output_linear1 = nn.Linear(4 * self.hidden_size, 1)
 
 
     def forward(self, data, criterion, config, usegpu, acc_result = None):
@@ -165,33 +192,61 @@ class MultiMatchNet(nn.Module):
         documents = data['reference']
         labels = data['label']
 
+        '''
+        print('input')
+        print('question.shape', question.shape)
+        print('option_list.shape', option_list.shape)
+        print('document.shape', documents.shape)
+        print('labels', labels.shape)
+        '''
+
 
         if not config.getboolean("data", "need_word2vec"):
             question = self.embs(question)
+        
+        hq = self.input(question)
 
         out = []
         for option_index in range(4):
             option = option_list[:,option_index].contiguous()
             docs = documents[:,option_index].contiguous()
             
-            #取第一个文章
-            doc = docs[:,0].contiguous()
-
             if not config.getboolean('data', 'need_word2vec'):
                 option = self.embs(option)
-                doc = self.embs(doc)
-            
-            hp = self.input(doc)
-            hq = self.input(question)
+
             ha = self.input(option)
+            
+            hfs = []
+            for doc_index in range(docs.shape[1]):
+                doc = docs[:,doc_index].contiguous()
 
-            hf1 = self.EAM1(hq, hp, ha)
-            hf2 = self.EAM1(hq, ha, hp)
-            hf3 = self.QPAM(hq, hp, ha)
+                #取第一个文章
+                #doc = docs[:,0].contiguous()
 
-            hf = torch.cat([hf1, hf2, hf3], dim = 1)
-            hf = F.relu(self.output_linear0(hf))
-            hf = self.output_linear1(hf)
+                if not config.getboolean('data', 'need_word2vec'):
+                    doc = self.embs(doc)
+
+                hp = self.input(doc)
+                # hq = self.input(question)
+                # ha = self.input(option)
+
+                hf1 = self.EAM1(hq, hp, ha)
+                hf2 = self.EAM1(hq, ha, hp)
+                hf3 = self.QPAM(hq, hp, ha)
+
+                hf = torch.cat([hf1, hf2, hf3], dim = 1)
+
+                hf = F.relu(self.output_linear0(hf))
+
+                hfs.append(hf.unsqueeze(1))
+
+            hfs = torch.cat(hfs, dim = 1)
+            hf, _ = torch.max(hfs, dim = 1)
+            hf0 = torch.mean(hfs, dim = 1)
+            # hf = F.relu(self.output_linear0(hf))
+
+            hf = self.output_linear1(torch.cat([hf, hf0], dim = 1))
+            #hf = self.output_linear1(hf3)
             out.append(hf)
 
         out_result = torch.cat(out, dim = 1)
@@ -199,6 +254,8 @@ class MultiMatchNet(nn.Module):
 
         loss = criterion(out_result, labels)
         accu, acc_result = calc_accuracy(out_result, labels, config, acc_result)
+
+        #print(torch.max(out_result, dim = 1)[1])
 
         return {"loss": loss, "accuracy": accu, "result": torch.max(out_result, dim=1)[1].cpu().numpy(), "x": out_result, "accuracy_result": acc_result}
 
