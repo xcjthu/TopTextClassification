@@ -98,7 +98,7 @@ def parse_file(content):
     # if cnt == 50:
     #    print(json.dumps(text, indent=2, ensure_ascii=False))
     #    gg
-    return result
+    return text
 
 
 def solve_file(filepath):

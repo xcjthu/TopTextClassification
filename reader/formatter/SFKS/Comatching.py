@@ -477,14 +477,20 @@ class ComatchingFormatter3:
                 for a in range(0, 4):
                     arr = ["A", "B", "C", "D"]
                     res = []
+                    k = [0, 1, 2, 6, 12, 7, 13, 3, 8, 9, 14, 15, 4, 10, 16, 5, 16, 17]
                     for b in range(0, self.k):
-                        res.append(self.parseH(temp_data["reference"][arr[a]][b]))
+                        res.append(self.parseH(temp_data["reference"][arr[a]][k[b]]))
                     document[a].append(res)
 
             label.append(label_x)
 
-        v1 = 50
-        v2 = 50
+        v1 = 0
+        v2 = 0
+        for a in range(0, 4):
+            for b in range(0, len(document[a])):
+                v1t, v2t = self.gen_max(document[a][b], self.max_sent, self.sent_max_len)
+                v1 = max(v1, v1t)
+                v2 = max(v2, v2t)
         option = self.seq2Htensor(option, self.max_sent, self.sent_max_len, transformer)
         question = self.seq2tensor(question, self.sent_max_len, transformer)
 
