@@ -148,7 +148,7 @@ class SimpleAndEffective(nn.Module):
 
         # print("s", s.size())
 
-        y = self.rank_module(s)
+        y = self.rank_module(s).view(batch,-1)
 
         # print("y", y.size())
 
