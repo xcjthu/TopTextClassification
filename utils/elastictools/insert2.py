@@ -40,16 +40,9 @@ cnt = 0
 
 def dfs_insert(type1, type2, type3, data):
     global cnt
-    cnt += 1
-    tx = cnt
-    temp = ""
     for x in data:
-        if type(x) is list:
-            dfs_insert(type1, type2, type3, x)
-        else:
-            temp = temp + x + " "
-
-    insert_doc(index_name, doc_type, {"content": temp, "type1": type1, "type2": type2, "type3": type3}, tx)
+        cnt += 1
+        insert_doc(index_name, doc_type, {"content": x, "type1": type1, "type2": type2, "type3": type3}, cnt)
 
 
 if __name__ == "__main__":
