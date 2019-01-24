@@ -8,7 +8,8 @@ from pytorch_pretrained_bert import BertTokenizer
 
 class SFKSBertPredictionFormatter:
     def __init__(self, config):
-        self.max_len = config.getint("data", "max_len")
+        self.max_len1 = config.getint("data", "max_len1")
+        self.max_len2 = config.getint("data", "max_len2")
 
         self.tokenizer = BertTokenizer.from_pretrained(os.path.join(config.get("model", "bert_path"), "vocab.txt"))
         self.k = config.getint("data", "topk")
@@ -21,7 +22,7 @@ class SFKSBertPredictionFormatter:
             return None
         return data
 
-    def convert(self, tokens, which):
+    def convert(self, tokens, which, l):
         ids = []
         mask = []
         tokenx = []
@@ -36,7 +37,7 @@ class SFKSBertPredictionFormatter:
                 mask.append(1)
                 tokenx.append(which)
 
-        while len(ids) < self.max_len:
+        while len(ids) < l:
             ids.append(self.tokenizer.vocab["[PAD]"])
             mask.append(0)
             tokenx.append(which)
@@ -87,21 +88,21 @@ class SFKSBertPredictionFormatter:
 
                 for a in range(0, len(res)):
                     text = text + [res[a]]
-                text = text[0:self.max_len]
+                text = text[0:self.max_len1]
 
-                txt1, mask1, token1 = self.convert(text, 0)
+                txt1, mask1, token1 = self.convert(text, 0, self.max_len1)
 
                 ref = []
-                k = [0, 1, 2, 4, 5, 8]
+                k = [0, 1, 2, 6, 12, 7, 13, 3, 8, 9, 14, 15, 4, 10, 16, 5, 16, 17]
                 for a in range(0, self.k):
                     res = temp_data["reference"][option][k[a]]
                     text = []
 
                     for a in range(0, len(res)):
                         text = text + [res[a]]
-                    text = text[0:self.max_len]
+                    text = text[0:self.max_len2]
 
-                    txt2, mask2, token2 = self.convert(text, 1)
+                    txt2, mask2, token2 = self.convert(text, 1, self.max_len2)
 
                     temp_text.append(torch.cat([txt1, txt2]))
                     temp_mask.append(torch.cat([mask1, mask2]))
