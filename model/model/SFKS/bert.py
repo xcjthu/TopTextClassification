@@ -14,7 +14,8 @@ class SFKSBert(nn.Module):
         self.batch_size = config.getint('train', 'batch_size')
 
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
-        self.rank_module = nn.Linear(768 * config.getint("data", "max_len") * config.getint("data", "topk") * 2, 1)
+        self.rank_module = nn.Linear(
+            768 * (config.getint("data", "max_len1") + config.getint("data", "max_len2")), 1)
 
         self.sigmoid = nn.Sigmoid()
 
@@ -54,8 +55,10 @@ class SFKSBert(nn.Module):
         # print(encode.size())
         # print(y.size())
 
-        y = y.view(batch * option, -1)
+        y = y.view(batch * option * k, -1)
         y = self.rank_module(y)
+        y = y.view(batch, option, k)
+        y = torch.max(y, dim=2)[0]
 
         y = y.view(batch, option)
 
