@@ -12,8 +12,9 @@ class SeaReaderFormatter:
         self.word2id = json.load(open(config.get("data", "word2id"), "r"))
         self.max_len = config.getint("data", "max_len")
         
-        self.que_len = config.getint('data', 'question_len')
-        self.opt_len = config.getint('data', 'option_len')
+        self.que_len = config.getint('data', 'question_max_len')
+        self.opt_len = config.getint('data', 'option_max_len')
+        self.topN = config.getint('data', 'topN')
 
 
     def check(self, data, config):
@@ -101,7 +102,7 @@ class SeaReaderFormatter:
             temp_ref = []
             for option in ["A", "B", "C", "D"]:
                 temp_ref.append([])
-                for a in range(0, 10):
+                for a in range(0, self.topN):
                     temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], self.max_len, transformer))
 
             reference.append(temp_ref)

@@ -163,6 +163,30 @@ class QPAMatch(nn.Module):
         return hf3
 
 
+class GateLayer(nn.Module):
+    def __init__(self, config, feature_size):
+        super(GateLayer, self).__init__()
+
+        self.topN = config.getint('data', 'topN')
+        self.linear = nn.Linear(feature_size, 1)
+    
+    def forward(self, all_doc_out):
+        # batchsize * doc_num * feature_size
+        out = self.linear(all_doc_out).squeeze(2)
+        out = F.relu(out) + 0.0001
+        out = out.mul(out)
+        sumof = torch.sum(out, dim = 1)
+        out = (out / sumof.unsqueeze(1))
+
+        #print(out.shape)
+        #print(all_doc_out.shape)
+
+        feature = torch.bmm(out.unsqueeze(1), all_doc_out)
+        
+        return feature, all_doc_out
+
+
+
 class MultiMatchNet(nn.Module):
     def __init__(self, config):
         super(MultiMatchNet, self).__init__()
@@ -176,6 +200,8 @@ class MultiMatchNet(nn.Module):
         #if config.getboolean("data", "need_word2vec"):
         #    self.embs = generate_embedding(self.embs, config)
 
+        self.need_gate = config.getboolean('model', 'gate')
+
 
         self.input = InputLayer(config)
         self.EAM1 = EAMatch(config)
@@ -183,7 +209,22 @@ class MultiMatchNet(nn.Module):
 
         self.QPAM = QPAMatch(config)
         self.output_linear0 = nn.Linear(6 * self.hidden_size, 2 * self.hidden_size)
-        self.output_linear1 = nn.Linear(4 * self.hidden_size, 1)
+        self.output_linear1 = nn.Linear(2 * self.hidden_size, 1)
+        
+        if self.need_gate:
+            self.out_gate = GateLayer(config, 6 * self.hidden_size)
+
+    def init_multi_gpu(self, device):
+        self.EAM1 = nn.DataParallel(self.EAM1)
+        self.QPAM = nn.DataParallel(self.QPAM)
+        self.output_linear0 = nn.DataParallel(self.output_linear0)
+        self.output_linear1 = nn.DataParallel(self.output_linear1)
+        
+        if self.need_gate:
+            self.out_gate = nn.DataParallel(self.out_gate)
+        
+        self.input = nn.DataParallel(self.input)
+        self.embs = nn.DataParallel(self.embs)
 
 
     def forward(self, data, criterion, config, usegpu, acc_result = None):
@@ -235,27 +276,28 @@ class MultiMatchNet(nn.Module):
                 hf3 = self.QPAM(hq, hp, ha)
 
                 hf = torch.cat([hf1, hf2, hf3], dim = 1)
-
-                hf = F.relu(self.output_linear0(hf))
-
+                
+                # hf: 6 * hidden_size
                 hfs.append(hf.unsqueeze(1))
 
             hfs = torch.cat(hfs, dim = 1)
-            hf, _ = torch.max(hfs, dim = 1)
-            hf0 = torch.mean(hfs, dim = 1)
-            # hf = F.relu(self.output_linear0(hf))
+            #print(hfs.shape)
+            if self.need_gate:
+                hf, _ = self.out_gate(hfs)
+            if not self.need_gate:
+                hf, _ = torch.max(hfs, dim = 1)
+            hf = F.relu(self.output_linear0(hf))
 
-            hf = self.output_linear1(torch.cat([hf, hf0], dim = 1))
-            #hf = self.output_linear1(hf3)
+            hf = self.output_linear1(hf)#.squeeze(2)
+            if self.need_gate:
+                hf = hf.squeeze(2)
+
             out.append(hf)
 
         out_result = torch.cat(out, dim = 1)
-        out_result = F.softmax(out_result, dim = 1)
-
+        
         loss = criterion(out_result, labels)
         accu, acc_result = calc_accuracy(out_result, labels, config, acc_result)
-
-        #print(torch.max(out_result, dim = 1)[1])
 
         return {"loss": loss, "accuracy": accu, "result": torch.max(out_result, dim=1)[1].cpu().numpy(), "x": out_result, "accuracy_result": acc_result}
 
