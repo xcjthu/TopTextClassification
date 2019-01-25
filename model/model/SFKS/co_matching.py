@@ -377,7 +377,7 @@ class CoMatch3(nn.Module):
         self.h_encoder = MaskLSTM(self.mem_dim * 2, self.mem_dim, dropoutP=0)
 
         self.match_module = MatchNet(self.mem_dim * 2, self.dropoutP)
-        self.rank_module = nn.Linear(self.mem_dim * 2 * config.getint("data", "topk"), 1)
+        self.rank_module = nn.Linear(self.mem_dim * 2, 1)
 
         self.multi = config.getboolean("data", "multi_choice")
         self.multi_module = nn.Linear(4, 16)
@@ -399,6 +399,10 @@ class CoMatch3(nn.Module):
         # print("o_l_len", o_l_len.size())
         # print("q_word", q_word.size())
         # print("q_len", q_len.size())
+
+        batch = d_word.size()[0]
+        option = d_word.size()[1]
+        k = d_word.size()[2]
 
         d_embs = self.drop_module(self.embs(d_word))
         o_embs = self.drop_module(self.embs(o_word))
@@ -470,9 +474,16 @@ class CoMatch3(nn.Module):
         h_hidden_pool, _ = h_hidden.max(1)
         # print("h_hidden_pool", h_hidden_pool.size())
 
-        o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
+        # o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
         # print("o_rep", o_rep.size())
-        output = self.rank_module(o_rep).squeeze(2)
+        # output = self.rank_module(o_rep).squeeze(2)
+
+        y = h_hidden_pool.view(batch * option * k, -1)
+        y = self.rank_module(y)
+        y = y.view(batch, option, k)
+        y = torch.max(y, dim=2)[0]
+        y = y.view(batch, option)
+        output = y
 
         if self.multi:
             output = self.multi_module(output)
