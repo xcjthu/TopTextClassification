@@ -99,7 +99,10 @@ class SimpleAndEffective(nn.Module):
 
         self.relu = nn.ReLU()
 
-        self.rank_module = nn.Linear(self.hidden_size * 8 * self.max_len, 1)
+        if config.get("model", "rank_method") == "all":
+            self.rank_module = nn.Linear(self.hidden_size * 8 * self.k * self.max_len, 1)
+        else:
+            self.rank_module = nn.Linear(self.hidden_size * 8 * self.max_len, 1)
 
     def forward(self, data, criterion, config, usegpu, acc_result=None):
         question = data["question"]
@@ -148,11 +151,14 @@ class SimpleAndEffective(nn.Module):
 
         # print("s", s.size())
 
-        y = s.view(batch * option * k, -1)
-        y = self.rank_module(y)
-        y = y.view(batch, option, k)
-        y = torch.max(y, dim=2)[0]
-        y = y.view(batch, option)
+        if config.get("model", "rank_method") == "all":
+            y = self.rank_module(s).view(batch, -1)
+        else:
+            y = s.view(batch * option * k, -1)
+            y = self.rank_module(y)
+            y = y.view(batch, option, k)
+            y = torch.max(y, dim=2)[0]
+            y = y.view(batch, option)
 
         # print("y", y.size())
 

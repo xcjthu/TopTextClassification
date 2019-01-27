@@ -377,7 +377,13 @@ class CoMatch3(nn.Module):
         self.h_encoder = MaskLSTM(self.mem_dim * 2, self.mem_dim, dropoutP=0)
 
         self.match_module = MatchNet(self.mem_dim * 2, self.dropoutP)
-        self.rank_module = nn.Linear(self.mem_dim * 2, 1)
+
+        self.rank_mods = config.get("model", "rank_method")
+
+        if config.get("model", "rank_method") == "all":
+            self.rank_module = nn.Linear(self.mem_dim * 2 * config.getint("data", "topk"), 1)
+        else:
+            self.rank_module = nn.Linear(self.mem_dim * 2, 1)
 
         self.multi = config.getboolean("data", "multi_choice")
         self.multi_module = nn.Linear(4, 16)
@@ -478,12 +484,16 @@ class CoMatch3(nn.Module):
         # print("o_rep", o_rep.size())
         # output = self.rank_module(o_rep).squeeze(2)
 
-        y = h_hidden_pool.view(batch * option * k, -1)
-        y = self.rank_module(y)
-        y = y.view(batch, option, k)
-        y = torch.max(y, dim=2)[0]
-        y = y.view(batch, option)
-        output = y
+        if self.rank_mods == "all":
+            o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
+            output = self.rank_module(o_rep).squeeze(2)
+        else:
+            y = h_hidden_pool.view(batch * option * k, -1)
+            y = self.rank_module(y)
+            y = y.view(batch, option, k)
+            y = torch.max(y, dim=2)[0]
+            y = y.view(batch, option)
+            output = y
 
         if self.multi:
             output = self.multi_module(output)
