@@ -9,6 +9,7 @@ from model.model.SFKS.conv_spatial_att import ConvSpatialAtt
 from model.model.SFKS.bert import SFKSBert
 from model.model.bert import Bert
 from model.model.SFKS.simple import SimpleAndEffective
+from model.model.SFKS.DSQA_lyk import DSQA
 
 model_list = {
     "LSTM": LSTM,
@@ -22,7 +23,8 @@ model_list = {
     "ConvSpatialAtt": ConvSpatialAtt,
     "Bert": Bert,
     "SFKS_bert": SFKSBert,
-    "SFKSSimpleAndEffective": SimpleAndEffective
+    "SFKSSimpleAndEffective": SimpleAndEffective,
+    "DSQA": DSQA 
 }
 
 
