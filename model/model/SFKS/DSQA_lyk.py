@@ -73,7 +73,7 @@ class OneOption(nn.Module):
     def init_multi_gpu(self, device):
         self.encoder = nn.DataParallel(self.encoder)
         self.self_att = nn.DataParallel(self.self_att)
-        self.selector_w = nn.DataParallel(self.selector_w)
+        # self.selector_w = nn.DataParallel(self.selector_w)
         self.reader = nn.DataParallel(self.reader)
 
 
@@ -117,8 +117,9 @@ class DSQA(nn.Module):
 
         self.oneOpt = OneOption(config)
 
-    def init_multi_gpu(config, device):
-        self.oneOpt.init_multi_gpu(device)
+    def init_multi_gpu(self, device):
+        # self.oneOpt.init_multi_gpu(device)
+        self.oneOpt = nn.DataParallel(self.oneOpt)
 
     def forward(self, data, criterion, config, usegpu, acc_result = None):
         
@@ -129,12 +130,17 @@ class DSQA(nn.Module):
 
         option_prob = []
         option_output = []
+
+        doc_choice_all = []
         for option_index in range(4):
             que = question[:,option_index]
             doces = documents[:,option_index]
 
             
             doc_prob, reader_out = self.oneOpt(doces, que)
+            _, doc_choice = torch.max(doc_prob, dim = 1)
+
+            doc_choice_all.append(doc_choice.unsqueeze(1))
             # doc_prob: batch * doc_num
             # reader_out: batch * doc_num * 1
             opt_prob = torch.bmm(doc_prob.unsqueeze(1), torch.sigmoid(reader_out)).squeeze(1)
@@ -143,6 +149,9 @@ class DSQA(nn.Module):
 
         option_prob = torch.cat(option_prob, dim = 1)
         option_output = torch.cat(option_output, dim = 1)
+
+        doc_choice_all = torch.cat(doc_choice_all, dim = 1)
+        print(doc_choice_all.shape)
         
         '''
         print(option_prob.shape)
@@ -153,7 +162,10 @@ class DSQA(nn.Module):
         out_result = option_prob
         accu, acc_result = calc_accuracy(out_result, labels, config, acc_result)
 
-        return {"loss": loss, "accuracy": accu, "result": torch.max(out_result, dim=1)[1].cpu().numpy(), "x": out_result, "accuracy_result": acc_result}
+        return {"loss": loss, "accuracy": accu, "result": torch.max(out_result, dim=1)[1].cpu().numpy(), "x": out_result, 
+            "accuracy_result": acc_result, 
+            "doc_choice": doc_choice_all.cpu().numpy()
+        }
 
 
 

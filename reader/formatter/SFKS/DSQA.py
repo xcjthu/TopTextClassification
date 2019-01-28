@@ -27,11 +27,11 @@ class DSQAFormatter:
         if len(data["answer"]) != 1:
             # print("gg2")
             return None
-        if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
+        if len(data["statement"]) == 0:# or len(data["statement"]) > self.max_len:
             # print("gg3")
             return None
         for option in data["option_list"]:
-            if len(data["option_list"][option]) == 0 or len(data["option_list"][option]) > self.max_len:
+            if len(data["option_list"][option]) == 0:# or len(data["option_list"][option]) > self.max_len:
                 # print("gg4")
                 return None
         if len(data["option_list"]) != 4:

@@ -30,7 +30,7 @@ def EM_and_cross_entropy_loss(option_prob, option_output, labels):
     option_prob_log = - torch.log(option)
     loss = torch.mean(option_prob_log)
     
-    return loss + loss_cross
+    return loss_cross #+ loss
 
 
 
