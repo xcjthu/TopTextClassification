@@ -48,7 +48,13 @@ class SeaReader(nn.Module):
 
 
     def init_multi_gpu(self, device):
-        pass
+        self.context_layer = nn.DataParallel(self.context_layer)
+        self.statement_reason_layer = nn.DataParallel(self.statement_reason_layer)
+        self.doc_reason_layer = nn.DataParallel(self.doc_reason_layer)
+        self.reason_gate = nn.DataParallel(self.reason_gate)
+        self.intergrate_gate = nn.DataParallel(self.intergrate_gate)
+        self.output_layer = nn.DataParallel(self.output_layer)
+        
 
     def init_hidden(self, config, usegpu):
         if (usegpu):
@@ -59,7 +65,7 @@ class SeaReader(nn.Module):
         
 	
     def forward(self, data, criterion, config, usegpu, acc_result = None):
-        self.init_hidden(config, usegpu)
+        # self.init_hidden(config, usegpu)
 
         question = data['statement']
         option_list = data['answer']

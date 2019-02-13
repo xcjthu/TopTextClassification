@@ -16,6 +16,7 @@ from reader.formatter.SFKS.CNNSubject import SFKS_CNN_Subject
 from reader.formatter.race.race_MMN import RaceMMNFormatter
 from reader.formatter.SFKS.SFKS_bert import SFKSBertPredictionFormatter
 from reader.formatter.SFKS.simple import SFKSSimpleAndEffectiveFormatter
+from reader.formatter.SFKS.DSQA import DSQAFormatter
 from word2vec.word2vec import init_transformer
 
 
@@ -36,7 +37,8 @@ def init_formatter(config):
         "SFKS_Bert_Subject": SFKSBertSubjectFormatter,
         "SFKS_CNN_Subject": SFKS_CNN_Subject,
         "SFKS_bert": SFKSBertPredictionFormatter,
-        "SFKSSimpleAndEffectiveFormatter": SFKSSimpleAndEffectiveFormatter
+        "SFKSSimpleAndEffectiveFormatter": SFKSSimpleAndEffectiveFormatter,
+        "DSQAFormatter": DSQAFormatter
     }
     if config.get("data", "formatter") in useable_list.keys():
         formatter = useable_list[config.get("data", "formatter")](config)

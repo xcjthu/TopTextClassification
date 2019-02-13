@@ -9,6 +9,24 @@ import json
 from utils.util import calc_accuracy, gen_result
 
 
+def EM_loss(doc_prob, ans_prob, label):
+    # doc_prob: batch * doc_num
+    # ans_prob: batch * doc_num * 4
+    # label: batch * 1
+    ans = torch.bmm(doc_prob.unsqueeze(1), ans_prob)
+
+    prob = torch.log(ans) # batch * 4
+
+    prob = - prob
+    
+    one_hot = torch.zeros(doc_prob.shape[0], 4)
+    one_hot.scatter_(dim = 1, index = label.unsqueeze(1), value = 1)
+    prob = one_hot.mul(prob)
+
+    return torch.sum(prob)/doc_prob.shape[0]
+
+
+
 
 class InputLayer(nn.Module):
     def __init__(self, config):
