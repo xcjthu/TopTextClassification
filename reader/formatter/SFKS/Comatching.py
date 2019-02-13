@@ -461,8 +461,6 @@ class ComatchingFormatter3:
                     label_x += 4
                 if "D" in temp_data["answer"]:
                     label_x += 8
-
-                document.append(self.parseH(temp_data["analyse"]))
             else:
                 option.append([self.parse(temp_data["option_list"]["A"]),
                                self.parse(temp_data["option_list"]["B"]),
@@ -479,14 +477,14 @@ class ComatchingFormatter3:
                 if "D" in temp_data["answer"]:
                     label_x = 3
 
-                temp = []
-                for a in range(0, 4):
-                    arr = ["A", "B", "C", "D"]
-                    res = []
-                    k = [0, 1, 2, 6, 12, 7, 13, 3, 8, 9, 14, 15, 4, 10, 16, 5, 16, 17]
-                    for b in range(0, self.k):
-                        res.append(self.parseH(temp_data["reference"][arr[a]][k[b]]))
-                    document[a].append(res)
+            temp = []
+            for a in range(0, 4):
+                arr = ["A", "B", "C", "D"]
+                res = []
+                k = [0, 1, 2, 6, 12, 7, 13, 3, 8, 9, 14, 15, 4, 10, 16, 5, 16, 17]
+                for b in range(0, self.k):
+                    res.append(self.parseH(temp_data["reference"][arr[a]][k[b]]))
+                document[a].append(res)
 
             label.append(label_x)
 
