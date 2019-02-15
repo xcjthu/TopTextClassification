@@ -16,12 +16,17 @@ class SFKSBertPredictionFormatter:
 
     def check(self, data, config):
         data = json.loads(data)
-        if not ("answer" in data.keys()):
-            return None
         if len(data["answer"]) == 0:
             return None
         if not (config.getboolean("data", "multi_choice")) and len(data["answer"]) != 1:
             return None
+        if len(data["answer"]) == 0:
+            return None
+        if len(data["statement"]) == 1:
+            return None
+        for x in ["A", "B", "C", "D"]:
+            if len(data["option_list"][x]) == 0:
+                return None
         return data
 
     def convert(self, tokens, which, l):
