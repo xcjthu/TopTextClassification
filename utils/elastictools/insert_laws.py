@@ -95,14 +95,14 @@ def get_number_from_string(s):
 
 
 def parse(s):
-    s = s.replace("\t","").replace("\n","").replace("|","")
+    s = s.replace("\t", "").replace("\n", "").replace("|", "")
     res = []
     temps = ""
 
     pre = 0
 
     a = 0
-    while a<len(s):
+    while a < len(s):
         if s[a] == "第":
             b = a + 1
             while b < len(s) and s[b] in num_list.keys():
@@ -122,7 +122,7 @@ def parse(s):
 
         else:
             temps = temps + s[a]
-        a+=1
+        a += 1
 
     if len(temps) != 0:
         res.append(temps)
@@ -141,9 +141,8 @@ def insert_file(index, doc_type, file_path):
             data["issue_date"] = data["issue_date"].split(" ")[0]
 
             content = parse(data["content"])
-            print(json.dumps(data["title"], indent=2, ensure_ascii=False))
-            break
             for x in content:
+                data["content"] = data["title"] + " " + x
                 insert_doc(index, doc_type, data, str(uuid.uuid4()))
         except Exception as e:
             raise e
@@ -199,7 +198,7 @@ if __name__ == "__main__":
                }
                }
 
-    #print(json.dumps(mapping, indent=2))
+    # print(json.dumps(mapping, indent=2))
     create_index(index_name, json.dumps(mapping))
 
     insert_file(index_name, doc_type, "/home/zhx/laws_es.json")
