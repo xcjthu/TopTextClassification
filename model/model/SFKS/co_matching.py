@@ -487,6 +487,13 @@ class CoMatch3(nn.Module):
         if self.rank_mods == "all":
             o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
             output = self.rank_module(o_rep).squeeze(2)
+        elif self.rank_mods == "max":
+            y = h_hidden_pool.view(batch * option, k, -1)
+            y = torch.max(y, dim=1)[0]
+            y = y.view(batch * option, -1)
+            y = self.rank_module(y)
+            y = y.view(batch, option)
+            output = y
         else:
             y = h_hidden_pool.view(batch * option * k, -1)
             y = self.rank_module(y)

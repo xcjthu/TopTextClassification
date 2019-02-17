@@ -17,7 +17,7 @@ class SFKSBert(nn.Module):
         if config.get("model", "rank_method") == "all":
             self.rank_module = nn.Linear(
                 768 * (config.getint("data", "max_len1") + config.getint("data", "max_len2")) * config.getint("data",
-                                                                                                              "topk") * 2,
+                                                                                                              "topk"),
                 1)
         else:
             self.rank_module = nn.Linear(768 * (config.getint("data", "max_len1") + config.getint("data", "max_len2")),
