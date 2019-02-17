@@ -9,25 +9,6 @@ import json
 from utils.util import calc_accuracy, gen_result
 
 
-def EM_loss(doc_prob, ans_prob, label):
-    # doc_prob: batch * doc_num
-    # ans_prob: batch * doc_num * 4
-    # label: batch * 1
-    ans = torch.bmm(doc_prob.unsqueeze(1), ans_prob)
-
-    prob = torch.log(ans) # batch * 4
-
-    prob = - prob
-    
-    one_hot = torch.zeros(doc_prob.shape[0], 4)
-    one_hot.scatter_(dim = 1, index = label.unsqueeze(1), value = 1)
-    prob = one_hot.mul(prob)
-
-    return torch.sum(prob)/doc_prob.shape[0]
-
-
-
-
 class InputLayer(nn.Module):
     def __init__(self, config):
         super(InputLayer, self).__init__()
@@ -222,26 +203,28 @@ class OutputLayer(nn.Module):
 
     def forward(self, feature):
         # feature size: (batch, 4, doc_num, input_dim)
+        #print('feature size:', feature.shape)
         scores = []
-        for i in range(4):
-            feat = feature[:,i].contiguous()
-
-            if self.output_strategy == "max_pooling_fc":
-                feat, _ = torch.max(feat, dim = 1)
-                feat = self.linear(feat)
+        #for i in range(4):
+        #feat = feature[:,i].contiguous()
+        feat = feature.view(feature.shape[0] * feature.shape[1], feature.shape[2], feature.shape[3])
+        if self.output_strategy == "max_pooling_fc":
+            feat, _ = torch.max(feat, dim = 1)
+            feat = self.linear(feat)
             
-            elif self.output_strategy == "fc_fc":
-                feat = self.linear(feat).squeeze(2)
-                feat = self.linear2(feat)
-                scores.append(feat)
-            
-            elif self.output_strategy == "fc_max_pooling":
-                feat = self.linear(feat)
-                feat, _ = torch.max(feat, dim = 1)
-            
+        elif self.output_strategy == "fc_fc":
+            feat = self.linear(feat).squeeze(2)
+            feat = self.linear2(feat)
             scores.append(feat)
+            
+        elif self.output_strategy == "fc_max_pooling":
+            feat = self.linear(feat)
+            feat, _ = torch.max(feat, dim = 1)
+            
+        #scores.append(feat)
         
-        scores = torch.cat(scores, dim = 1)
+        #scores = torch.cat(scores, dim = 1)
+        scores = feat.squeeze().view(-1, 4)
         if self.multi:
             scores = self.multi_module(scores)
         
@@ -262,7 +245,9 @@ class MultiMatchNet(nn.Module):
         #if config.getboolean("data", "need_word2vec"):
         #    self.embs = generate_embedding(self.embs, config)
 
-        self.need_gate = config.getboolean('model', 'gate')
+
+        self.topN = config.getint('data', 'topN')
+        self.batch_size = config.getint('train', 'batch_size')
 
 
         self.input = InputLayer(config)
@@ -314,19 +299,33 @@ class MultiMatchNet(nn.Module):
             question = self.embs(question)
         
         hq = self.input(question)
+        hq = hq.unsqueeze(1).repeat(1, 4, 1, 1)
+        hq = hq.view(self.batch_size * 4, hq.shape[2], hq.shape[3])
+        hq = hq.unsqueeze(1).repeat(1, self.topN, 1, 1)
+        hq = hq.view(self.batch_size * 4 * self.topN, hq.shape[2], hq.shape[3])
+
+
+
 
         out = []
         feature = []
-        for option_index in range(4):
-            option = option_list[:,option_index].contiguous()
-            docs = documents[:,option_index].contiguous()
-            
-            if not config.getboolean('data', 'need_word2vec'):
-                option = self.embs(option)
 
-            ha = self.input(option)
+        #for option_index in range(4):
+        #    option = option_list[:,option_index].contiguous()
+        #    docs = documents[:,option_index].contiguous()
+        option = option_list.view(self.batch_size * 4, option_list.shape[2], option_list.shape[3])
+        docs = documents.view(self.batch_size * 4, documents.shape[2], documents.shape[3], documents.shape[4])
             
-            hfs = []
+        if not config.getboolean('data', 'need_word2vec'):
+            option = self.embs(option)
+
+        ha = self.input(option)
+
+        ha = ha.unsqueeze(1).repeat(1, self.topN, 1, 1)
+        ha = ha.view(self.batch_size * 4 * self.topN, ha.shape[2], ha.shape[3])
+            
+        hfs = []
+        '''
             for doc_index in range(docs.shape[1]):
                 doc = docs[:,doc_index].contiguous()
 
@@ -350,22 +349,26 @@ class MultiMatchNet(nn.Module):
                 hfs.append(hf.unsqueeze(1))
 
             hfs = torch.cat(hfs, dim = 1) # size: (batch, doc_num, 6 * hidden_size)
-            feature.append(hfs.unsqueeze(1))
-
-            '''
-            if self.need_gate:
-                hf, _ = self.out_gate(hfs)
-            if not self.need_gate:
-                hf, _ = torch.max(hfs, dim = 1)
-            hf = F.relu(self.output_linear0(hf))
-
-            hf = self.output_linear1(hf)#.squeeze(2)
-            if self.need_gate:
-                hf = hf.squeeze(2)
+        '''
             
-            out.append(hf)
-            '''
-        feature = torch.cat(feature, dim = 1)
+        doc = docs.view(self.batch_size * self.topN * 4, docs.shape[2], docs.shape[3])
+            
+        if not config.getboolean('data', 'need_word2vec'):
+            doc = self.embs(doc)
+
+        hp = self.input(doc)
+        hf1 = self.EAM1(hq, hp, ha)
+        hf2 = self.EAM1(hq, ha, hp)
+        hf3 = self.QPAM(hq, hp, ha)
+
+        hfs = torch.cat([hf1, hf2, hf3], dim = 1)
+        hfs = hfs.view(self.batch_size * 4, self.topN, 6 * self.hidden_size)
+        
+        feature = hfs.view(self.batch_size, 4, self.topN, 6 * self.hidden_size)
+
+        #feature.append(hfs.unsqueeze(1))
+
+        #feature = torch.cat(feature, dim = 1)
         out_result = self.output(feature)
 
         # out_result = torch.cat(out, dim = 1)
