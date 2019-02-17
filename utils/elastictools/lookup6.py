@@ -35,7 +35,7 @@ def workx(s, t, k):
             }
         ]
 
-    response = search("law", "data", request_body)
+    response = search("law2", "data", request_body)
     for a in range(0, k):
         l.append(response["hits"]["hits"][a]["_source"]["content"])
 
