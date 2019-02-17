@@ -59,9 +59,46 @@ num_list = {
 }
 
 
+def get_number_from_string(s):
+    for x in s:
+        if not (x in num_list):
+            print(s)
+            gg
+
+    value = 0
+    try:
+        value = int(s)
+    except ValueError:
+        nowbase = 1
+        addnew = True
+        for a in range(len(s) - 1, -1, -1):
+            if s[a] == u'十':
+                nowbase = 10
+                addnew = False
+            elif s[a] == u'百':
+                nowbase = 100
+                addnew = False
+            elif s[a] == u'千':
+                nowbase = 1000
+                addnew = False
+            elif s[a] == u'万':
+                nowbase = 10000
+                addnew = False
+            else:
+                value = value + nowbase * num_list[s[a]]
+                addnew = True
+
+        if not (addnew):
+            value += nowbase
+
+    return value
+
+
 def parse(s):
     res = []
     temps = ""
+
+    pre = 0
 
     for a in range(0, len(s)):
         if s[a] == "第":
@@ -69,10 +106,16 @@ def parse(s):
             while b < len(s) and s[b] in num_list.keys():
                 b += 1
             if s[b] == "条":
-                if len(temps) != 0:
-                    res.append(temps)
-                temps = s[a:b + 1]
-                a = b
+                x = get_number_from_string(s[a + 1:b])
+                if x == pre + 1:
+                    pre += 1
+                    if len(temps) != 0:
+                        res.append(temps)
+                    temps = s[a:b + 1]
+                    a = b
+                else:
+                    temps = temps + s[a]
+
         else:
             temps = temps + s[a]
 
