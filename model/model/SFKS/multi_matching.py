@@ -205,6 +205,50 @@ class GateLayer(nn.Module):
 
 
 
+class OutputLayer(nn.Module):
+    def __init__(self, config, input_dim):
+        super(OutputLayer, self).__init__()
+        
+        self.output_strategy = config.get('model', 'output_strategy')
+        
+        self.linear = nn.Linear(input_dim, 1)
+        if self.output_strategy == "fc_fc":
+            self.linear2 = nn.Linear(config.getint('data', 'topN'), 1)
+
+        self.multi = config.getboolean('data', 'multi_choice')
+        if self.multi:
+            self.mutli_module = nn.Linear(4, 16)
+
+
+    def forward(self, feature):
+        # feature size: (batch, 4, doc_num, input_dim)
+        scores = []
+        for i in range(4):
+            feat = feature[:,i].contiguous()
+
+            if self.output_strategy == "max_pooling_fc":
+                feat, _ = torch.max(feat, dim = 1)
+                feat = self.linear(feat)
+            
+            elif self.output_strategy == "fc_fc":
+                feat = self.linear(feat).squeeze(2)
+                feat = self.linear2(feat)
+                scores.append(feat)
+            
+            elif self.output_strategy == "fc_max_pooling":
+                feat = self.linear(feat)
+                feat, _ = torch.max(feat, dim = 1)
+            
+            scores.append(feat)
+        
+        scores = torch.cat(scores, dim = 1)
+        if self.multi:
+            scores = self.multi_module(scores)
+        
+        return scores
+            
+
+
 class MultiMatchNet(nn.Module):
     def __init__(self, config):
         super(MultiMatchNet, self).__init__()
@@ -226,23 +270,29 @@ class MultiMatchNet(nn.Module):
         #self.EAM2 = EAMatch(config)
 
         self.QPAM = QPAMatch(config)
-        self.output_linear0 = nn.Linear(6 * self.hidden_size, 2 * self.hidden_size)
-        self.output_linear1 = nn.Linear(2 * self.hidden_size, 1)
         
-        if self.need_gate:
-            self.out_gate = GateLayer(config, 6 * self.hidden_size)
+        #self.output_linear0 = nn.Linear(6 * self.hidden_size, 2 * self.hidden_size)
+        #self.output_linear1 = nn.Linear(2 * self.hidden_size, 1)
+        
+        #if self.need_gate:
+        #    self.out_gate = GateLayer(config, 6 * self.hidden_size)
+
+        self.output = OutputLayer(config, self.hidden_size * 6)
+
 
     def init_multi_gpu(self, device):
         self.EAM1 = nn.DataParallel(self.EAM1)
         self.QPAM = nn.DataParallel(self.QPAM)
-        self.output_linear0 = nn.DataParallel(self.output_linear0)
-        self.output_linear1 = nn.DataParallel(self.output_linear1)
+        #self.output_linear0 = nn.DataParallel(self.output_linear0)
+        #self.output_linear1 = nn.DataParallel(self.output_linear1)
         
-        if self.need_gate:
-            self.out_gate = nn.DataParallel(self.out_gate)
+        #if self.need_gate:
+        #    self.out_gate = nn.DataParallel(self.out_gate)
         
         self.input = nn.DataParallel(self.input)
         self.embs = nn.DataParallel(self.embs)
+
+        self.output = nn.DataParallel(self.output)
 
 
     def forward(self, data, criterion, config, usegpu, acc_result = None):
@@ -266,6 +316,7 @@ class MultiMatchNet(nn.Module):
         hq = self.input(question)
 
         out = []
+        feature = []
         for option_index in range(4):
             option = option_list[:,option_index].contiguous()
             docs = documents[:,option_index].contiguous()
@@ -298,8 +349,10 @@ class MultiMatchNet(nn.Module):
                 # hf: 6 * hidden_size
                 hfs.append(hf.unsqueeze(1))
 
-            hfs = torch.cat(hfs, dim = 1)
-            #print(hfs.shape)
+            hfs = torch.cat(hfs, dim = 1) # size: (batch, doc_num, 6 * hidden_size)
+            feature.append(hfs.unsqueeze(1))
+
+            '''
             if self.need_gate:
                 hf, _ = self.out_gate(hfs)
             if not self.need_gate:
@@ -309,10 +362,13 @@ class MultiMatchNet(nn.Module):
             hf = self.output_linear1(hf)#.squeeze(2)
             if self.need_gate:
                 hf = hf.squeeze(2)
-
+            
             out.append(hf)
+            '''
+        feature = torch.cat(feature, dim = 1)
+        out_result = self.output(feature)
 
-        out_result = torch.cat(out, dim = 1)
+        # out_result = torch.cat(out, dim = 1)
         
         loss = criterion(out_result, labels)
         accu, acc_result = calc_accuracy(out_result, labels, config, acc_result)

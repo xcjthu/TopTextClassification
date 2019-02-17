@@ -20,20 +20,22 @@ class SeaReaderFormatter:
     def check(self, data, config):
         data = json.loads(data)
         if not ("answer" in data.keys()):
-            # print("gg1")
             return None
-        if len(data["answer"]) != 1:
-            # print("gg2")
+
+        if(not config.getboolean("data", "multi_choice")) and len(data["answer"]) != 1:
             return None
+
+        if len(data["answer"]) == 0:
+            return None
+
         if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
-            # print("gg3")
             return None
+
         for option in data["option_list"]:
             if len(data["option_list"][option]) == 0 or len(data["option_list"][option]) > self.max_len:
-                # print("gg4")
                 return None
+
         if len(data["option_list"]) != 4:
-            # print("gg5")
             return None
         if not ("reference" in data.keys()):
             return None
@@ -76,16 +78,16 @@ class SeaReaderFormatter:
                            self.lookup(temp_data["option_list"]["C"], self.opt_len, transformer),
                            self.lookup(temp_data["option_list"]["D"], self.opt_len, transformer)])
 
-            if check_multi(config):
-                label_x = [0, 0, 0, 0]
+            if config.getboolean("data", "multi_choice"):
+                label_x = 0
                 if "A" in temp_data["answer"]:
-                    label_x[0] = 1
+                    label_x += 1
                 if "B" in temp_data["answer"]:
-                    label_x[1] = 1
+                    label_x += 2
                 if "C" in temp_data["answer"]:
-                    label_x[2] = 1
+                    label_x = 4
                 if "D" in temp_data["answer"]:
-                    label_x[3] = 1
+                    label_x = 8
             else:
                 label_x = 0
                 if "A" in temp_data["answer"]:
