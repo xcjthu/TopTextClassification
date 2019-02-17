@@ -44,7 +44,7 @@ def cut_file(path):
     for a in range(0, len(data)):
         data[a] = cut(data[a])
 
-    json.dump(data, open(os.path.join(output_data_path, path), "w"))
+    json.dump(data, open(os.path.join(output_data_path, path), "w"), sort_keys=True, ensure_ascii=False, indent=2)
 
 
 def dfs_search(path):
