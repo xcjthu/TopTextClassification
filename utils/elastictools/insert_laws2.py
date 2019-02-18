@@ -40,8 +40,17 @@ def dfs_insert(index, doc_type, title, x):
 def insert_file(index, doc_type, file_path):
     data = json.load(open(file_path, "r"))
 
+    total = len(data["laws"])
+    cnt = 0
+
     for x in data["laws"]:
         dfs_insert(index, doc_type, x["title"], x)
+        cnt += 1
+
+        print('\r', end='', flush=True)
+        print("%d/%d" % (cnt, total), end='', flush=True)
+
+    print("")
 
 
 if __name__ == "__main__":
