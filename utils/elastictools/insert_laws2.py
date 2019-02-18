@@ -109,7 +109,7 @@ def parse(s):
                 x = get_number_from_string(s[a + 1:b])
                 if x == pre + 1:
                     pre += 1
-                    if len(temps) != 0:
+                    if len(temps) != 0 and len(temps)<1000:
                         res.append(temps)
                     temps = s[a:b + 1]
                     a = b
@@ -122,7 +122,7 @@ def parse(s):
             temps = temps + s[a]
         a += 1
 
-    if len(temps) != 0:
+    if len(temps) != 0 and len(temps)<1000:
         res.append(temps)
 
     return res
@@ -157,7 +157,7 @@ def insert_file(index, doc_type, file_path):
             if len(x["law_articles"]) == 0:
                 z = parse(x["content"])
                 print(z)
-                gg
+                continue#gg
 
                 for y in z:
                     insert_doc(index, doc_type, {"title": x["title"], "content": x["title"] + " " + y},
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     # print(json.dumps(mapping, indent=2))
     create_index(index_name, json.dumps(mapping))
 
-    file_list = ["b0_new.json", "b1_new.json", "b2_new.json", "b3_new.json", "b4_new.json"]
+    file_list = ["a0_new.json", "a1_new.json", "a2_new.json", "b3_new.json", "b4_new.json"]
     pre_path = "/data/disk1/data/law_data/"
 
     for name in file_list:
