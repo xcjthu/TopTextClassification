@@ -44,8 +44,11 @@ def insert_file(index, doc_type, file_path):
     cnt = 0
 
     for x in data["laws"]:
-        for y in x["law_articles"]:
-            dfs_insert(index, doc_type, x["title"], y)
+        if x["authority_level"] >= 20:
+            pass
+        else:
+            for y in x["law_articles"]:
+                dfs_insert(index, doc_type, x["title"], y)
         cnt += 1
 
         print('\r', end='', flush=True)
