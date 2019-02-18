@@ -151,7 +151,9 @@ def insert_file(index, doc_type, file_path):
     cnt = 0
 
     for x in data["laws"]:
-        if x["authority_level"] >= 20:
+        if x["authority_level"] in [1, 2, 3, 4, 10, 11, 12, 13, 14, 15, 16, 17, 18]:
+            pass
+        elif x["title"].find("批复") != -1:
             pass
         else:
             if len(x["law_articles"]) == 0:
