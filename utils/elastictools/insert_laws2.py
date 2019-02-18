@@ -109,7 +109,7 @@ def parse(s):
                 x = get_number_from_string(s[a + 1:b])
                 if x == pre + 1:
                     pre += 1
-                    if len(temps) != 0 and len(temps) < 1000:
+                    if len(temps) != 0 and len(temps) < 500:
                         res.append(temps)
                     temps = s[a:b + 1]
                     a = b
@@ -122,7 +122,7 @@ def parse(s):
             temps = temps + s[a]
         a += 1
 
-    if len(temps) != 0 and len(temps) < 1000:
+    if len(temps) != 0 and len(temps) < 500:
         res.append(temps)
 
     return res
@@ -138,7 +138,7 @@ def dfs(x):
 def dfs_insert(index, doc_type, title, x):
     if x["article_level"] == 4:
         z = dfs(x)
-        insert_doc(index, doc_type, {"title": title, "content": title + " " + z}, str(uuid.uuid4()))
+        insert_doc(index, doc_type, {"title": title, "content": z}, str(uuid.uuid4()))
     else:
         for y in x["child"]:
             dfs_insert(index, doc_type, title, y)
@@ -158,7 +158,7 @@ def insert_file(index, doc_type, file_path):
                 z = parse(x["content"])
 
                 for y in z:
-                    insert_doc(index, doc_type, {"title": x["title"], "content": x["title"] + " " + y},
+                    insert_doc(index, doc_type, {"title": x["title"], "content": y},
                                str(uuid.uuid4()))
             else:
                 for y in x["law_articles"]:
