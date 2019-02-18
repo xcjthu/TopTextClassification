@@ -41,7 +41,8 @@ def insert_file(index, doc_type, file_path):
     data = json.load(open(file_path, "r"))
 
     for x in data["laws"]:
-        dfs_insert(index, doc_type, x["title"], x)
+        for y in x["law_articles"]:
+            dfs_insert(index, doc_type, x["title"], y)
 
 
 if __name__ == "__main__":
