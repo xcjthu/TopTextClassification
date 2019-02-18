@@ -4,8 +4,8 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 
-input_data_path = "/data/disk3/private/zhx/exam/data/origin_data/final"
-output_data_path = "/data/disk3/private/zhx/exam/data/cut_data/final"
+input_data_path = "/data/disk3/private/zhx/exam/data/origin_data/final3"
+output_data_path = "/data/disk3/private/zhx/exam/data/cut_data/final3"
 
 word_set = set()
 
@@ -90,5 +90,5 @@ word_dic = {}
 for a in range(0, len(word_set)):
     word_dic[word_set[a]] = a
 
-json.dump(word_dic, open("/data/disk3/private/zhx/exam/data/embedding/word2id.txt", "w"), indent=2,
+json.dump(word_dic, open("/data/disk3/private/zhx/exam/data/embedding/word2id4.txt", "w"), indent=2,
           ensure_ascii=False)
