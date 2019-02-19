@@ -10,7 +10,7 @@ file_list = ["0_train.json", "1_train.json", "0_test.json", "1_test.json"]
 
 
 def format(s):
-    s = s.replace(" ", "").replace("\t", "").replace("\n","")
+    s = s.replace(" ", "").replace("\t", "").replace("\n", "")
     return s
 
 
@@ -35,9 +35,10 @@ def check(s1, s2):
                     f[a][b] = min(f[a][b], f[a - 1][b - 1] + (s1[a - 1] != s2[b - 1]))
 
     x = f[l1][l2]
-    if x <= (l1+l2)*0.2:
+    if x <= (l1 + l2) * 0.2:
         return False
     return True
+
 
 def worky(s, k):
     l = []
@@ -65,14 +66,21 @@ def worky(s, k):
         if check(l[-1], s):
             l.append(s)
         a += 1
-    #print(json.dumps(l, indent=2, ensure_ascii=False))
+    # print(json.dumps(l, indent=2, ensure_ascii=False))
 
     return l
 
 
 def work(filename):
+    total = 0
+    f = open(os.path.join(path, filename), "r")
+    for line in f:
+        total += 1
+    f.close()
+
     print(filename)
     data = []
+    cnt = 0
     f = open(os.path.join(path, filename), "r")
     for line in f:
         d = json.loads(line)
@@ -81,6 +89,9 @@ def work(filename):
             d["reference"][option] = d["reference"][option][0:12] + worky(query, 6)
 
         data.append(d)
+        cnt += 1
+        print("\r", end='')
+        print("%d/%d" % (cnt, total), end='')
 
     f.close()
     f = open(os.path.join(output_path, filename), "w")
