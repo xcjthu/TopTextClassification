@@ -30,8 +30,10 @@ def worky(s, k):
         }
     }
     response = search("law_laws", "data", request_body)
-    for a in range(0, k):
+    for a in range(0, min(k, len(response["hits"]["hits"]))):
         l.append(response["hits"]["hits"][a]["_source"]["content"])
+    while len(l) < k:
+        l.append("")
     # print(json.dumps(l, indent=2, ensure_ascii=False))
 
     return l
