@@ -4,8 +4,8 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 
-input_data_path = "/data/disk3/private/zhx/exam/data/origin_data/final3"
-output_data_path = "/data/disk3/private/zhx/exam/data/cut_data/final3"
+input_data_path = "/data/disk3/private/zhx/exam/data/origin_data/final4"
+output_data_path = "/data/disk3/private/zhx/exam/data/cut_data/final4"
 
 word_set = set()
 
