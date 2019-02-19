@@ -9,6 +9,36 @@ output_path = "/data/disk3/private/zhx/exam/data/origin_data/final4"
 file_list = ["0_train.json", "1_train.json", "0_test.json", "1_test.json"]
 
 
+def format(s):
+    s = s.replace(" ", "").replace("\t", "")
+    return s
+
+
+def cmp(s1, s2):
+    f = []
+    l1 = len(s1)
+    l2 = len(s2)
+    for a in range(0, l1 + 1):
+        f.append([])
+        for b in range(0, l2 + 1):
+            f[-1].append(1e+20)
+
+    f[0][0] = 0
+    for a in range(0, l1 + 1):
+        for b in range(0, l2 + 1):
+            if a + b != 0:
+                if a != 0:
+                    f[a][b] = min(f[a][b], f[a - 1][b] + 1)
+                if b != 0:
+                    f[a][b] = min(f[a][b], f[a][b - 1] + 1)
+                if a != 0 and b != 0:
+                    f[a][b] = min(f[a][b], f[a - 1][b - 1] + (s1[a - 1] != s2[b - 1]))
+
+    x = f[l1][l2]
+    if x <= (l1+l2)*0.2:
+        return False
+    return True
+
 def worky(s, k):
     l = []
     request_body = {
@@ -27,12 +57,13 @@ def worky(s, k):
 
     response = search("law_laws", "data", request_body, size=100)
 
-    l.append(response["hits"]["hits"][0]["_source"]["content"])
+    l.append(format(response["hits"]["hits"][0]["_source"]["content"]))
 
     a = 1
     while len(l) < k:
-        if l[-1] != response["hits"]["hits"][a]["_source"]["content"]:
-            l.append(response["hits"]["hits"][a]["_source"]["content"])
+        s = format(response["hits"]["hits"][a]["_source"]["content"])
+        if check(l[-1], s):
+            l.append(s)
         a += 1
     print(json.dumps(l, indent=2, ensure_ascii=False))
 
