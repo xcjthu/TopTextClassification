@@ -86,15 +86,19 @@ class SeaReader(nn.Module):
 
             statement, self.context_statement_hidden =  self.context_layer(statement)
             
-            docs, self.context_doc_hidden = self.context_layer(docs.view(self.batchsize * self.topN, self.doc_len, self.vecsize))
-            docs = docs.view(self.batchsize, self.topN, self.doc_len, self.hidden_size)
+            #change size of statement from (batch, len, hidden) to (batch, topN, len, hidden)
+            #statement = statement.unsqueeze(1).repeat(1, self.topN, 1, 1)
+            #statement = statement.view(self.batchsize * self.topN, self.doc_len, self.hidden_size)
+
+            docs, self.context_doc_hidden = self.context_layer(self.embs(docs.view(self.batchsize * self.topN, self.doc_len, self.vecsize)))
+            #docs = docs.view(self.batchsize, self.topN, self.doc_len, self.hidden_size)
+            
             
 
             docs_read_info = []
             read_sum = []
             for doc_index in range(self.topN):
                 doc = docs[:, doc_index]
-                doc = self.embs(doc)
 
                 match_mat = torch.bmm(statement, torch.transpose(doc, 1, 2))  # batch_size, statement_len, doc_len
 
