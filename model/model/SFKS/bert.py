@@ -66,6 +66,13 @@ class SFKSBert(nn.Module):
             y = self.rank_module(y)
 
             y = y.view(batch, option)
+        elif config.get("model", "rank_method") == "max":
+            y = y.view(batch * option, k, -1)
+            y = torch.max(y, dim=1)[0]
+            y = y.view(batch * option, -1)
+            y = self.rank_module(y)
+            y = y.view(batch, option)
+            output = y
         else:
             y = y.view(batch * option * k, -1)
             y = self.rank_module(y)
