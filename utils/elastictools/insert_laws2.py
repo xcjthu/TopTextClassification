@@ -155,6 +155,10 @@ def insert_file(index, doc_type, file_path):
             pass
         elif x["title"].find("批复") != -1:
             pass
+        elif x["title"].find("答复") != -1:
+            pass
+        elif x["title"].find("复函") != -1:
+            pass
         else:
             if len(x["law_articles"]) == 0:
                 z = parse(x["content"])

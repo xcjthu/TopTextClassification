@@ -10,11 +10,11 @@ file_list = ["0_train.json", "1_train.json", "0_test.json", "1_test.json"]
 
 
 def format(s):
-    s = s.replace(" ", "").replace("\t", "")
+    s = s.replace(" ", "").replace("\t", "").replace("\n","")
     return s
 
 
-def cmp(s1, s2):
+def check(s1, s2):
     f = []
     l1 = len(s1)
     l2 = len(s2)
@@ -65,7 +65,7 @@ def worky(s, k):
         if check(l[-1], s):
             l.append(s)
         a += 1
-    print(json.dumps(l, indent=2, ensure_ascii=False))
+    #print(json.dumps(l, indent=2, ensure_ascii=False))
 
     return l
 
