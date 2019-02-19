@@ -2,7 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable as Var
-from utils.util import calc_accuracy, gen_result
+from utils.util import calc_accuracy, generate_embedding
+
 
 class Gate(nn.Module):
     def __init__(self, config, input_size):
@@ -46,6 +47,13 @@ class SeaReader(nn.Module):
 
         self.output_layer = nn.Linear(4 * self.hidden_size, 1)
 
+        self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
+        self.emb_dim = config.getint("data", "vec_size")  # 300
+        
+        self.embs = nn.Embedding(self.word_num, self.emb_dim)
+        if config.getboolean("data", "need_word2vec"):
+            self.embs = generate_embedding(self.embs, config)
+
 
     def init_multi_gpu(self, device):
         self.context_layer = nn.DataParallel(self.context_layer)
@@ -56,16 +64,7 @@ class SeaReader(nn.Module):
         self.output_layer = nn.DataParallel(self.output_layer)
         
 
-    def init_hidden(self, config, usegpu):
-        if (usegpu):
-            self.context_statement_hidden = Var(torch.Tensor(1, self.batchsize * 4, self.hidden_size).cuda())
-            self.context_doc_hidden = Var(torch.Tensor(1, self.batchsize * self.topN * 4, self.hidden_size).cuda())
-            self.doc_reason_hidden = Var(torch.Tensor(1, self.batchsize, self.hidden_size).cuda())
-            self.statement_reason_hidden = Var(torch.Tensor(1, self.batchsize, self.hidden_size).cuda())
-        
-	
     def forward(self, data, criterion, config, usegpu, acc_result = None):
-        # self.init_hidden(config, usegpu)
 
         question = data['statement']
         option_list = data['answer']
@@ -73,10 +72,14 @@ class SeaReader(nn.Module):
         labels = data['label']
         # documents shape : batchsize * topn * doclength * vecsize
         
-
+        question = self.embs(question)
+        
         out_result = []
         for option_index in range(4):
             option = option_list[:,option_index].contiguous()
+            
+            option = self.embs(option)
+
             docs = documents[:,option_index].contiguous()
 
             statement = torch.cat([question, option], dim = 1)
@@ -91,6 +94,8 @@ class SeaReader(nn.Module):
             read_sum = []
             for doc_index in range(self.topN):
                 doc = docs[:, doc_index]
+                doc = self.embs(doc)
+
                 match_mat = torch.bmm(statement, torch.transpose(doc, 1, 2))  # batch_size, statement_len, doc_len
 
                 softmax_col = F.softmax(match_mat, dim = 2)

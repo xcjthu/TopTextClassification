@@ -9,7 +9,6 @@ import json
 from utils.util import calc_accuracy, gen_result
 
 
-
 class InputLayer(nn.Module):
     def __init__(self, config):
         super(InputLayer, self).__init__()

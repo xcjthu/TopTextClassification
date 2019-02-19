@@ -41,7 +41,10 @@ class SeaReaderFormatter:
             return None
 
         return data
+    
 
+
+    '''
     def lookup(self, data, max_len, transforemer=None):
         lookup_id = []
         for word in data:
@@ -63,6 +66,22 @@ class SeaReaderFormatter:
         lookup_id = lookup_id[0:max_len]
 
         return lookup_id
+    '''
+
+
+    def lookup(self, data, max_len):
+        lookup_id = []
+        for word in data:
+            try:
+                lookup_id.append(self.word2id[word])
+            except:
+                lookup_id.append(self.word2id["UNK"])
+
+        while len(lookup_id) < max_len:
+            lookup_id.append(self.word2id["PAD"])
+        lookup_id = lookup_id[:max_len]
+
+        return lookup_id
 
 
     def format(self, data, config, transformer, mode):
@@ -72,11 +91,11 @@ class SeaReaderFormatter:
         label = []
 
         for temp_data in data:
-            statement.append(self.lookup(temp_data["statement"], self.que_len, transformer))
-            answer.append([self.lookup(temp_data["option_list"]["A"], self.opt_len, transformer),
-                           self.lookup(temp_data["option_list"]["B"], self.opt_len, transformer),
-                           self.lookup(temp_data["option_list"]["C"], self.opt_len, transformer),
-                           self.lookup(temp_data["option_list"]["D"], self.opt_len, transformer)])
+            statement.append(self.lookup(temp_data["statement"], self.que_len))
+            answer.append([self.lookup(temp_data["option_list"]["A"], self.opt_len),
+                           self.lookup(temp_data["option_list"]["B"], self.opt_len),
+                           self.lookup(temp_data["option_list"]["C"], self.opt_len),
+                           self.lookup(temp_data["option_list"]["D"], self.opt_len)])
 
             if config.getboolean("data", "multi_choice"):
                 label_x = 0
@@ -105,18 +124,13 @@ class SeaReaderFormatter:
             for option in ["A", "B", "C", "D"]:
                 temp_ref.append([])
                 for a in range(0, self.topN):
-                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], self.max_len, transformer))
+                    temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], self.max_len))
 
             reference.append(temp_ref)
 
-        if self.need:
-            statement = torch.tensor(statement, dtype=torch.float)
-            reference = torch.tensor(reference, dtype=torch.float)
-            answer = torch.tensor(answer, dtype=torch.float)
-        else:
-            statement = torch.tensor(statement, dtype=torch.long)
-            reference = torch.tensor(reference, dtype=torch.long)
-            answer = torch.tensor(answer, dtype=torch.long)
+        statement = torch.tensor(statement, dtype=torch.long)
+        reference = torch.tensor(reference, dtype=torch.long)
+        answer = torch.tensor(answer, dtype=torch.long)
 
         label = torch.tensor(label, dtype=torch.long)
 

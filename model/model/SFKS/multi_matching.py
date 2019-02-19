@@ -6,7 +6,7 @@ from torch.autograd import Variable as Var
 import numpy as np
 import json
 
-from utils.util import calc_accuracy, gen_result
+from utils.util import calc_accuracy, gen_result, generate_embedding
 
 
 class InputLayer(nn.Module):
@@ -242,9 +242,9 @@ class MultiMatchNet(nn.Module):
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
 
         self.embs = nn.Embedding(self.word_num, self.emb_dim)
-        #if config.getboolean("data", "need_word2vec"):
-        #    self.embs = generate_embedding(self.embs, config)
-
+        if config.getboolean("data", "need_word2vec"):
+            self.embs = generate_embedding(self.embs, config)
+        
 
         self.topN = config.getint('data', 'topN')
         self.batch_size = config.getint('train', 'batch_size')
@@ -252,17 +252,13 @@ class MultiMatchNet(nn.Module):
 
         self.input = InputLayer(config)
         self.EAM1 = EAMatch(config)
-        #self.EAM2 = EAMatch(config)
 
         self.QPAM = QPAMatch(config)
         
-        #self.output_linear0 = nn.Linear(6 * self.hidden_size, 2 * self.hidden_size)
-        #self.output_linear1 = nn.Linear(2 * self.hidden_size, 1)
-        
-        #if self.need_gate:
-        #    self.out_gate = GateLayer(config, 6 * self.hidden_size)
 
         self.output = OutputLayer(config, self.hidden_size * 6)
+
+        print('output_strategy:', config.get('model', 'output_strategy'))
 
 
     def init_multi_gpu(self, device):
@@ -295,8 +291,8 @@ class MultiMatchNet(nn.Module):
         '''
 
 
-        if not config.getboolean("data", "need_word2vec"):
-            question = self.embs(question)
+        #if not config.getboolean("data", "need_word2vec"):
+        question = self.embs(question)
         
         hq = self.input(question)
         hq = hq.unsqueeze(1).repeat(1, 4, 1, 1)
@@ -313,11 +309,12 @@ class MultiMatchNet(nn.Module):
         #for option_index in range(4):
         #    option = option_list[:,option_index].contiguous()
         #    docs = documents[:,option_index].contiguous()
-        option = option_list.view(self.batch_size * 4, option_list.shape[2], option_list.shape[3])
-        docs = documents.view(self.batch_size * 4, documents.shape[2], documents.shape[3], documents.shape[4])
+        option = option_list.view(self.batch_size * 4, option_list.shape[2])#, option_list.shape[3])
+        docs = documents.view(self.batch_size * 4, documents.shape[2], documents.shape[3])#, documents.shape[4])
             
-        if not config.getboolean('data', 'need_word2vec'):
-            option = self.embs(option)
+        #if not config.getboolean('data', 'need_word2vec'):
+        option = self.embs(option)
+
 
         ha = self.input(option)
 
@@ -351,10 +348,10 @@ class MultiMatchNet(nn.Module):
             hfs = torch.cat(hfs, dim = 1) # size: (batch, doc_num, 6 * hidden_size)
         '''
             
-        doc = docs.view(self.batch_size * self.topN * 4, docs.shape[2], docs.shape[3])
+        doc = docs.view(self.batch_size * self.topN * 4, docs.shape[2])#, docs.shape[3])
             
-        if not config.getboolean('data', 'need_word2vec'):
-            doc = self.embs(doc)
+        #if not config.getboolean('data', 'need_word2vec'):
+        doc = self.embs(doc)
 
         hp = self.input(doc)
         hf1 = self.EAM1(hq, hp, ha)
