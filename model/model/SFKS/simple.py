@@ -145,8 +145,8 @@ class SimpleAndEffective(nn.Module):
 
         self.question_encoder = GRUEncoder(self.batch * self.k * 4, self.word_size, self.hidden_size, self.layers,
                                            self.max_len)
-        self.article_encoder = GRUEncoder(self.batch * self.k * 4, self.word_size, self.hidden_size, self.layers,
-                                          self.max_len)
+        self.article_encoder = self.question_encoder  # GRUEncoder(self.batch * self.k * 4, self.word_size, self.hidden_size, self.layers,
+        # self.max_len)
         self.encoder = GRUEncoder(self.batch * self.k * 4, self.hidden_size * 8, self.hidden_size, self.layers,
                                   self.max_len)
 
