@@ -123,7 +123,8 @@ class SeaReaderFormatter:
             temp_ref = []
             for option in ["A", "B", "C", "D"]:
                 temp_ref.append([])
-                for a in range(0, self.topN):
+                for a in [0,1,6,7,12,13]:
+                #for a in range(0, self.topN):
                     temp_ref[-1].append(self.lookup(temp_data["reference"][option][a], self.max_len))
 
             reference.append(temp_ref)

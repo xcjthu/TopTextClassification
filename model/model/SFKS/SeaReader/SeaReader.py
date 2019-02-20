@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable as Var
 from utils.util import calc_accuracy, generate_embedding
-
+import json
 
 class Gate(nn.Module):
     def __init__(self, config, input_size):
@@ -27,8 +27,11 @@ class SeaReader(nn.Module):
         super(SeaReader, self).__init__()
 
         self.vecsize = config.getint('data', 'vec_size')
-        self.statement_len = config.getint('data', 'max_len')
-        self.option_len = config.getint('data', 'max_len')
+        self.statement_len = config.getint('data', 'question_max_len')
+        self.option_len = config.getint('data', 'option_max_len')
+        
+        self.statement_len = self.statement_len + self.option_len
+        
         self.topN = config.getint('data', 'topN')
         self.doc_len = config.getint('data', 'max_len')
 
@@ -54,15 +57,22 @@ class SeaReader(nn.Module):
         if config.getboolean("data", "need_word2vec"):
             self.embs = generate_embedding(self.embs, config)
 
+        self.multi = config.getboolean("data", "multi_choice")
+        if self.multi:
+            self.multi_module = nn.Linear(4, 16)
+
 
     def init_multi_gpu(self, device):
+        print('gg: begin init multi gpu')
         self.context_layer = nn.DataParallel(self.context_layer)
         self.statement_reason_layer = nn.DataParallel(self.statement_reason_layer)
         self.doc_reason_layer = nn.DataParallel(self.doc_reason_layer)
         self.reason_gate = nn.DataParallel(self.reason_gate)
         self.intergrate_gate = nn.DataParallel(self.intergrate_gate)
         self.output_layer = nn.DataParallel(self.output_layer)
-        
+        if self.multi:
+            self.multi_module = nn.DataParallel(self.multi_module)
+        print('gg: end init multi gpu')
 
     def forward(self, data, criterion, config, usegpu, acc_result = None):
 
@@ -84,61 +94,78 @@ class SeaReader(nn.Module):
 
             statement = torch.cat([question, option], dim = 1)
 
-            statement, self.context_statement_hidden =  self.context_layer(statement)
+            statement, self.context_statement_hidden = self.context_layer(statement)
+
             
-            docs, self.context_doc_hidden = self.context_layer(docs.view(self.batchsize * self.topN, self.doc_len, self.vecsize))
-            docs = docs.view(self.batchsize, self.topN, self.doc_len, self.hidden_size)
+            #change size of statement from (batch, len, hidden) to (batch, topN, len, hidden)
+            statement = statement.unsqueeze(1).repeat(1, self.topN, 1, 1)
+            statement = statement.view(self.batchsize * self.topN, self.statement_len, self.hidden_size)
+
+
+            docs, self.context_doc_hidden = self.context_layer(self.embs(docs.view(self.batchsize * self.topN, self.doc_len)))
+            #docs = docs.view(self.batchsize, self.topN, self.doc_len, self.hidden_size)
             
 
             docs_read_info = []
             read_sum = []
-            for doc_index in range(self.topN):
-                doc = docs[:, doc_index]
-                doc = self.embs(doc)
+            #for doc_index in range(self.topN):
+            #    doc = docs[:, doc_index]
 
-                match_mat = torch.bmm(statement, torch.transpose(doc, 1, 2))  # batch_size, statement_len, doc_len
+            match_mat = torch.bmm(statement, torch.transpose(docs, 1, 2))  # batch_size * self.topN, statement_len, doc_len
 
-                softmax_col = F.softmax(match_mat, dim = 2)
-                read_sum.append(torch.bmm(softmax_col, doc).unsqueeze(1))
-                
-                softmax_row = F.softmax(match_mat, dim = 1)
-                doc_read = torch.bmm(torch.transpose(softmax_row, 1, 2), statement)
-                docs_read_info.append(doc_read.unsqueeze(1))
-            docs_read_info = torch.cat(docs_read_info, dim = 1)
-            docs_read_info = torch.cat([docs, docs_read_info], dim = 3)
+            softmax_col = F.softmax(match_mat, dim = 2)
+            #    read_sum.append(torch.bmm(softmax_col, doc).unsqueeze(1))
+            read_sum = torch.bmm(softmax_col, docs) # batch*topN, statement_len, hidden
+               
+            softmax_row = F.softmax(match_mat, dim = 1)
+            doc_read = torch.bmm(torch.transpose(softmax_row, 1, 2), statement)
+            #    docs_read_info.append(doc_read.unsqueeze(1))
+            docs_read_info = doc_read
             
-            read_sum = torch.cat(read_sum, dim = 1) # batchsize, topN, len, hidden_size
+            #docs_read_info = torch.cat(docs_read_info, dim = 1)
+            docs_read_info = torch.cat([docs, docs_read_info], dim = 2) # (batch_size * topN, doc_len, 2 * hidden)
+            
+            #read_sum = torch.cat(read_sum, dim = 1) # batchsize, topN, len, hidden_size
 
 
             doc_doc_att = []
             doc_doc_tmp = docs_read_info.view(self.batchsize, self.topN * self.doc_len, self.hidden_size * 2)
-            for doc_index in range(self.topN):
-                doc = docs_read_info[:, doc_index]
-                match_m = torch.bmm(doc, torch.transpose(doc_doc_tmp, 1, 2))
-                softmax_col = F.softmax(match_m, dim = 2)
-                doc_doc_att.append(torch.bmm(softmax_col, doc_doc_tmp).unsqueeze(1))
-            
+            doc_doc_tmp = doc_doc_tmp.unsqueeze(1).repeat(1, self.topN, 1, 1).view(self.batchsize * self.topN, self.topN * self.doc_len, self.hidden_size * 2)
 
-            doc_read_info = torch.cat(doc_doc_att, dim = 1) # batchsize, topN, doc_len, 2 * hidden_size
+            #for doc_index in range(self.topN):
+            #    doc = docs_read_info[:, doc_index]
+            doc = docs_read_info.view(self.batchsize * self.topN, self.doc_len, 2 * self.hidden_size)
+
+            match_m = torch.bmm(doc, torch.transpose(doc_doc_tmp, 1, 2))
+            softmax_col = F.softmax(match_m, dim = 2)
+            #    doc_doc_att.append(torch.bmm(softmax_col, doc_doc_tmp).unsqueeze(1))
+            
+            doc_read_info = torch.bmm(softmax_col, doc_doc_tmp)
+            #doc_read_info = torch.cat(doc_doc_att, dim = 1) # batchsize, topN, doc_len, 2 * hidden_size
             
             reason_statement_result = []
             reason_doc_result = []
-            for doc_index in range(self.topN):
-                doc = doc_read_info[:, doc_index]
-                statement = read_sum[:, doc_index]
+            #for doc_index in range(self.topN):
+            #    doc = doc_read_info[:, doc_index]
+            #    statement = read_sum[:, doc_index]
+            doc = doc_read_info
+            statement = read_sum
 
-                statement, self.statement_reason_hidden = self.statement_reason_layer(statement)
-                doc, self.doc_reason_hidden = self.doc_reason_layer(doc)
+            statement, self.statement_reason_hidden = self.statement_reason_layer(statement)
+            doc, self.doc_reason_hidden = self.doc_reason_layer(doc)
                 
-                statement = torch.max(statement, dim = 1)[0]
-                doc = torch.max(doc, dim = 1)[0]
+            statement = torch.max(statement, dim = 1)[0]
+            doc = torch.max(doc, dim = 1)[0]
+            
                 
-                reason_statement_result.append(statement.unsqueeze(1))
-                reason_doc_result.append(doc.unsqueeze(1))
+            #    reason_statement_result.append(statement.unsqueeze(1))
+            #    reason_doc_result.append(doc.unsqueeze(1))
+            reason_statement_result = statement.view(self.batchsize, self.topN, self.hidden_size)
+            reason_doc_result = doc.view(self.batchsize, self.topN, self.hidden_size)
 
             # batchsize, topN, hidden_size
-            reason_statement_result = torch.cat(reason_statement_result, dim = 1)
-            reason_doc_result = torch.cat(reason_doc_result, dim = 1)
+            # reason_statement_result = torch.cat(reason_statement_result, dim = 1)
+            # reason_doc_result = torch.cat(reason_doc_result, dim = 1)
 
             result = torch.cat([reason_statement_result, reason_doc_result], dim = 2).view(self.batchsize * self.topN, 2 * self.hidden_size)
             
@@ -154,8 +181,10 @@ class SeaReader(nn.Module):
             out_result.append(out)
 
         out_result = torch.cat(out_result, dim = 1)
-        out_result = F.softmax(out_result, dim = 1)
+        # out_result = F.softmax(out_result, dim = 1)
         
+        if self.multi:
+            out_result = self.multi_module(out_result)
 
         loss = criterion(out_result, labels)
         accu, acc_result = calc_accuracy(out_result, labels, config, acc_result)
