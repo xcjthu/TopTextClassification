@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable as Var
 from utils.util import calc_accuracy, generate_embedding
-
+import json
 
 class Gate(nn.Module):
     def __init__(self, config, input_size):
@@ -27,8 +27,11 @@ class SeaReader(nn.Module):
         super(SeaReader, self).__init__()
 
         self.vecsize = config.getint('data', 'vec_size')
-        self.statement_len = config.getint('data', 'max_len')
-        self.option_len = config.getint('data', 'max_len')
+        self.statement_len = config.getint('data', 'question_max_len')
+        self.option_len = config.getint('data', 'option_max_len')
+        
+        self.statement_len = self.statement_len + self.option_len
+        
         self.topN = config.getint('data', 'topN')
         self.doc_len = config.getint('data', 'max_len')
 
@@ -60,13 +63,16 @@ class SeaReader(nn.Module):
 
 
     def init_multi_gpu(self, device):
+        print('gg: begin init multi gpu')
         self.context_layer = nn.DataParallel(self.context_layer)
         self.statement_reason_layer = nn.DataParallel(self.statement_reason_layer)
         self.doc_reason_layer = nn.DataParallel(self.doc_reason_layer)
         self.reason_gate = nn.DataParallel(self.reason_gate)
         self.intergrate_gate = nn.DataParallel(self.intergrate_gate)
         self.output_layer = nn.DataParallel(self.output_layer)
-        
+        if self.multi:
+            self.multi_module = nn.DataParallel(self.multi_module)
+        print('gg: end init multi gpu')
 
     def forward(self, data, criterion, config, usegpu, acc_result = None):
 
@@ -88,15 +94,15 @@ class SeaReader(nn.Module):
 
             statement = torch.cat([question, option], dim = 1)
 
-            statement, self.context_statement_hidden =  self.context_layer(statement)
+            statement, self.context_statement_hidden = self.context_layer(statement)
 
             
             #change size of statement from (batch, len, hidden) to (batch, topN, len, hidden)
             statement = statement.unsqueeze(1).repeat(1, self.topN, 1, 1)
-            statement = statement.view(self.batchsize * self.topN, self.doc_len, self.hidden_size)
+            statement = statement.view(self.batchsize * self.topN, self.statement_len, self.hidden_size)
 
 
-            docs, self.context_doc_hidden = self.context_layer(self.embs(docs.view(self.batchsize * self.topN, self.doc_len, self.vecsize)))
+            docs, self.context_doc_hidden = self.context_layer(self.embs(docs.view(self.batchsize * self.topN, self.doc_len)))
             #docs = docs.view(self.batchsize, self.topN, self.doc_len, self.hidden_size)
             
 
@@ -154,8 +160,8 @@ class SeaReader(nn.Module):
                 
             #    reason_statement_result.append(statement.unsqueeze(1))
             #    reason_doc_result.append(doc.unsqueeze(1))
-            read_statement_result = statement.view(self.batchsize, self.topN, self.hidden_size)
-            reason_doc_result = reason_doc_result.view(self.batchsize, self.topN, self.hidden_size)
+            reason_statement_result = statement.view(self.batchsize, self.topN, self.hidden_size)
+            reason_doc_result = doc.view(self.batchsize, self.topN, self.hidden_size)
 
             # batchsize, topN, hidden_size
             # reason_statement_result = torch.cat(reason_statement_result, dim = 1)
