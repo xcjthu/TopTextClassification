@@ -198,7 +198,7 @@ class OutputLayer(nn.Module):
 
         self.multi = config.getboolean('data', 'multi_choice')
         if self.multi:
-            self.mutli_module = nn.Linear(4, 16)
+            self.multi_module = nn.Linear(4, 16)
 
 
     def forward(self, feature):

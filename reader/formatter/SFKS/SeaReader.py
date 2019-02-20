@@ -104,9 +104,9 @@ class SeaReaderFormatter:
                 if "B" in temp_data["answer"]:
                     label_x += 2
                 if "C" in temp_data["answer"]:
-                    label_x = 4
+                    label_x += 4
                 if "D" in temp_data["answer"]:
-                    label_x = 8
+                    label_x += 8
             else:
                 label_x = 0
                 if "A" in temp_data["answer"]:
