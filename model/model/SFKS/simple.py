@@ -58,7 +58,7 @@ class BiDAF(nn.Module):
 
         self.att_weight_c = nn.Linear(self.word_size, 1)
         self.att_weight_q = nn.Linear(self.word_size, 1)
-        self.att_weight_cq = nn.LLinear(self.word_size, 1)
+        self.att_weight_cq = nn.Linear(self.word_size, 1)
 
     def forward(self, c, q):
         """
