@@ -212,7 +212,7 @@ class SimpleAndEffective(nn.Module):
 
         if config.get("model", "rank_method") == "all":
             y = self.rank_module(s).view(batch, -1)
-        elif self.rank_mods == "max":
+        elif config.get("model", "rank_method") == "max":
             y = s.view(batch * option, k, -1)
             y = torch.max(y, dim=1)[0]
             y = y.view(batch * option, -1)
