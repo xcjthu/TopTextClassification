@@ -194,4 +194,4 @@ if __name__ == "__main__":
         print(name)
         insert_file("?", "?", name)
 
-    json.dump(result, "/home/zhx/law_content.json", indent=2, ensure_ascii=False, sort_keys=True)
+    json.dump(result, open("/home/zhx/law_content.json", "w"), indent=2, ensure_ascii=False, sort_keys=True)
