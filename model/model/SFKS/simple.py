@@ -163,6 +163,9 @@ class SimpleAndEffective(nn.Module):
         else:
             self.rank_module = nn.Linear(self.hidden_size * 8 * self.max_len, 1)
 
+        self.multi = config.getboolean("data", "multi_choice")
+        self.multi_module = nn.Linear(4, 16)
+
     def forward(self, data, criterion, config, usegpu, acc_result=None):
         question = data["question"]
         article = data["article"]
@@ -224,6 +227,9 @@ class SimpleAndEffective(nn.Module):
             y = y.view(batch, option, k)
             y = torch.max(y, dim=2)[0]
             y = y.view(batch, option)
+
+        if self.multi:
+            y = self.multi_module(y)
 
         # print("y", y.size())
 
