@@ -17,7 +17,7 @@ from reader.formatter.race.race_MMN import RaceMMNFormatter
 from reader.formatter.SFKS.SFKS_bert import SFKSBertPredictionFormatter
 from reader.formatter.SFKS.simple import SFKSSimpleAndEffectiveFormatter
 from reader.formatter.SFKS.DSQA import DSQAFormatter
-from reader.formatter.ffzj.basic import FFZJBertPredictionFormatter
+from reader.formatter.ffzj.bert import FFZJBertPredictionFormatter
 from word2vec.word2vec import init_transformer
 
 
