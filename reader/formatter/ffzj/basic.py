@@ -46,6 +46,7 @@ class FFZJBertPredictionFormatter:
             self.map_list[x] = a
 
         self.tokenizer = BertTokenizer.from_pretrained(os.path.join(config.get("model", "bert_path"), "vocab.txt"))
+        self.max_len = config.getint("data", "max_len")
 
     def check(self, data, config):
         data = json.loads(data)
