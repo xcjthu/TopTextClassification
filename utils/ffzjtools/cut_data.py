@@ -14,22 +14,10 @@ password = None
 
 
 def cut(content):
-    global username, password
-    if password is None:
-        print("Enter username: ", end='')
-        username = input().replace("\n", "")
-        print("Enter password: ", end='')
-        password = input().replace("\n", "")
-
-    url = "http://114.112.106.221:9200/_analyze"
-    response = requests.get(url, data=json.dumps({"analyzer": "ik_smart", "text": content}),
-                            auth=HTTPBasicAuth(username, password),
-                            headers={"Content-Type": "application/json"})
-
-    data = json.loads(response.text)["tokens"]
+    data = list(jieba.cut(content))
     content = []
     for x in data:
-        word = x["token"]
+        word = x
         content.append(word)
         word_set.add(word)
 

@@ -14,7 +14,7 @@ class Bert(nn.Module):
         self.batch_size = config.getint('train', 'batch_size')
 
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
-        self.fc = nn.Linear(768 * 512, self.output_dim)
+        self.fc = nn.Linear(768 * config.getint("data", "max_len"), self.output_dim)
 
         self.sigmoid = nn.Sigmoid()
 
