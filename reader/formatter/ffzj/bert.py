@@ -85,7 +85,7 @@ class FFZJBertPredictionFormatter:
             input.append(tokens_tensor)
             labels = []
             for a in range(0, 30):
-                labels[a] = 0
+                labels.append(0)
             for x in temp_data["label"]:
                 labels[self.map_list[x]] = 1
             label.append(labels)
