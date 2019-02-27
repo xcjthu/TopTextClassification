@@ -6,17 +6,18 @@ if __name__ == "__main__":
     content = ""
 
     for a in range(0, len(data)):
-        content = content + """%d. %s
-
+        if data[a]["type"]%2==0:
+            s = "单选"
+        else:
+            s = "多选"
+        content = content + """
+%d.(%s) %s
    A. %s 
-
    B. %s
-
    C. %s
-
    D. %s
 
-        """ % (a + 1, data[a]["statement"],
+        """ % (a + 1, s, data[a]["statement"],
                data[a]["option_list"]["A"],
                data[a]["option_list"]["B"],
                data[a]["option_list"]["C"],

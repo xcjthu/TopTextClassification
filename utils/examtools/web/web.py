@@ -21,15 +21,21 @@ def init_question():
 
 @app.route("/")
 def root():
+    global data
     result = []
     option = ""
     num = ""
-    if "option" in request.args and "num" in request.args:
+    if "option" in request.args.keys() and "num" in request.args.keys():
         option = request.args["option"]
-        num = int(request.args["num"])
-        result = data[num]["reference"][option]
+        num = request.args["num"]
+        if num == "":
+            pass
+        else:
+            num = int(request.args["num"])
+            for a in range(0,18):
+                result.append(data[num]["reference"][option][a])
     for a in range(0, len(result)):
-        result[a] = str(a) + ". " + result[a]
+        result[a] = str(a+1) + ". " + result[a]
     return render_template("main.html", result=result, option=option, num=num)
 
 
