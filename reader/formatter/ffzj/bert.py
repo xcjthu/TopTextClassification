@@ -50,7 +50,7 @@ class FFZJBertPredictionFormatter:
 
     def check(self, data, config):
         data = json.loads(data)
-        if len(data["text"]) == 0:
+        if len(data["text"]) == 0 or len(data["text"]) < 10:
             return None
         return data
 
