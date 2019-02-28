@@ -20,10 +20,6 @@ class FFZJBasicDocuFormatter:
 
     def check(self, data, config, mode):
         data = json.loads(data)
-        if len(data["text"]) == 0:
-            return None
-        if len(data["label"]) == 0 and len(data["text"]) < 15:
-            return None
         if len(data["label"]) == 0 and mode == "train":
             if random.randint(1, 100) != 1:
                 return None
