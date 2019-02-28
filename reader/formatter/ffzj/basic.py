@@ -45,6 +45,7 @@ class FFZJBasicFormatter:
         for a in range(0, len(l)):
             x = l[a]
             self.map_list[x] = a
+        self.l = l
 
         self.xd = {}
         xx = 30
@@ -54,15 +55,20 @@ class FFZJBasicFormatter:
                 self.xd[(a, b)] = xx
         self.max_len = config.getint("data", "max_len")
         self.word2id = json.load(open(config.get("data", "word2id"), "r"))
+        self.which = config.getint("data", "which")
 
     def check(self, data, config, mode):
         data = json.loads(data)
         if len(data["text"]) == 0:
             return None
-        if len(data["label"]) == 0 and len(data["text"]) < 15:
+        if self.l[self.which] in set(data["label"]):
+            data["label"] = 1
+        else:
+            data["label"] = 0
+        if data["label"] == 0 and len(data["text"]) < 15:
             return None
-        if len(data["label"]) == 0 and mode == "train":
-            if random.randint(1, 100) != 1:
+        if data["label"] == 0 and mode == "train":
+            if random.randint(1, 300) != 1:
                 return None
         return data
 
@@ -94,17 +100,7 @@ class FFZJBasicFormatter:
 
             input.append(tokens_tensor)
 
-            labels = 0
-            if len(temp_data["label"]) == 0:
-                labels = 0
-            elif len(temp_data["label"]) == 1:
-                labels = self.map_list[temp_data["label"][0]] + 1
-            else:
-                a = self.map_list[temp_data["label"][0]]
-                b = self.map_list[temp_data["label"][1]]
-                if a > b:
-                    a, b = b, a
-                labels = self.xd[(a, b)]
+            labels = temp_data["label"]
             label.append(labels)
 
         input = torch.cat(input, dim=0)
