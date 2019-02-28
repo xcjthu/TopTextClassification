@@ -104,8 +104,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
         running_loss += loss.item()
         running_acc += accu.item()
 
-    print(json.dump(acc_result, open("/home/zhx/gg_dir/%d.json" % epoch, "w"), indent=2, sort_keys=True,
-                    ensure_ascii=False, ))
+    json.dump(acc_result, open("/home/zhx/gg_dir/%d.json" % epoch, "w"), indent=2, sort_keys=True, ensure_ascii=False)
 
     if writer is None:
         pass

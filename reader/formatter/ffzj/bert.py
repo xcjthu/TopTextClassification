@@ -2,6 +2,7 @@ import json
 import torch
 import numpy as np
 import jieba
+import random
 import os
 from pytorch_pretrained_bert import BertTokenizer
 
@@ -52,6 +53,9 @@ class FFZJBertPredictionFormatter:
         data = json.loads(data)
         if len(data["text"]) == 0 or len(data["text"]) < 10:
             return None
+        if len(data["label"]) == 0:
+            if random.randint(1, 100) != 1:
+                return None
         return data
 
     def convert(self, tokens):
