@@ -25,7 +25,7 @@ model_list = {
     "Bert": Bert,
     "SFKS_bert": SFKSBert,
     "SFKSSimpleAndEffective": SimpleAndEffective,
-    "DSQA": DSQA
+    "DSQA": DSQA,
     "FFZJCNN" : FFZJTextCNN
 }
 
