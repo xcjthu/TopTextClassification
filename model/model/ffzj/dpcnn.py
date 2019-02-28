@@ -56,7 +56,7 @@ class FFZJDPCNN(nn.Module):
         self.region_embedding = nn.Sequential(
             nn.Conv1d(self.emb_dim, self.mem_dim,
                       kernel_size=3, padding=1),
-            nn.BatchNorm1d(num_features=self.mem_dimP),
+            nn.BatchNorm1d(num_features=self.mem_dim),
             nn.ReLU(),
             nn.Dropout(0.2)
         )
