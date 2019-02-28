@@ -58,10 +58,13 @@ class FFZJBertPredictionFormatter:
 
     def check(self, data, config, mode):
         data = json.loads(data)
-        if len(data["text"]) == 0 or len(data["text"]) < 10:
+        if len(data["text"]) == 0:
+            return None
+        if len(data["label"]) == 0 and len(data["text"]) < 15:
             return None
         if len(data["label"]) == 0 and mode == "train":
-            return None
+            if random.randint(1, 100) != 1:
+                return None
         return data
 
     def convert(self, tokens):
