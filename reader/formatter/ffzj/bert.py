@@ -46,6 +46,13 @@ class FFZJBertPredictionFormatter:
             x = l[a]
             self.map_list[x] = a
 
+        self.xd = {}
+        xx = 30
+        for a in range(0, 30):
+            for b in range(a + 1, 30):
+                xx += 1
+                self.xd[(a, b)] = xx
+
         self.tokenizer = BertTokenizer.from_pretrained(os.path.join(config.get("model", "bert_path"), "vocab.txt"))
         self.max_len = config.getint("data", "max_len")
 
@@ -86,11 +93,17 @@ class FFZJBertPredictionFormatter:
             tokens_tensor = torch.tensor([indexed_tokens])
 
             input.append(tokens_tensor)
-            labels = []
-            for a in range(0, 30):
-                labels.append(0)
-            for x in temp_data["label"]:
-                labels[self.map_list[x]] = 1
+            labels = 0
+            if len(temp_data["label"]) == 0:
+                labels = 0
+            elif len(temp_data["label"]) == 1:
+                labels = self.map_list[temp_data["label"][0]] + 1
+            else:
+                a = self.map_list[temp_data["label"][0]]
+                b = self.map_list[temp_data["label"][1]]
+                if a > b:
+                    a, b = b, a
+                labels = self.xd[(a, b)]
             label.append(labels)
 
         input = torch.cat(input, dim=0)
