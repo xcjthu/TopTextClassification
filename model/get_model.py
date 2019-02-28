@@ -11,6 +11,7 @@ from model.model.bert import Bert
 from model.model.SFKS.simple import SimpleAndEffective
 from model.model.SFKS.DSQA_lyk import DSQA
 from model.model.ffzj.TextCNN import FFZJTextCNN
+from model.model.ffzj.dpcnn import DPCNN
 
 model_list = {
     "LSTM": LSTM,
@@ -26,7 +27,8 @@ model_list = {
     "SFKS_bert": SFKSBert,
     "SFKSSimpleAndEffective": SimpleAndEffective,
     "DSQA": DSQA,
-    "FFZJCNN" : FFZJTextCNN
+    "FFZJCNN" : FFZJTextCNN,
+    "FFZJDPCNN" : FFZJDPCNN
 }
 
 
