@@ -21,6 +21,7 @@ from reader.formatter.ffzj.bert import FFZJBertPredictionFormatter
 from reader.formatter.ffzj.basic import FFZJBasicFormatter
 from reader.formatter.ffzj.basic2 import FFZJBasicFormatter2
 from reader.formatter.ffzj.basic_docu import FFZJBasicDocuFormatter
+from reader.formatter.ffzj.basic_docu2 import FFZJBasicDocuFormatter2
 from word2vec.word2vec import init_transformer
 
 
@@ -46,7 +47,8 @@ def init_formatter(config):
         "FFZJBert": FFZJBertPredictionFormatter,
         "FFZJBasic": FFZJBasicFormatter,
         "FFZJBasic2": FFZJBasicFormatter2,
-        "FFZJDocuBasic": FFZJBasicDocuFormatter
+        "FFZJDocuBasic": FFZJBasicDocuFormatter,
+        "FFZJDocuBasic2": FFZJBasicDocuFormatter2
     }
     if config.get("data", "formatter") in useable_list.keys():
         formatter = useable_list[config.get("data", "formatter")](config)
