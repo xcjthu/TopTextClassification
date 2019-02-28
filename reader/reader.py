@@ -132,7 +132,7 @@ class reader:
                     return None
                 continue
 
-            x = formatter.check(x, config)
+            x = formatter.check(x, config, self.mode)
             if not (x is None):
                 data_list.append(x)
 

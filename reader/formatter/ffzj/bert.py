@@ -49,13 +49,12 @@ class FFZJBertPredictionFormatter:
         self.tokenizer = BertTokenizer.from_pretrained(os.path.join(config.get("model", "bert_path"), "vocab.txt"))
         self.max_len = config.getint("data", "max_len")
 
-    def check(self, data, config):
+    def check(self, data, config, mode):
         data = json.loads(data)
         if len(data["text"]) == 0 or len(data["text"]) < 10:
             return None
-        if len(data["label"]) == 0:
-            if random.randint(1, 100) != 1:
-                return None
+        if len(data["label"]) == 0 and mode == "train":
+            return None
         return data
 
     def convert(self, tokens):
