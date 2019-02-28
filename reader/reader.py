@@ -46,7 +46,7 @@ def init_formatter(config):
         "FFZJBert": FFZJBertPredictionFormatter,
         "FFZJBasic": FFZJBasicFormatter,
         "FFZJBasic2": FFZJBasicFormatter2,
-        "FFZJDocuBaisc": FFZJBasicDocuFormatter
+        "FFZJDocuBasic": FFZJBasicDocuFormatter
     }
     if config.get("data", "formatter") in useable_list.keys():
         formatter = useable_list[config.get("data", "formatter")](config)
