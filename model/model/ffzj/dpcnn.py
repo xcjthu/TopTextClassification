@@ -47,6 +47,7 @@ class FFZJDPCNN(nn.Module):
         self.emb_dim = config.getint("data", "vec_size")  # 300
         self.mem_dim = config.getint("model", "hidden_size")  # 150
         self.output_dim = config.getint("model", "output_dim")
+        self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
 
         self.embedding = nn.Embedding(self.word_num, self.emb_dim)
 
