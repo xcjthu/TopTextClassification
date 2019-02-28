@@ -25,9 +25,6 @@ class FFZJBasicDocuFormatter2:
             data["label"] = 1
         else:
             data["label"] = 0
-        if len(data["label"]) == 0 and mode == "train":
-            if random.randint(1, 100) != 1:
-                return None
         return data
 
     def transform(self, word):
