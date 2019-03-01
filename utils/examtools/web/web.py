@@ -19,10 +19,10 @@ def init_question():
     global data
     data = json.load(open("/data/disk3/private/zhx/exam/data/solve/x.json", "r"))
     data2 = json.load(open("/home/zhx/final_biao.json", "r"))
-    
+
 
 @app.route("/xcj")
-def root():
+def xcj():
     global data
     result = []
     option = ""
