@@ -12,11 +12,33 @@ else:
     import config as config
 
 data = []
+dara2 = []
 
 
 def init_question():
     global data
     data = json.load(open("/data/disk3/private/zhx/exam/data/solve/x.json", "r"))
+    data2 = json.load(open("/home/zhx/final_biao.json", "r"))
+    
+
+@app.route("/xcj")
+def root():
+    global data
+    result = []
+    option = ""
+    num = ""
+    if "option" in request.args.keys() and "num" in request.args.keys():
+        option = request.args["option"]
+        num = request.args["num"]
+        if num == "":
+            pass
+        else:
+            num = int(request.args["num"])
+            for a in range(0, 18):
+                result.append(data[num]["reference"][option][a])
+    for a in range(0, len(result)):
+        result[a] = str(a + 1) + ". " + result[a]
+    return render_template("main.html", result=result, option=option, num=num)
 
 
 @app.route("/")
@@ -32,10 +54,10 @@ def root():
             pass
         else:
             num = int(request.args["num"])
-            for a in range(0,18):
+            for a in range(0, 18):
                 result.append(data[num]["reference"][option][a])
     for a in range(0, len(result)):
-        result[a] = str(a+1) + ". " + result[a]
+        result[a] = str(a + 1) + ". " + result[a]
     return render_template("main.html", result=result, option=option, num=num)
 
 
