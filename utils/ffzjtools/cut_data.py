@@ -4,8 +4,8 @@ import json
 import requests
 from requests.auth import HTTPBasicAuth
 
-input_data_path = "/data/disk1/private/zhx/ffzj/data"
-output_data_path = "//data/disk1/private/zhx/ffzj/cut_data"
+input_data_path = "/data/disk1/private/zhx/ffzj/origin_data"
+output_data_path = "//data/disk1/private/zhx/ffzj/cut_data2"
 
 word_set = set()
 
@@ -32,8 +32,8 @@ def cut_file(path):
 
     for line in input_file:
         try:
-            data = json.loads(line)
-            data["text"] = cut(data["text"].replace("\n", ""))
+            data = line#json.loads(line)
+            data = cut(data.replace("\n",""))#data["text"] = cut(data["text"].replace("\n", ""))
 
             print(json.dumps(data, ensure_ascii=False, sort_keys=True), file=output_file)
 

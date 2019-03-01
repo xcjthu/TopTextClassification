@@ -95,7 +95,7 @@ class FFZJDPCNN(nn.Module):
         x = self.conv_block(x)
         x = self.resnet_layer(x)
         x = x.permute(0, 2, 1)
-        x = x.contiguous().view(config.getint("data","batch_size"), -1)
+        x = x.contiguous().view(config.getint("train","batch_size"), -1)
         out = self.fc(x)
         y = out
 

@@ -142,7 +142,11 @@ class reader:
 
             x = formatter.check(x, config, self.mode)
             if not (x is None):
-                data_list.append(x)
+                if x["label"] == 1:
+                    while len(data_list) < batch_size:
+                        data_list.append(x)
+                else:
+                    data_list.append(x)
 
         if len(data_list) < batch_size:
             return None
