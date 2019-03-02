@@ -379,7 +379,7 @@ class ComatchingFormatter3:
             if len(data["option_list"][x]) == 0:
                 return None
         f = open("/home/zhx/comatch.json", "a")
-        print(json.dumps(data, indent=2, ensure_ascii=False, sort_keys=True), file=f)
+        print(json.dumps(data, ensure_ascii=False, sort_keys=True), file=f)
         f.close()
 
         return data
