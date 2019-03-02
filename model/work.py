@@ -47,7 +47,7 @@ def resulting(net, valid_dataset, use_gpu, config):
         results = net(data, criterion, config, use_gpu, acc_result)
 
         for a in range(0, len(results["result"])):
-            result.append([(cnt - 1) * config.getint("train", "batch_size") + a + 1, results["x"][a].tolist()])
+            result.append(int(results["result"][a]))
 
         # print('forward')
 
