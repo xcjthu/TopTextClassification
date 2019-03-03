@@ -11,8 +11,8 @@ temp = json.load(open(args.file, "r", encoding="utf8"))
 
 res = []
 for x in temp["term"]:
-    #if x["userName"] != "louky":
-    #    continue
+    if x["userName"] != "louky":
+        continue
     # print(x["content"][0]["content"][0])
     match = re.search(r"num=(\d+)", x["content"][0]["content"][0])
     idx = int(match.group(1))
