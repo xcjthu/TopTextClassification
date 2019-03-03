@@ -11,38 +11,49 @@ class SeaReaderFormatter:
         self.need = config.getboolean("data", "need_word2vec")
         self.word2id = json.load(open(config.get("data", "word2id"), "r"))
         self.max_len = config.getint("data", "max_len")
-        
+
         self.que_len = config.getint('data', 'question_max_len')
         self.opt_len = config.getint('data', 'option_max_len')
         self.topN = config.getint('data', 'topN')
 
-
     def check(self, data, config):
+        """data = json.loads(data)
+if not ("answer" in data.keys()):
+    return None
+
+if(not config.getboolean("data", "multi_choice")) and len(data["answer"]) != 1:
+    return None
+
+if len(data["answer"]) == 0:
+    return None
+
+if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
+    return None
+
+for option in data["option_list"]:
+    if len(data["option_list"][option]) == 0 or len(data["option_list"][option]) > self.max_len:
+        return None
+
+if len(data["option_list"]) != 4:
+    return None
+if not ("reference" in data.keys()):
+    return None
+
+return data"""
+
         data = json.loads(data)
-        if not ("answer" in data.keys()):
-            return None
-
-        if(not config.getboolean("data", "multi_choice")) and len(data["answer"]) != 1:
-            return None
-
         if len(data["answer"]) == 0:
             return None
-
-        if len(data["statement"]) == 0 or len(data["statement"]) > self.max_len:
+        if not (config.getboolean("data", "multi_choice")) and len(data["answer"]) != 1:
             return None
-
-        for option in data["option_list"]:
-            if len(data["option_list"][option]) == 0 or len(data["option_list"][option]) > self.max_len:
+        if len(data["answer"]) == 0:
+            return None
+        if len(data["statement"]) == 1:
+            return None
+        for x in ["A", "B", "C", "D"]:
+            if len(data["option_list"][x]) == 0:
                 return None
-
-        if len(data["option_list"]) != 4:
-            return None
-        if not ("reference" in data.keys()):
-            return None
-
         return data
-    
-
 
     '''
     def lookup(self, data, max_len, transforemer=None):
@@ -68,7 +79,6 @@ class SeaReaderFormatter:
         return lookup_id
     '''
 
-
     def lookup(self, data, max_len):
         lookup_id = []
         for word in data:
@@ -82,7 +92,6 @@ class SeaReaderFormatter:
         lookup_id = lookup_id[:max_len]
 
         return lookup_id
-
 
     def format(self, data, config, transformer, mode):
         statement = []
