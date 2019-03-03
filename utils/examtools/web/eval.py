@@ -11,8 +11,8 @@ temp = json.load(open(args.file, "r", encoding="utf8"))
 
 res = []
 for x in temp["term"]:
-    if x["userName"] != "louky":
-        continue
+    # if x["userName"] != "louky":
+    #    continue
     # print(x["content"][0]["content"][0])
     match = re.search(r"num=(\d+)", x["content"][0]["content"][0])
     idx = int(match.group(1))
@@ -30,7 +30,7 @@ for x in res:
     if set(answer[idx]["ans"]) == set(x["res"]):
         dic[t]["correct"] += 1
 
-#print(json.dumps(dic, indent=2, ensure_ascii=False, sort_keys=True))
+# print(json.dumps(dic, indent=2, ensure_ascii=False, sort_keys=True))
 
 print(
     dic[0]["correct"] / dic[0]["total"] * 100,
