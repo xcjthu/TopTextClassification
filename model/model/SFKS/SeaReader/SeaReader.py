@@ -22,9 +22,9 @@ class Gate(nn.Module):
         return seq.mul(gate)
 
 
-class SeaReader(nn.Module):
+class SeaReader_model(nn.Module):
     def __init__(self, config):
-        super(SeaReader, self).__init__()
+        super(SeaReader_model, self).__init__()
 
         self.vecsize = config.getint('data', 'vec_size')
         self.statement_len = config.getint('data', 'question_max_len')
@@ -74,7 +74,7 @@ class SeaReader(nn.Module):
             self.multi_module = nn.DataParallel(self.multi_module)
         print('gg: end init multi gpu')
 
-    def forward(self, data, criterion, config, usegpu, acc_result = None):
+    def forward(self, data):#, criterion, config, usegpu, acc_result = None):
 
         question = data['statement']
         option_list = data['answer']
@@ -83,6 +83,8 @@ class SeaReader(nn.Module):
         # documents shape : batchsize * topn * doclength * vecsize
         
         question = self.embs(question)
+        
+        self.batchsize = question.shape[0]
         
         out_result = []
         for option_index in range(4):
@@ -99,6 +101,7 @@ class SeaReader(nn.Module):
             
             #change size of statement from (batch, len, hidden) to (batch, topN, len, hidden)
             statement = statement.unsqueeze(1).repeat(1, self.topN, 1, 1)
+            # print(statement.shape)
             statement = statement.view(self.batchsize * self.topN, self.statement_len, self.hidden_size)
 
 
@@ -185,6 +188,24 @@ class SeaReader(nn.Module):
         
         if self.multi:
             out_result = self.multi_module(out_result)
+
+        return out_result
+
+
+class SeaReader(nn.Module):
+    def __init__(self, config):
+        super(SeaReader, self).__init__()
+
+        self.model = SeaReader_model(config)
+
+    def init_multi_gpu(self, device):
+        self.model = nn.DataParallel(self.model)
+
+    def forward(self, data, criterion, config, usegpu, acc_result = None):
+
+        labels = data['label']
+        
+        out_result = self.model(data)
 
         loss = criterion(out_result, labels)
         accu, acc_result = calc_accuracy(out_result, labels, config, acc_result)
