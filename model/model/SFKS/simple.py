@@ -7,9 +7,9 @@ import json
 from utils.util import calc_accuracy, generate_embedding
 
 
-class BiDAF(nn.Module):
+class BiDAF2(nn.Module):
     def __init__(self, l, dim):
-        super(BiDAF, self).__init__()
+        super(BiDAF2, self).__init__()
 
         self.word_size = dim
 
@@ -50,6 +50,65 @@ class BiDAF(nn.Module):
         return torch.cat([h, c, h * c, qc * c], dim=2)
 
 
+class BiDAF(nn.Module):
+    def __init__(self, l, dim):
+        super(BiDAF, self).__init__()
+
+        self.word_size = dim
+
+        self.att_weight_c = nn.Linear(self.word_size, 1)
+        self.att_weight_q = nn.Linear(self.word_size, 1)
+        self.att_weight_cq = nn.Linear(self.word_size, 1)
+
+    def forward(self, c, q):
+        """
+                    :param c: (batch, c_len, hidden_size * 2)
+                    :param q: (batch, q_len, hidden_size * 2)
+                    :return: (batch, c_len, q_len)
+                    """
+        c_len = c.size(1)
+        q_len = q.size(1)
+
+        # (batch, c_len, q_len, hidden_size * 2)
+        # c_tiled = c.unsqueeze(2).expand(-1, -1, q_len, -1)
+        # (batch, c_len, q_len, hidden_size * 2)
+        # q_tiled = q.unsqueeze(1).expand(-1, c_len, -1, -1)
+        # (batch, c_len, q_len, hidden_size * 2)
+        # cq_tiled = c_tiled * q_tiled
+        # cq_tiled = c.unsqueeze(2).expand(-1, -1, q_len, -1) * q.unsqueeze(1).expand(-1, c_len, -1, -1)
+
+        cq = []
+        for i in range(q_len):
+            # (batch, 1, hidden_size * 2)
+            qi = q.select(1, i).unsqueeze(1)
+            # (batch, c_len, 1)
+            ci = self.att_weight_cq(c * qi).squeeze()
+            cq.append(ci)
+        # (batch, c_len, q_len)
+        cq = torch.stack(cq, dim=-1)
+
+        # (batch, c_len, q_len)
+        s = self.att_weight_c(c).expand(-1, -1, q_len) + \
+            self.att_weight_q(q).permute(0, 2, 1).expand(-1, c_len, -1) + \
+            cq
+
+        # (batch, c_len, q_len)
+        a = F.softmax(s, dim=2)
+        # (batch, c_len, q_len) * (batch, q_len, hidden_size * 2) -> (batch, c_len, hidden_size * 2)
+        c2q_att = torch.bmm(a, q)
+        # (batch, 1, c_len)
+        b = F.softmax(torch.max(s, dim=2)[0], dim=1).unsqueeze(1)
+        # (batch, 1, c_len) * (batch, c_len, hidden_size * 2) -> (batch, hidden_size * 2)
+        q2c_att = torch.bmm(b, c).squeeze()
+        # (batch, c_len, hidden_size * 2) (tiled)
+        q2c_att = q2c_att.unsqueeze(1).expand(-1, c_len, -1)
+        # q2c_att = torch.stack([q2c_att] * c_len, dim=1)
+
+        # (batch, c_len, hidden_size * 8)
+        x = torch.cat([c, c2q_att, c * c2q_att, c * q2c_att], dim=-1)
+        return x
+
+
 class GRUEncoder(nn.Module):
     def __init__(self, batch, input_size, output_size, layers, max_len):
         super(GRUEncoder, self).__init__()
@@ -86,8 +145,8 @@ class SimpleAndEffective(nn.Module):
 
         self.question_encoder = GRUEncoder(self.batch * self.k * 4, self.word_size, self.hidden_size, self.layers,
                                            self.max_len)
-        self.article_encoder = GRUEncoder(self.batch * self.k * 4, self.word_size, self.hidden_size, self.layers,
-                                          self.max_len)
+        self.article_encoder = self.question_encoder  # GRUEncoder(self.batch * self.k * 4, self.word_size, self.hidden_size, self.layers,
+        # self.max_len)
         self.encoder = GRUEncoder(self.batch * self.k * 4, self.hidden_size * 8, self.hidden_size, self.layers,
                                   self.max_len)
 
@@ -103,6 +162,9 @@ class SimpleAndEffective(nn.Module):
             self.rank_module = nn.Linear(self.hidden_size * 8 * self.k * self.max_len, 1)
         else:
             self.rank_module = nn.Linear(self.hidden_size * 8 * self.max_len, 1)
+
+        self.multi = config.getboolean("data", "multi_choice")
+        self.multi_module = nn.Linear(4, 16)
 
     def forward(self, data, criterion, config, usegpu, acc_result=None):
         question = data["question"]
@@ -153,12 +215,21 @@ class SimpleAndEffective(nn.Module):
 
         if config.get("model", "rank_method") == "all":
             y = self.rank_module(s).view(batch, -1)
+        elif config.get("model", "rank_method") == "max":
+            y = s.view(batch * option, k, -1)
+            y = torch.max(y, dim=1)[0]
+            y = y.view(batch * option, -1)
+            y = self.rank_module(y)
+            y = y.view(batch, option)
         else:
             y = s.view(batch * option * k, -1)
             y = self.rank_module(y)
             y = y.view(batch, option, k)
             y = torch.max(y, dim=2)[0]
             y = y.view(batch, option)
+
+        if self.multi:
+            y = self.multi_module(y)
 
         # print("y", y.size())
 

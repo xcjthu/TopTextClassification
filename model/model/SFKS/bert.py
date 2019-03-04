@@ -25,10 +25,8 @@ class SFKSBert(nn.Module):
 
         self.sigmoid = nn.Sigmoid()
 
-        if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
-            self.multi = True
-        else:
-            self.multi = False
+        self.multi = config.getboolean("data", "multi_choice")
+        self.multi_module = nn.Linear(4, 16)
 
     def init_multi_gpu(self, device):
         self.bert = nn.DataParallel(self.bert, device_ids=device)
@@ -80,6 +78,9 @@ class SFKSBert(nn.Module):
             y = torch.max(y, dim=2)[0]
 
             y = y.view(batch, option)
+
+        if self.multi:
+            y = self.multi_module(y)
 
         # print(y.size())
 
