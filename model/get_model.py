@@ -10,6 +10,7 @@ from model.model.SFKS.bert import SFKSBert
 from model.model.bert import Bert
 from model.model.SFKS.simple import SimpleAndEffective
 from model.model.SFKS.DSQA_lyk import DSQA
+from model.model.SFKS.DenoiseDSQA import DenoiseDSQA
 
 model_list = {
     "LSTM": LSTM,
@@ -24,7 +25,8 @@ model_list = {
     "Bert": Bert,
     "SFKS_bert": SFKSBert,
     "SFKSSimpleAndEffective": SimpleAndEffective,
-    "DSQA": DSQA 
+    "DSQA": DSQA,
+    "DenoiseDSQA": DenoiseDSQA
 }
 
 
