@@ -9,8 +9,6 @@ from reader.reader import init_dataset
 from model.work import train_net
 from utils.util import print_info
 
-torch.backends.cudnn.enabled = False
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', '-c')
 parser.add_argument('--gpu', '-g')

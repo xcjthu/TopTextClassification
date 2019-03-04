@@ -364,7 +364,7 @@ class ComatchingFormatter3:
 
     def check(self, data, config):
         data = json.loads(data)
-        if not("answer" in data.keys()):
+        if not ("answer" in data.keys()):
             return None
         if not (config.getboolean("data", "multi_choice")) and len(data["answer"]) != 1:
             return None
@@ -375,6 +375,7 @@ class ComatchingFormatter3:
         for x in ["A", "B", "C", "D"]:
             if len(data["option_list"][x]) == 0:
                 return None
+
         return data
 
     def transform(self, word, transformer):

@@ -25,7 +25,7 @@ def get_loss(task_loss_type):
 def EM_and_cross_entropy_loss(option_prob, option_output, labels):
     loss_cross = cross_entropy_loss(option_output, labels)
     label_one_shot = torch.zeros(option_prob.size()).cuda()
-    label_one_shot.scatter_(dim = 1, index = labels.unsqueeze(1), value = 1)
+    label_one_shot.scatter_(dim=1, index=labels.unsqueeze(1), value=1)
 
     option = label_one_shot.mul(option_prob) + 1 - (1 - label_one_shot).mul(option_prob)
     option_prob_log = - torch.log(option)
@@ -55,10 +55,9 @@ def DSQA_loss(final_result, passage_prob, labels):
     return loss + loss_rp
 
 
-
 def multi_label_cross_entropy_loss(outputs, labels):
     labels = labels.float()
-    temp = F.sigmoid(outputs)
+    temp = outputs
     res = - labels * torch.log(temp) - (1 - labels) * torch.log(1 - temp)
     res = torch.mean(torch.sum(res, dim=1))
 
