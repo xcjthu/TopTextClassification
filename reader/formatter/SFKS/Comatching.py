@@ -362,9 +362,6 @@ class ComatchingFormatter3:
         self.symbol = [",", ".", "?", "\"", "”", "。", "？", ""]
         self.last_symbol = [".", "?", "。", "？"]
 
-        f = open("/home/zhx/comatch_single.json", "w")
-        f.close()
-
     def check(self, data, config):
         data = json.loads(data)
         if not ("answer" in data.keys()):
@@ -378,9 +375,6 @@ class ComatchingFormatter3:
         for x in ["A", "B", "C", "D"]:
             if len(data["option_list"][x]) == 0:
                 return None
-        f = open("/home/zhx/comatch_single.json", "a")
-        print(json.dumps(data, ensure_ascii=False, sort_keys=True), file=f)
-        f.close()
 
         return data
 
