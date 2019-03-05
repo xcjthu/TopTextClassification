@@ -23,7 +23,7 @@ class InputLayer(nn.Module):
         self.wh = nn.Linear(self.vecsize, self.vecsize, bias = False)
         self.we = nn.Linear(self.vecsize, self.vecsize)
 
-        self.init_para()
+        #self.init_para()
 
 
     def init_para(self):
@@ -54,7 +54,7 @@ class SoftSel(nn.Module):
         self.hidden_size = config.getint('data', 'vec_size')
 
         self.wg = nn.Parameter(Var(torch.Tensor(self.hidden_size, self.hidden_size)))
-        torch.nn.init.xavier_uniform_(self.wg, gain=1)
+        #torch.nn.init.xavier_uniform_(self.wg, gain=1)
         
     def forward(self, hi1, hi2):
         G = hi1.matmul(self.wg)

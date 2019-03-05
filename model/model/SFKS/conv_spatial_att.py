@@ -6,7 +6,7 @@ from torch.autograd import Variable as Var
 import numpy as np
 import json
 
-from utils.util import calc_accuracy, gen_result
+from utils.util import calc_accuracy, generate_embedding
 
 
 class InputLayer(nn.Module):
@@ -38,7 +38,12 @@ class EnrichAttention(nn.Module):
         
         self.D = nn.Parameter(torch.Tensor(self.att_len, self.att_len))
         self.W = nn.Parameter(torch.Tensor(self.len1, self.len2))
+
+
+        torch.nn.init.xavier_uniform(self.D, gain=1)
+        torch.nn.init.xavier_uniform(self.W, gain=1)
         
+
         self.gru = nn.GRU(2 * self.hidden_size, self.hidden_size, batch_first = True)
 
     def forward(self, x1, x2):
@@ -69,6 +74,7 @@ class ConvSpatialAtt(nn.Module):
         self.que_len = config.getint('data', 'question_max_len')
         self.doc_len = config.getint('data', 'max_len')
         self.opt_len = config.getint('data', 'option_max_len')
+        self.topN = config.getint('data', 'topN')
 
 
         print('que_len:', self.que_len)
@@ -78,7 +84,9 @@ class ConvSpatialAtt(nn.Module):
         self.emb_dim = config.getint('data', 'vec_size')
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
         self.embs = nn.Embedding(self.word_num, self.emb_dim)
-        
+        if config.getboolean("data", "need_word2vec"):
+            self.embs = generate_embedding(self.embs, config)
+
 
         self.kernel0 = 3
         self.kernel1 = 4
@@ -97,7 +105,11 @@ class ConvSpatialAtt(nn.Module):
 
         self.linear_att = nn.Linear(3 * self.opt_len + 3 - self.kernel0 - self.kernel1 - self.kernel2, 1)
         self.linear_out = nn.Linear(3 * self.opt_len + 3 - self.kernel0 - self.kernel1 - self.kernel2, 1)
-
+        
+        self.multi = config.getboolean('data', 'multi_choice')
+        if self.multi:
+            self.multi_module = nn.Linear(4, 16)
+    
 
     def forward(self, data, criterion, config, usegpu, acc_result = None):
         question = data['statement']
@@ -105,86 +117,100 @@ class ConvSpatialAtt(nn.Module):
         documents = data['reference']
         labels = data['label']
 
-        if not config.getboolean("data", "need_word2vec"):
-            question = self.embs(question)
+        # if not config.getboolean("data", "need_word2vec"):
+        question = self.embs(question)
+
+        batchsize = question.shape[0]
 
         question = self.input(question)
+        question = question.unsqueeze(1).repeat(1, self.topN, 1, 1)
+        question = question.view(batchsize * self.topN, question.shape[2], question.shape[3])
+
         out_result = []
         for option_index in range(4):
             option = option_list[:,option_index].contiguous()
             
-            if not config.getboolean('data', 'need_word2vec'):
-                option = self.embs(option)
+            #if not config.getboolean('data', 'need_word2vec'):
+            option = self.embs(option)
 
             option = self.input(option)
+            option = option.unsqueeze(1).repeat(1, self.topN, 1, 1)
+            option = option.view(batchsize * self.topN, option.shape[2], option.shape[3])
 
             docs = documents[:,option_index].contiguous()
 
             out_all_doc = []
             doc_softmax = []
             #for doc_index in range(docs.shape[1]):
-            for doc_index in range(1):
+            #for doc_index in range(1):
 
-                doc = docs[:,doc_index].contiguous()
+            #    doc = docs[:,doc_index].contiguous()
+            doc = docs.view(batchsize * self.topN, docs.shape[2])    
+            #    #if not config.getboolean('data', 'need_word2vec'):
+            doc = self.embs(doc)
+
+            doc = self.input(doc)
+
+            rcq = self.enrichCQ(option, question)
+            rcp = self.enrichCP(option, doc)
+            rqp = self.enrichQP(question, doc)
+            rq = self.enrichQ(question, rqp)
+
+            rq = torch.transpose(rq, 1, 2)
+            rqp = torch.transpose(rqp, 1, 2)
+
+            m11 = torch.bmm(rcq, rq)
+            m12 = torch.bmm(rcp, rq)
+            m13 = torch.bmm(option, rq)
+
+            m21 = torch.bmm(rcq, rqp)
+            m22 = torch.bmm(rcp, rqp)
+            m23 = torch.bmm(option, rqp)
+
                 
-                if not config.getboolean('data', 'need_word2vec'):
-                    doc = self.embs(doc)
-
-                doc = self.input(doc)
-
-                rcq = self.enrichCQ(option, question)
-                rcp = self.enrichCP(option, doc)
-                rqp = self.enrichQP(question, doc)
-                rq = self.enrichQ(question, rqp)
-
-                rq = torch.transpose(rq, 1, 2)
-                rqp = torch.transpose(rqp, 1, 2)
-
-                m11 = torch.bmm(rcq, rq)
-                m12 = torch.bmm(rcp, rq)
-                m13 = torch.bmm(option, rq)
-
-                m21 = torch.bmm(rcq, rqp)
-                m22 = torch.bmm(rcp, rqp)
-                m23 = torch.bmm(option, rqp)
-
+            M = torch.cat([m11.unsqueeze(1), m12.unsqueeze(1), m13.unsqueeze(1), m21.unsqueeze(1), m22.unsqueeze(1), m23.unsqueeze(1)], dim = 1)
                 
-                M = torch.cat([m11.unsqueeze(1), m12.unsqueeze(1), m13.unsqueeze(1), m21.unsqueeze(1), m22.unsqueeze(1), m23.unsqueeze(1)], dim = 1)
-                
-                o1 = self.conv0(M)
-                o1, _ = torch.max(o1, dim = 1) 
+            o1 = self.conv0(M)
+            o1, _ = torch.max(o1, dim = 1) 
 
-                o2 = self.conv1(M)
-                o2, _ = torch.max(o2, dim = 1)
+            o2 = self.conv1(M)
+            o2, _ = torch.max(o2, dim = 1)
 
-                o3 = self.conv2(M)
-                o3, _ = torch.max(o3, dim = 1)
+            o3 = self.conv2(M)
+            o3, _ = torch.max(o3, dim = 1)
                 
-                '''
+            '''
                 print('o1.shape', o1.shape)
                 print('o2.shape', o2.shape)
                 print('o3.shape', o3.shape)
-                '''
+            '''
                 
-                feature = torch.cat([o1, o2, o3], dim = 1).squeeze()
-                doc_softmax.append(self.linear_att(feature))
-                out_all_doc.append(feature.unsqueeze(1))
-            
-            doc_softmax = torch.cat(doc_softmax, dim = 1)
+            feature = torch.cat([o1, o2, o3], dim = 1).squeeze()
+            #doc_softmax.append(self.linear_att(feature))
+            doc_softmax = self.linear_att(feature).view(batchsize, self.topN)
+            #out_all_doc.append(feature.unsqueeze(1))
+            out_all_doc = feature.view(batchsize, self.topN, -1)
+
+            #doc_softmax = torch.cat(doc_softmax, dim = 1)
             doc_softmax = F.softmax(doc_softmax, dim = 1).unsqueeze(1)
 
-            out_all_doc = torch.cat(out_all_doc, dim = 1)
+            #out_all_doc = torch.cat(out_all_doc, dim = 1)
             
             #print('doc_softmax', doc_softmax.shape)
             #print('out_all_doc', out_all_doc.shape)
 
             feature = torch.bmm(doc_softmax, out_all_doc).squeeze()
+            #feature = feature.view(batchsize, self.topN, -1)
+            #print(feature.shape)
+            #feature,_ = torch.max(feature, dim = 1)
 
             out = self.linear_out(feature)
 
             out_result.append(out)
 
         out_result = torch.cat(out_result, dim = 1)
+        if self.multi:
+            out_result = self.multi_module(out_result)
                 
         out_result = F.softmax(out_result, dim = 1)
         loss = criterion(out_result, labels)
