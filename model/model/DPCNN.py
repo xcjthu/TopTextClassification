@@ -50,7 +50,7 @@ class DPCNN(nn.Module):
         self.output_dim = config.getint("model", "output_dim")
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
 
-        self.embedding = nn.Embedding(self.word_num, self.emb_dim)
+        # self.embedding = nn.Embedding(self.word_num, self.emb_dim)
 
         # region embedding
         self.region_embedding = nn.Sequential(
@@ -89,7 +89,7 @@ class DPCNN(nn.Module):
         x = data['input']
         labels = data['label']
 
-        x = self.embedding(x)
+        # x = self.embedding(x)
         x = x.permute(0, 2, 1)
         x = self.region_embedding(x)
         x = self.conv_block(x)
