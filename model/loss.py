@@ -19,8 +19,20 @@ def get_loss(task_loss_type):
     return criterion
 
 
-def demo_multi_task_loss():
+def demo_multi_task_loss(attr_result, task_result, labels):
+    loss = 0
+    for key in task_result:
+        loss += cross_entropy_loss(task_result[key], labels[key])
     
+
+    for i in range(len(labels['attribute'])):
+        result_tmp = torch.softmax(attr_result[i], dim = 1)
+        label_tmp = labels['attribute'][i]
+        loss_tmp = - torch.sum(label_tmp.mul(torch.log(result_tmp)))
+        loss += loss_tmp/result_tmp.shape[0]
+
+    return loss
+
 
 
 def multi_label_cross_entropy_loss(outputs, labels):
