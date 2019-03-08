@@ -20,7 +20,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     criterion = get_loss(task_loss_type)
 
     running_acc = 0
-    running_loss = 0
+    running_loss = {'law': 0, 'charge': 0, 'time': 0}
     cnt = 0
     acc_result = []
 
@@ -45,13 +45,18 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
         acc_result = results["accuracy_result"]
 
         running_loss += loss.item()
-        running_acc += accu.item()
+        running_acc['law'] += accu['law'].item()
+        running_acc['charge'] += accu['charge'].item()
+        running_acc['time'] += accu['time'].item()
+
 
     if writer is None:
         pass
     else:
         writer.add_scalar(config.get("output", "model_name") + " valid loss", running_loss / cnt, epoch)
-        writer.add_scalar(config.get("output", "model_name") + " valid accuracy", running_acc / cnt, epoch)
+        writer.add_scalar(config.get("output", "model_name") + " valid law accuracy", running_acc['law'] / cnt, epoch)
+        writer.add_scalar(config.get("output", "model_name") + " valid charge accuracy", running_acc['charge'] / cnt, epoch)
+        writer.add_scalar(config.get("output", "model_name") + " valid time accuracy", running_acc['time'] / cnt, epoch)
 
     # print_info("Valid result:")
     # print_info("Average loss = %.5f" % (running_loss / cnt))
@@ -60,7 +65,10 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
 
     net.train()
 
-    return running_loss / cnt, running_acc / cnt
+    for key in running_acc.keys():
+        running_acc[key] /= cnt
+
+    return running_loss / cnt, running_acc
 
     # print_info("valid end")
     # print_info("------------------------")
@@ -109,9 +117,9 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
     print('** start training here! **')
-    print('----------------|----------TRAIN-----------|----------VALID-----------|----------------|')
-    print('  lr    epoch   |   loss           top-1   |   loss           top-1   |      time      |')
-    print('----------------|--------------------------|--------------------------|----------------|')
+    print('----------------|----------------TRAIN------------------------------|----------VALID---------------------------------------|--------------------|')
+    print('  lr    epoch   |   loss         law         charge          time   |   loss            law         charge          time   |      run_time      |')
+    print('----------------|---------------------------------------------------|------------------------------------------------------|--------------------|')
     start = timer()
 
     for epoch_num in range(trained_epoch, epoch):
@@ -119,7 +127,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
         train_cnt = 0
         train_loss = 0
-        train_acc = 0
+        train_acc = {'law': 0, 'charge': 0, 'time': 0}
 
         exp_lr_scheduler.step(epoch_num)
         lr = 0
@@ -148,7 +156,9 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
             loss.backward()
             train_loss += loss.item()
-            train_acc += accu.item()
+            train_acc['law'] += accu['law'].item()
+            train_acc['charge'] += accu['charge'].item()
+            train_acc['time'] += accu['time'].item()
             train_cnt += 1
 
             loss = loss.item()
@@ -157,13 +167,15 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
             if cnt % output_time == 0:
                 print('\r', end='', flush=True)
-                print('%.4f   % 3d    |  %.4f         % 2.2f   |   ????           ?????   |  %s  |' % (
-                    lr, epoch_num + 1, train_loss / train_cnt, train_acc / train_cnt * 100,
+                print('%.4f   % 3d    |  %.4f         % 2.2f         % 2.2f         % 2.2f   |   ????         ?????         ????         ????   |  %s  |' % (
+                    lr, epoch_num + 1, train_loss / train_cnt, train_acc['law'] / train_cnt * 100, train_acc['charge'] / train_cnt * 100, train_acc['time'] / train_cnt * 100,
                     time_to_str((timer() - start))), end='',
                       flush=True)
 
         train_loss /= train_cnt
-        train_acc /= train_cnt
+        train_acc['law'] /= train_cnt
+        train_acc['charge'] /= train_cnt
+        train_acc['time'] /= train_cnt
 
         # writer.add_scalar(config.get("output", "model_name") + " train loss", train_loss, epoch_num + 1)
         # writer.add_scalar(config.get("output", "model_name") + " train accuracy", train_acc, epoch_num + 1)
@@ -174,8 +186,9 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
         valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
         print('\r', end='', flush=True)
-        print('%.4f   % 3d    |  %.4f          %.2f   |  %.4f         % 2.2f   |  %s  |' % (
-            lr, epoch_num + 1, train_loss, train_acc * 100, valid_loss, valid_accu * 100,
+        print('%.4f   % 3d    |  %.4f          %.2f         %.2f         %.2f   |  %.4f         % 2.2f         % 2.2f         % 2.2f   |  %s  |' % (
+            lr, epoch_num + 1, train_loss, train_acc['law'] * 100, train_acc['charge'] * 100, train_acc['time'] * 100, 
+            valid_loss, valid_accu['law'] * 100, valid_accu['charge'] * 100, valid_accu['time'] * 100,
             time_to_str((timer() - start))))
 
 
