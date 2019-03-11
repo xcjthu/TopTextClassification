@@ -13,6 +13,8 @@ def get_loss(task_loss_type):
         criterion = FocalLoss()
     elif task_loss_type == "multi_label_cross_entropy_loss":
         criterion = multi_label_cross_entropy_loss
+    elif task_loss_type == "demo_multi_task_loss":
+        criterion = demo_multi_task_loss
     else:
         raise NotImplementedError
 

@@ -1,9 +1,11 @@
 from model.model.LSTM import LSTM
 from model.model.TextCNN import TextCNN
+from model.model.demo.Judge_prediction import JudgePrediction
 
 model_list = {
     "LSTM": LSTM,
-    "TextCNN": TextCNN
+    "TextCNN": TextCNN,
+    "JudgePrediction": JudgePrediction
 }
 
 
