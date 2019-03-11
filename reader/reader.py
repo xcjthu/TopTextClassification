@@ -1,27 +1,54 @@
 import time
 import multiprocessing
 import random
+import os
 
-from utils.util import print_info, get_file_list
+from utils.util import get_file_list
 from reader.formatter.AYYC import AYPredictionFormatter
-from reader.formatter.AJLX import AJLXPredictionFormatter
+from reader.formatter.AJLX.AJLX import AJLXPredictionFormatter
+from reader.formatter.SFKS.SFKS_word import SFKSWordFormatter
+from reader.formatter.SFKS.Comatching import ComatchingFormatter, ComatchingFormatter2, ComatchingFormatter3
+from reader.formatter.SFKS.SeaReader import SeaReaderFormatter
+from reader.formatter.race.comatch import RaceComatchFormatter, RaceComatchFormatter2
+from reader.formatter.AJLX.AJLX_bert import AJLXBertPredictionFormatter
+from reader.formatter.SFKS.bert_subject import SFKSBertSubjectFormatter
+from reader.formatter.SFKS.CNNSubject import SFKS_CNN_Subject
+from reader.formatter.race.race_MMN import RaceMMNFormatter
+from reader.formatter.SFKS.SFKS_bert import SFKSBertPredictionFormatter
+from reader.formatter.SFKS.simple import SFKSSimpleAndEffectiveFormatter
+from reader.formatter.SFKS.DSQA import DSQAFormatter
 from word2vec.word2vec import init_transformer
 from reader.formatter.demo.demo import DemoFormatter
 
 
 def init_formatter(config):
     global formatter
-    if config.get("data", "formatter") == "AYYC":
-        formatter = AYPredictionFormatter(config)
-    elif config.get("data", "formatter") == "AJLX":
-        formatter = AJLXPredictionFormatter(config)
-    elif config.get("data", "formatter") == "DemoFormatter":
-        formatter = DemoFormatter(config)
+    useable_list = {
+        "AYYC": AYPredictionFormatter,
+        "AJLX": AJLXPredictionFormatter,
+        "SFKS_word": SFKSWordFormatter,
+        "SFKS_comatching": ComatchingFormatter,
+        "SFKS_comatching2": ComatchingFormatter2,
+        "SFKS_comatching3": ComatchingFormatter3,
+        "SFKS_seareader": SeaReaderFormatter,
+        "RACE_comatch": RaceComatchFormatter,
+        "RACE_comatch2": RaceComatchFormatter2,
+        "RACEMMN": RaceMMNFormatter,
+        "AJLXBert": AJLXBertPredictionFormatter,
+        "SFKS_Bert_Subject": SFKSBertSubjectFormatter,
+        "SFKS_CNN_Subject": SFKS_CNN_Subject,
+        "SFKS_bert": SFKSBertPredictionFormatter,
+        "SFKSSimpleAndEffectiveFormatter": SFKSSimpleAndEffectiveFormatter,
+        "DSQAFormatter": DSQAFormatter,
+        "DemoFormatter": DemoFormatter
+    }
+    if config.get("data", "formatter") in useable_list.keys():
+        formatter = useable_list[config.get("data", "formatter")](config)
     else:
         raise NotImplementedError
 
 
-class reader():
+class reader:
     def __init__(self, file_list, config, num_process, mode):
         self.file_list = file_list
         self.mode = mode
@@ -53,6 +80,8 @@ class reader():
         if config.getboolean("train", "shuffle") and self.mode == "train":
             random.shuffle(self.file_list)
         for a in range(0, len(self.file_list)):
+            if not (os.path.exists(self.file_list[a])):
+                raise FileNotFoundError
             self.file_queue.put(self.file_list[a])
 
     def always_read_data(self, config, data_queue, file_queue, idx):
@@ -141,7 +170,6 @@ def init_train_dataset(config):
 
 
 def init_valid_dataset(config):
-    print(config.get('data', 'valid_file_list'))
     return create_dataset(get_file_list(config.get("data", "valid_data_path"), config.get("data", "valid_file_list")),
                           config, config.getint("reader", "valid_reader_num"), "valid")
 

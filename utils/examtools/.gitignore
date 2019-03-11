@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+data
+data.zip
+analyze_result.txt
+error.txt
+docx
+*.zip
+data2

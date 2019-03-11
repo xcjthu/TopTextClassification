@@ -9,3 +9,6 @@ config/default_local.config
 SVM/svmModel
 
 temp
+
+notebook
+result

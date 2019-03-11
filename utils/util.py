@@ -1,6 +1,8 @@
 import time
 import torch
 import os
+import json
+import numpy as np
 
 
 def time_to_str(t, mode='min'):
@@ -27,76 +29,42 @@ def print_info(s):
     print("[%s] %s" % (times, s))
 
 
-def get_file_list(file_path, file_name):
-    file_list = file_name.replace(" ", "").split(",")
-    for a in range(0, len(file_list)):
-        file_list[a] = os.path.join(file_path, file_list[a])
+def dfs_search(pre_path, now_path):
+    path = os.path.join(pre_path, now_path)
+    file_list = []
+    if os.path.isdir(path):
+        for filename in os.listdir(path):
+            file_list = file_list + dfs_search(pre_path, os.path.join(now_path, filename))
+    else:
+        file_list = [path]
+
     return file_list
 
 
-multi_label = ["multi_label_cross_entropy_loss"]
+def get_file_list(file_path, file_name):
+    real_file_list = []
+    file_list = file_name.replace(" ", "").split(",")
+    for a in range(0, len(file_list)):
+        real_file_list = real_file_list + dfs_search(file_path, file_list[a])
+    return real_file_list
+
+
+def check_multi(config):
+    multi_label = ["multi_label_cross_entropy_loss"]
+    if config.get("train", "type_of_loss") in multi_label:
+        return True
+    else:
+        return False
 
 
 def calc_accuracy(outputs, label, config, result=None):
-    if config.get("train", "type_of_loss") in multi_label:
-        if len(label[0]) != len(outputs[0]):
-            raise ValueError('Input dimensions of labels and outputs must match.')
-
-        outputs = outputs.data
-        labels = label.data
-
-        if result is None:
-            result = []
-
-        total = 0
-        nr_classes = outputs.size(1)
-
-        while (len(result) < nr_classes):
-            result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
-
-        for i in range(nr_classes):
-            outputs1 = (outputs[:, i] >= 0.5).long()
-            labels1 = (labels[:, i] >= 0.5).long()
-            total += int((labels1 * outputs1).sum())
-            total += int(((1 - labels1) * (1 - outputs1)).sum())
-
-            if result is None:
-                continue
-
-            # if len(result) < i:
-            #    result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
-
-            result[i]["TP"] += int((labels1 * outputs1).sum())
-            result[i]["FN"] += int((labels1 * (1 - outputs1)).sum())
-            result[i]["FP"] += int(((1 - labels1) * outputs1).sum())
-            result[i]["TN"] += int(((1 - labels1) * (1 - outputs1)).sum())
-
-        return torch.Tensor([1.0 * total / len(outputs) / len(outputs[0])]), result
+    from utils.accuracy import top1, top2
+    if config.get("output", "accuracy_method") == "top1":
+        return top1(outputs, label, config, result)
+    elif config.get("output", "accuracy_method") == "top2":
+        return top2(outputs, label, config, result)
     else:
-
-        if not (result is None):
-            # print(label)
-            id1 = torch.max(outputs, dim=1)[1]
-            # id2 = torch.max(label, dim=1)[1]
-            id2 = label
-            nr_classes = outputs.size(1)
-            while len(result) < nr_classes:
-                result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
-            for a in range(0, len(id1)):
-                # if len(result) < a:
-                #    result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
-
-                it_is = int(id1[a])
-                should_be = int(id2[a])
-                if it_is == should_be:
-                    result[it_is]["TP"] += 1
-                else:
-                    result[it_is]["FP"] += 1
-                    result[should_be]["FN"] += 1
-        pre, prediction = torch.max(outputs, 1)
-        prediction = prediction.view(-1)
-
-        return torch.mean(torch.eq(prediction, label).float()), result
+        raise NotImplementedError
 
 
 def get_value(res):
@@ -155,3 +123,25 @@ def gen_result(res, print=False):
         print_info("Macro recall\t%.3f" % macro_recall)
         print_info("Micro f1\t%.3f" % micro_f1)
         print_info("Macro f1\t%.3f" % macro_f1)
+
+
+def generate_embedding(embedding, config):
+    from word2vec.word2vec import Word2vec
+
+    transformer = Word2vec(config.get("data", "word2vec"))
+    word_list = json.load(open(config.get("data", "word2id"), "r"))
+    embs = np.zeros([len(word_list), config.getint("data", "vec_size")], dtype=np.float32)
+    cnt = 0
+    total = 0
+
+    for word in word_list:
+        if word in transformer.model:
+            embs[word_list[word]] = torch.from_numpy(np.array(transformer.load(word), dtype=np.float32))
+        else:
+            cnt += 1
+        total += 1
+
+    embedding.weight.data.copy_(torch.from_numpy(embs))
+    print_info("%d/%d words missing" % (cnt, total))
+
+    return embedding

@@ -15,6 +15,9 @@ def get_loss(task_loss_type):
         criterion = multi_label_cross_entropy_loss
     elif task_loss_type == "demo_multi_task_loss":
         criterion = demo_multi_task_loss
+
+    elif task_loss_type == "DSQA_loss":
+        criterion = DSQA_loss
     else:
         raise NotImplementedError
 
@@ -35,10 +38,43 @@ def demo_multi_task_loss(attr_result, task_result, labels):
 
     return loss
 
+'''
+def EM_and_cross_entropy_loss(option_prob, option_output, labels):
+    loss_cross = cross_entropy_loss(option_output, labels)
+    label_one_shot = torch.zeros(option_prob.size()).cuda()
+    label_one_shot.scatter_(dim=1, index=labels.unsqueeze(1), value=1)
+
+    option = label_one_shot.mul(option_prob) + 1 - (1 - label_one_shot).mul(option_prob)
+    option_prob_log = - torch.log(option)
+    loss = torch.mean(option_prob_log)
+    
+    return loss_cross #+ loss
+'''
+
+def DSQA_loss(final_result, passage_prob, labels):
+    '''
+    label_one_shot = torch.zeros(final_result.size()).cuda()
+    label_one_shot.scatter_(dim = 1, index = labels.unsqueeze(1), value = 1)
+
+    result = torch.log(final_result + 0.0001)
+    loss = label_one_shot.mul(result)
+    loss = torch.sum(loss)
+    '''
+    loss = cross_entropy_loss(final_result, labels)
+    # print('loss:', loss)
+    
+    # print(passage_prob)
+
+    loss_rp = torch.log(passage_prob + 0.0001)
+    loss_rp = - 0.005 * torch.sum(loss_rp) / final_result.shape[0]
+
+    # print('loss_rp', loss_rp)
+    return loss + loss_rp
 
 
 def multi_label_cross_entropy_loss(outputs, labels):
-    temp = F.sigmoid(outputs)
+    labels = labels.float()
+    temp = outputs
     res = - labels * torch.log(temp) - (1 - labels) * torch.log(1 - temp)
     res = torch.mean(torch.sum(res, dim=1))
 

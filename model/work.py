@@ -8,9 +8,63 @@ from torch.optim import lr_scheduler
 # from tensorboardX import SummaryWriter
 import shutil
 from timeit import default_timer as timer
+from pytorch_pretrained_bert import BertAdam
 
 from model.loss import get_loss
 from utils.util import gen_result, print_info, time_to_str
+
+
+def resulting(net, valid_dataset, use_gpu, config):
+    net.eval()
+
+    task_loss_type = config.get("train", "type_of_loss")
+    criterion = get_loss(task_loss_type)
+
+    running_acc = 0
+    running_loss = 0
+    cnt = 0
+    acc_result = []
+
+    result = []
+
+    while True:
+        data = valid_dataset.fetch_data(config)
+        # print('fetch data')
+        if data is None:
+            break
+        cnt += 1
+        # print(data["label"])
+        # gg
+
+        with torch.no_grad():
+            for key in data.keys():
+                if isinstance(data[key], torch.Tensor):
+                    if torch.cuda.is_available() and use_gpu:
+                        data[key] = Variable(data[key].cuda())
+                    else:
+                        data[key] = Variable(data[key])
+
+        results = net(data, criterion, config, use_gpu, acc_result)
+
+        for a in range(0, len(results["result"])):
+            result.append(int(results["result"][a]))
+
+        # print('forward')
+
+        outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
+        acc_result = results["accuracy_result"]
+
+        running_loss += loss.item()
+        running_acc += accu.item()
+
+    # print_info("Valid result:")
+    # print_info("Average loss = %.5f" % (running_loss / cnt))
+    # print_info("Average accu = %.5f" % (running_acc / cnt))
+    # gen_result(acc_result, True)
+
+    net.train()
+
+    return result
 
 
 def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
@@ -24,6 +78,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     cnt = 0
     acc_result = []
 
+    #doc_list = []
     while True:
         data = valid_dataset.fetch_data(config)
         # print('fetch data')
@@ -43,6 +98,8 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
 
         outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
         acc_result = results["accuracy_result"]
+
+        #doc_list += results['doc_choice'].tolist()
 
         running_loss += loss.item()
         running_acc['law'] += accu['law'].item()
@@ -109,6 +166,8 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
     elif optimizer_type == "sgd":
         optimizer = optim.SGD(net.parameters(), lr=learning_rate, momentum=config.getfloat("train", "momentum"),
                               weight_decay=config.getfloat("train", "weight_decay"))
+    elif optimizer_type == "bert_adam":
+        optimizer = BertAdam(net.parameters(), lr=learning_rate, weight_decay=config.getfloat("train", "weight_decay"))
     else:
         raise NotImplementedError
 
@@ -124,6 +183,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
     for epoch_num in range(trained_epoch, epoch):
         cnt = 0
+        total = 0
 
         train_cnt = 0
         train_loss = 0
@@ -165,12 +225,16 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             accu = accu.item()
             optimizer.step()
 
+            total += config.getint("train", "batch_size")
+
             if cnt % output_time == 0:
                 print('\r', end='', flush=True)
                 print('%.4f   % 3d    |  %.4f         % 2.2f         % 2.2f         % 2.2f   |   ????         ?????         ????         ????   |  %s  |' % (
                     lr, epoch_num + 1, train_loss / train_cnt, train_acc['law'] / train_cnt * 100, train_acc['charge'] / train_cnt * 100, train_acc['time'] / train_cnt * 100,
                     time_to_str((timer() - start))), end='',
                       flush=True)
+
+        del data
 
         train_loss /= train_cnt
         train_acc['law'] /= train_cnt
@@ -184,7 +248,8 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             os.makedirs(model_path)
         torch.save(net.state_dict(), os.path.join(model_path, "model-%d.pkl" % (epoch_num + 1)))
 
-        valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
+        with torch.no_grad():
+            valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
         print('\r', end='', flush=True)
         print('%.4f   % 3d    |  %.4f          %.2f         %.2f         %.2f   |  %.4f         % 2.2f         % 2.2f         % 2.2f   |  %s  |' % (
             lr, epoch_num + 1, train_loss, train_acc['law'] * 100, train_acc['charge'] * 100, train_acc['time'] * 100, 

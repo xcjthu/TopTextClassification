@@ -56,7 +56,7 @@ train_dataset, valid_dataset = init_dataset(config)
 
 print_info("Data preparation Done")
 
-valid_net(net, valid_dataset, use_gpu, config, 0)
+print(valid_net(net, valid_dataset, use_gpu, config, 0))
 
 for a in range(0, len(train_dataset.read_process)):
     train_dataset.read_process[a].terminate()
