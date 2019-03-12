@@ -70,25 +70,25 @@ class DemoFormatter:
         try:
             attr = self.attr[charge]
         except:
-            print('gg?', charge)
+            # print('gg?', charge)
             attr = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 
         return [self.attr_vec[v] for v in attr]
 
 
     def check(self, data, config):
-        return data
+        try:
+            data = json.loads(data)
+            return data
+        except:
+            return None
+        
 
     def format(self, data, config, transformer, mode):
         label = {'law': [], 'charge': [], 'time': [], 'attribute': []}
         
         passage = []
         for line in data:
-            try:
-                line = json.loads(line)
-            except:
-                continue
-            #print(line)
 
             law = self.law_label[line['meta']['relevant_articles'][0]]
             charge = self.charge_label[line['meta']['accusation'][0]]

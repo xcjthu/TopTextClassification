@@ -106,14 +106,14 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
         running_acc['charge'] += accu['charge'].item()
         running_acc['time'] += accu['time'].item()
 
-    
+    '''
     print('law')
     gen_result(acc_result['law'], True)
     print('\n\ncharge')
     gen_result(acc_result['charge'], True)
     print('\n\ntime')
     gen_result(acc_result['time'], True)
-    
+    '''
 
 
     if writer is None:
