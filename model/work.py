@@ -73,10 +73,10 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     task_loss_type = config.get("train", "type_of_loss")
     criterion = get_loss(task_loss_type)
 
-    running_acc = 0
-    running_loss = {'law': 0, 'charge': 0, 'time': 0}
+    running_loss = 0
+    running_acc = {'law': 0, 'charge': 0, 'time': 0}
     cnt = 0
-    acc_result = []
+    acc_result = {'law': [], 'charge': [], 'time': []}
 
     #doc_list = []
     while True:
@@ -105,6 +105,15 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
         running_acc['law'] += accu['law'].item()
         running_acc['charge'] += accu['charge'].item()
         running_acc['time'] += accu['time'].item()
+
+    
+    print('law')
+    gen_result(acc_result['law'], True)
+    print('\n\ncharge')
+    gen_result(acc_result['charge'], True)
+    print('\n\ntime')
+    gen_result(acc_result['time'], True)
+    
 
 
     if writer is None:
@@ -176,9 +185,9 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
     print('** start training here! **')
-    print('----------------|----------------TRAIN------------------------------|----------VALID---------------------------------------|--------------------|')
-    print('  lr    epoch   |   loss         law         charge          time   |   loss            law         charge          time   |      run_time      |')
-    print('----------------|---------------------------------------------------|------------------------------------------------------|--------------------|')
+    print('----------------|----------------TRAIN----------------------|----------VALID----------------------------|--------------------|')
+    print('  lr    epoch   |   loss       law       charge      time   |   loss        law      charge      time   |      run_time      |')
+    print('----------------|-------------------------------------------|-------------------------------------------|--------------------|')
     start = timer()
 
     for epoch_num in range(trained_epoch, epoch):
@@ -222,14 +231,16 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             train_cnt += 1
 
             loss = loss.item()
-            accu = accu.item()
+            for key in accu:
+                accu[key] = accu[key].item()
+            #accu = accu.item()
             optimizer.step()
 
             total += config.getint("train", "batch_size")
 
             if cnt % output_time == 0:
                 print('\r', end='', flush=True)
-                print('%.4f   % 3d    |  %.4f         % 2.2f         % 2.2f         % 2.2f   |   ????         ?????         ????         ????   |  %s  |' % (
+                print('%.4f   % 3d    |  %.4f    % 2.2f     % 2.2f      % 2.2f   |   ????     ?????     ????     ????   |  %s  |' % (
                     lr, epoch_num + 1, train_loss / train_cnt, train_acc['law'] / train_cnt * 100, train_acc['charge'] / train_cnt * 100, train_acc['time'] / train_cnt * 100,
                     time_to_str((timer() - start))), end='',
                       flush=True)

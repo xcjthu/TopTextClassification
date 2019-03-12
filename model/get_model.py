@@ -1,6 +1,7 @@
 from model.model.LSTM import LSTM
 from model.model.TextCNN import TextCNN
 from model.model.demo.Judge_prediction import JudgePrediction
+from model.model.demo.NaiveLSTM import NaiveLSTM
 
 from model.model.SFKS.BasicCNN import BasicCNN
 from model.model.SFKS.co_matching import CoMatching
@@ -19,6 +20,7 @@ model_list = {
     "LSTM": LSTM,
     "TextCNN": TextCNN,
     "JudgePrediction": JudgePrediction,
+    "NaiveLSTM": NaiveLSTM,
 
     "SFKSCNN": BasicCNN,
     "Comatching": CoMatching,

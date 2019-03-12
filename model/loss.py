@@ -15,6 +15,8 @@ def get_loss(task_loss_type):
         criterion = multi_label_cross_entropy_loss
     elif task_loss_type == "demo_multi_task_loss":
         criterion = demo_multi_task_loss
+    elif task_loss_type == "demo_multi_task_loss_without_attr":
+        criterion = demo_multi_task_loss_without_attr
 
     elif task_loss_type == "DSQA_loss":
         criterion = DSQA_loss
@@ -29,14 +31,26 @@ def demo_multi_task_loss(attr_result, task_result, labels):
     for key in task_result:
         loss += cross_entropy_loss(task_result[key], labels[key])
     
-
+    # print(labels['attribute'].shape)
+    result = torch.softmax(attr_result, dim = 2)
+    loss_tmp = -torch.sum(labels['attribute'].mul(torch.log(result)))
+    loss += loss_tmp/result.shape[0]
+    '''
     for i in range(len(labels['attribute'])):
         result_tmp = torch.softmax(attr_result[i], dim = 1)
         label_tmp = labels['attribute'][i]
         loss_tmp = - torch.sum(label_tmp.mul(torch.log(result_tmp)))
         loss += loss_tmp/result_tmp.shape[0]
-
+    '''
     return loss
+
+
+def demo_multi_task_loss_without_attr(task_result, labels):
+    loss = 0
+    for key in task_result:
+        loss += cross_entropy_loss(task_result[key], labels[key])
+    return loss
+
 
 '''
 def EM_and_cross_entropy_loss(option_prob, option_output, labels):

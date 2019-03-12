@@ -17,41 +17,6 @@ def get_num_class(task_name):
     return task_name_num[task_name]
     
 
-
-class Attribute(nn.Module):
-    def __init__(self, config):
-        super(Attribute, self).__init__()
-        
-        self.attrNum = config.getint('data', 'attrNum')
-        self.w = nn.Parameter(torch.Tensor(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size')))
-        self.u = nn.Parameter(torch.Tensor(config.getint('data', 'attrNum'), config.getint('model', 'hidden_size')))
-        
-        torch.nn.init.xavier_uniform_(self.w, gain=1)
-        torch.nn.init.xavier_uniform_(self.u, gain=1)
-        
-        self.out = [nn.Linear(config.getint('model', 'hidden_size'), 2) for i in range(self.attrNum)]
-        
-        self.out = nn.ModuleList(self.out)
-
-    def forward(self, passage):
-        # passage: batch, len, hidden_size
-        # label: batch, attrNum, 1
-
-        content = passage.matmul(self.w)
-        content = content.matmul(torch.transpose(self.u, 0, 1))
-        content = torch.transpose(content, 1, 2) # batch, attrNum, len
-        content = torch.softmax(content, dim = 2)
-
-        vec = torch.bmm(content, passage) # batch, attrNum, hidden_size
-        
-        result = []
-        for i in range(self.attrNum):
-            result.append(self.out[i](vec[:,i]).unsqueeze(1))
-        result = torch.cat(result, dim = 1)
-        vec, _ = torch.max(vec, dim = 1)
-        return vec, result
-
-
 class Attention(nn.Module):
     def __init__(self, config):
         super(Attention, self).__init__()
@@ -72,9 +37,9 @@ class Attention(nn.Module):
 
 
 
-class JudgePrediction(nn.Module):
+class NaiveLSTM(nn.Module):
     def __init__(self, config):
-        super(JudgePrediction, self).__init__()
+        super(NaiveLSTM, self).__init__()
         
         self.emb_dim = config.getint('data', 'vec_size')
         self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
@@ -86,11 +51,9 @@ class JudgePrediction(nn.Module):
         self.taskName = config.get('data', 'task_name').split(',')
         self.taskName = [v.strip() for v in self.taskName]
 
-        self.gru = nn.GRU(config.getint('data', 'vec_size'), config.getint('model', 'hidden_size'), batch_first = True)
-        self.attr = Attribute(config)
+        self.gru = nn.LSTM(config.getint('data', 'vec_size'), config.getint('model', 'hidden_size'), batch_first = True)
         self.attention = Attention(config)
 
-        self.predictor = nn.LSTM(2 * config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), batch_first = True)
         
         self.out = [nn.Linear(config.getint('model', 'hidden_size'), get_num_class(name)) for name in self.taskName]
 
@@ -110,13 +73,7 @@ class JudgePrediction(nn.Module):
         # feature = self.attention(passage) # batch, taskNum, hidden_size
         # feature, _ = self.predictor(feature)
 
-        attr, attr_result = self.attr(passage)
         task_vec = self.attention(passage)
-
-        task_vec = torch.cat([task_vec, attr.unsqueeze(1).repeat(1, task_vec.shape[1], 1)], dim = 2)
-        # print(task_vec.shape)
-
-        task_vec, _ = self.predictor(task_vec)   # batch, taskNum, hidden_size
         
         task_result = {}
         for i in range(len(self.taskName)):
@@ -124,7 +81,7 @@ class JudgePrediction(nn.Module):
             task_result[self.taskName[i]] = self.out[i](vec)
             # task_result.append(self.out[i](vec))
 
-        loss = criterion(attr_result, task_result, labels)
+        loss = criterion(task_result, labels)
         
 
         accu = {}
