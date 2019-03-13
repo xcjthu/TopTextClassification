@@ -185,9 +185,9 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
     print('** start training here! **')
-    print('----------------|----------------TRAIN----------------------|----------VALID----------------------------|--------------------|')
-    print('  lr    epoch   |   loss       law       charge      time   |   loss        law      charge      time   |      run_time      |')
-    print('----------------|-------------------------------------------|-------------------------------------------|--------------------|')
+    print('----------------|----------------TRAIN----------------------|-----------------VALID---------------------|----------------|')
+    print('  lr    epoch   |   loss       law       charge      time   |   loss       law       charge      time   |    run_time    |')
+    print('----------------|-------------------------------------------|-------------------------------------------|----------------|')
     start = timer()
 
     for epoch_num in range(trained_epoch, epoch):
@@ -240,7 +240,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
             if cnt % output_time == 0:
                 print('\r', end='', flush=True)
-                print('%.4f   % 3d    |  %.4f    % 2.2f     % 2.2f      % 2.2f   |   ????     ?????     ????     ????   |  %s  |' % (
+                print('%.4f   % 3d    |  %.4f    % 2.2f     % 2.2f     % 2.2f   |   ?????      ?????      ?????     ?????   |  %s  |' % (
                     lr, epoch_num + 1, train_loss / train_cnt, train_acc['law'] / train_cnt * 100, train_acc['charge'] / train_cnt * 100, train_acc['time'] / train_cnt * 100,
                     time_to_str((timer() - start))), end='',
                       flush=True)
@@ -262,7 +262,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
         with torch.no_grad():
             valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
         print('\r', end='', flush=True)
-        print('%.4f   % 3d    |  %.4f          %.2f         %.2f         %.2f   |  %.4f         % 2.2f         % 2.2f         % 2.2f   |  %s  |' % (
+        print('%.4f   % 3d    |  %.4f     %.2f      %.2f      %.2f   |  %.4f     % 2.2f     % 2.2f    % 2.2f   |  %s  |' % (
             lr, epoch_num + 1, train_loss, train_acc['law'] * 100, train_acc['charge'] * 100, train_acc['time'] * 100, 
             valid_loss, valid_accu['law'] * 100, valid_accu['charge'] * 100, valid_accu['time'] * 100,
             time_to_str((timer() - start))))

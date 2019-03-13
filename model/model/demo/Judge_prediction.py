@@ -89,13 +89,18 @@ class JudgePrediction(nn.Module):
 
         self.gru = nn.GRU(config.getint('data', 'vec_size'), config.getint('model', 'hidden_size'), batch_first = True)
         self.attr = Attribute(config)
-        self.attention = Attention(config)
+        # self.attention = Attention(config)
         
-        self.predictor = nn.LSTM(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), batch_first = True)
+        # self.predictor = nn.LSTM(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), batch_first = True)
         # self.predictor = nn.LSTM(2 * config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), batch_first = True)
-        
+        self.predictor = [nn.LSTMCell(2 * config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), bias = True) for name in self.taskName]
+        self.cell_fc = [nn.Linear(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size')) for name in self.taskName]
+        self.hidden_fc = [nn.Linear(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size')) for name in self.taskName]
         self.out = [nn.Linear(config.getint('model', 'hidden_size'), get_num_class(name)) for name in self.taskName]
-
+        
+        self.predictor = nn.ModuleList(self.predictor)
+        self.cell_fc = nn.ModuleList(self.cell_fc)
+        self.hidden_fc = nn.ModuleList(self.hidden_fc)
         self.out = nn.ModuleList(self.out)
 
     def forward(self, data, criterion, config, usegpu, acc_result = {'law': None, 'charge': None, 'time': None}):
@@ -113,21 +118,26 @@ class JudgePrediction(nn.Module):
         # feature, _ = self.predictor(feature)
 
         attr, attr_result = self.attr(passage)
-        task_vec = self.attention(passage)
-
+        # task_vec = self.attention(passage)
+        task_vec, _ = torch.max(passage, dim = 1)
         # task_vec = torch.cat([task_vec, attr.unsqueeze(1).repeat(1, task_vec.shape[1], 1)], dim = 2)
+        task_vec = torch.cat([task_vec, attr], dim = 1)
         # print(task_vec.shape)
 
-        task_vec, _ = self.predictor(task_vec)   # batch, taskNum, hidden_size
+        # task_vec, _ = self.predictor(task_vec)   # batch, taskNum, hidden_size
         
         task_result = {}
+        h = torch.zeros(passage.shape[0], config.getint('model', 'hidden_size')).cuda()
+        c = torch.zeros(passage.shape[0], config.getint('model', 'hidden_size')).cuda()
         for i in range(len(self.taskName)):
-            vec = task_vec[:,i]
-            task_result[self.taskName[i]] = self.out[i](vec)
+            h, c = self.predictor[i](task_vec, (h, c))
+            h = self.hidden_fc[i](h)
+            c = self.cell_fc[i](h)
+            task_result[self.taskName[i]] = self.out[i](h)
             # task_result.append(self.out[i](vec))
 
-        # loss = criterion(attr_result, task_result, labels)
-        loss = criterion(task_result, labels)
+        loss = criterion(attr_result, task_result, labels)
+        # loss = criterion(task_result, labels)
 
         accu = {}
         accu['law'], acc_result['law'] = calc_accuracy(task_result['law'], labels['law'], config, acc_result['law'])
