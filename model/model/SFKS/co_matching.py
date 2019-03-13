@@ -532,5 +532,14 @@ class CoMatching3(nn.Module):
 
         loss = criterion(y, label)
         accu, acc_result = calc_accuracy(y, label, config, acc_result)
-        return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y,
+
+        result = []
+        res1 = torch.max(y, dim=1)[1].cpu().numpy()
+        res2 = torch.softmax(y, dim=1).to_list()
+        for a in range(0, len(res1)):
+            result.append({"res": int(res1[a]), "prob": res2[a]})
+
+        return {"loss": loss, "accuracy": accu,
+                "result": result,
+                "x": y,
                 "accuracy_result": acc_result}
