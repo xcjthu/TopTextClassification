@@ -46,8 +46,9 @@ class Attribute(nn.Module):
         
         result = []
         for i in range(self.attrNum):
-            result.append(self.out[i](vec[:,i]).unsqueeze(1))
-        result = torch.cat(result, dim = 1)
+            # result.append(self.out[i](vec[:,i]).unsqueeze(1))
+            result.append(self.out[i](vec[:,i]))
+        # result = torch.cat(result, dim = 1)
         vec, _ = torch.max(vec, dim = 1)
         return vec, result
 
@@ -89,8 +90,9 @@ class JudgePrediction(nn.Module):
         self.gru = nn.GRU(config.getint('data', 'vec_size'), config.getint('model', 'hidden_size'), batch_first = True)
         self.attr = Attribute(config)
         self.attention = Attention(config)
-
-        self.predictor = nn.LSTM(2 * config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), batch_first = True)
+        
+        self.predictor = nn.LSTM(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), batch_first = True)
+        # self.predictor = nn.LSTM(2 * config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), batch_first = True)
         
         self.out = [nn.Linear(config.getint('model', 'hidden_size'), get_num_class(name)) for name in self.taskName]
 
@@ -113,7 +115,7 @@ class JudgePrediction(nn.Module):
         attr, attr_result = self.attr(passage)
         task_vec = self.attention(passage)
 
-        task_vec = torch.cat([task_vec, attr.unsqueeze(1).repeat(1, task_vec.shape[1], 1)], dim = 2)
+        # task_vec = torch.cat([task_vec, attr.unsqueeze(1).repeat(1, task_vec.shape[1], 1)], dim = 2)
         # print(task_vec.shape)
 
         task_vec, _ = self.predictor(task_vec)   # batch, taskNum, hidden_size
@@ -124,8 +126,8 @@ class JudgePrediction(nn.Module):
             task_result[self.taskName[i]] = self.out[i](vec)
             # task_result.append(self.out[i](vec))
 
-        loss = criterion(attr_result, task_result, labels)
-        
+        # loss = criterion(attr_result, task_result, labels)
+        loss = criterion(task_result, labels)
 
         accu = {}
         accu['law'], acc_result['law'] = calc_accuracy(task_result['law'], labels['law'], config, acc_result['law'])
