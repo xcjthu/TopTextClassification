@@ -535,7 +535,7 @@ class CoMatching3(nn.Module):
 
         result = []
         res1 = torch.max(y, dim=1)[1].cpu().numpy()
-        res2 = torch.softmax(y, dim=1).to_list()
+        res2 = torch.softmax(y, dim=1).tolist()
         for a in range(0, len(res1)):
             result.append({"res": int(res1[a]), "prob": res2[a]})
 
