@@ -32,11 +32,12 @@ if __name__ == "__main__":
     word_list = json.load(open("/data/disk3/private/zhx/exam/data/dict/final_dict.txt", "r"))
 
     for word in word_list:
+        word = word[0]
         if crawl(word):
             pass
         else:
             print(word)
-            
+
         import random
 
         if random.randint(1, 20) == 1:
