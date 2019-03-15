@@ -29,7 +29,7 @@ def crawl(word):
     if s.find("百度百科错误页") != -1:
         return False
 
-    return Trie
+    return True
 
 
 if __name__ == "__main__":
