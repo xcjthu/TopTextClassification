@@ -37,14 +37,12 @@ def crawl(word):
 if __name__ == "__main__":
     word_list = json.load(open("/data/disk3/private/zhx/exam/data/dict/final_dict.txt", "r"))
 
+    res = []
     for word in word_list:
         word = word[0]
         if crawl(word):
             pass
         else:
-            print(word)
+            res.append(word)
 
-        import random
-
-        if random.randint(1, 20) == 1:
-            gg
+    json.dump(res, open("crawl_data/unknown.txt", "w"), indent=2, ensure_ascii=False, sort_keys=True)
