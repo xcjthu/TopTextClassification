@@ -19,6 +19,8 @@ urllib3.disable_warnings()
 
 
 def crawl(word):
+    if os.path.exists(os.path.join(output_path, "%s.html" % word)):
+        return True
     url = "https://baike.baidu.com/item/%s" % (urllib.parse.urlencode({"": word})[1:])
     # print(url)
 
@@ -35,11 +37,12 @@ def crawl(word):
 
 
 if __name__ == "__main__":
-    word_list = json.load(open("/data/disk3/private/zhx/exam/data/dict/final_dict.txt", "r"))
+    word_list = json.load(open("../../../final_dict.txt", "r"))
 
     res = []
     for word in word_list:
         word = word[0]
+        print(word)
         if crawl(word):
             pass
         else:
