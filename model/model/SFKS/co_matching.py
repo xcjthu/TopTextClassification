@@ -543,3 +543,193 @@ class CoMatching3(nn.Module):
                 "result": result,
                 "x": y,
                 "accuracy_result": acc_result}
+
+
+class CoMatch4(nn.Module):
+    def __init__(self, config):
+        super(CoMatch4, self).__init__()
+        self.emb_dim = config.getint("data", "vec_size")  # 300
+        self.mem_dim = config.getint("model", "hidden_size")  # 150
+        self.dropoutP = config.getfloat("model", "dropout")  # args.dropoutP 0.2
+        # self.cuda_bool = args.cuda
+
+        self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
+
+        self.embs = nn.Embedding(self.word_num, self.emb_dim)
+        if config.getboolean("data", "need_word2vec"):
+            self.embs = generate_embedding(self.embs, config)
+        # self.embs.weight.data.copy_(corpus.dictionary.embs)
+        # self.embs.weight.requires_grad = False
+
+        self.encoder = MaskLSTM(self.emb_dim, self.mem_dim, dropoutP=self.dropoutP)
+        self.l_encoder = MaskLSTM(self.mem_dim * 8, self.mem_dim, dropoutP=self.dropoutP)
+        self.h_encoder = MaskLSTM(self.mem_dim * 2, self.mem_dim, dropoutP=0)
+
+        self.match_module = MatchNet(self.mem_dim * 2, self.dropoutP)
+
+        self.rank_mods = config.get("model", "rank_method")
+
+        if config.get("model", "rank_method") == "all":
+            self.rank_module = nn.Linear(self.mem_dim * 2 * config.getint("data", "topk"), 1)
+        else:
+            self.rank_module = nn.Linear(self.mem_dim * 2, 1)
+
+        self.multi = config.getboolean("data", "multi_choice")
+        self.multi_module = nn.Linear(4, 16)
+
+        self.drop_module = nn.Dropout(self.dropoutP)
+
+        self.more = config.getboolean("model", "one_more_softmax")
+
+    def forward(self, inputs):
+        documents, questions, options = inputs
+        d_word, d_h_len, d_l_len = documents
+        o_word, o_h_len, o_l_len = options
+        q_word, q_len = questions
+        # print("d_word", d_word.size())
+        # print("d_h_len", d_h_len.size())
+        # print("d_l_len", d_l_len.size())
+        # print("o_word", o_word.size())
+        # print("o_h_len", o_h_len.size())
+        # print("o_l_len", o_l_len.size())
+        # print("q_word", q_word.size())
+        # print("q_len", q_len.size())
+
+        batch = d_word.size()[0]
+        option = d_word.size()[1]
+        k = d_word.size()[2]
+
+        d_embs = self.drop_module(self.embs(d_word))
+        d_embs = torch.zeros(d_embs.shape)
+        o_embs = self.drop_module(self.embs(o_word))
+        q_embs = self.drop_module(self.embs(q_word))
+        # print("d_embs", d_embs.size())
+        # print("o_embs", o_embs.size())
+        # print("q_embs", q_embs.size())
+
+        d_hidden = self.encoder(
+            [d_embs.view(d_embs.size(0) * d_embs.size(1) * d_embs.size(2) * d_embs.size(3), d_embs.size(4),
+                         self.emb_dim),
+             d_l_len.view(-1)])
+        o_hidden = self.encoder(
+            [o_embs.view(o_embs.size(0) * o_embs.size(1), o_embs.size(2), self.emb_dim), o_l_len.view(-1)])
+        q_hidden = self.encoder([q_embs, q_len])
+
+        # print("d_hidden", d_hidden.size())
+        # print("o_hidden", o_hidden.size())
+        # print("q_hidden", q_hidden.size())
+
+        # d_hidden_3d = d_hidden.view(d_embs.size(0), d_embs.size(1) * d_embs.size(2), d_hidden.size(-1))
+        # d_hidden_3d_repeat = d_hidden_3d.repeat(1, o_embs.size(1), 1).view(d_hidden_3d.size(0) * o_embs.size(1),
+        #                                                                   d_hidden_3d.size(1), d_hidden_3d.size(2))
+        d_hidden_3d_repeat = d_hidden.view(d_word.size()[0] * d_word.size()[2] * o_embs.size(1), -1,
+                                           d_hidden.size()[-1])
+
+        # print("d_hidden_3d", d_hidden_3d.size())
+        # print("d_hidden_3d_repeat", d_hidden_3d_repeat.size())
+
+        q_hidden_repeat = q_hidden.repeat(1, o_embs.size(1) * d_word.size()[2], 1).view(
+            q_hidden.size()[0] * o_embs.size(1) * d_word.size()[2], q_hidden.size()[1], q_hidden.size()[2])
+        q_len_repeat = q_len.repeat(o_embs.size(1) * d_word.size()[2])
+        # print("q_hidden_repeat", q_hidden_repeat.size())
+        # print("q_len_repeat", q_len_repeat.size())
+
+        o_hidden_repeat = o_hidden.repeat(1, 1, d_word.size()[2], ).view(o_hidden.size()[0] * d_word.size()[2],
+                                                                         o_hidden.size()[1], o_hidden.size()[2])
+        o_l_len_repeat = o_l_len.repeat(1, d_word.size()[2]).view(o_l_len.size()[0] * d_word.size()[2],
+                                                                  o_l_len.size()[1])
+        # print("o_hidden_repeat", o_hidden_repeat.size())
+        # print("o_l_len_repeat", o_l_len_repeat.size())
+
+        do_match = self.match_module([d_hidden_3d_repeat, o_hidden_repeat, o_l_len_repeat.view(-1)])
+        dq_match = self.match_module([d_hidden_3d_repeat, q_hidden_repeat, q_len_repeat])
+
+        # print("do_match", do_match.size())
+        # print("dq_match", dq_match.size())
+
+        dq_match_repeat = dq_match
+        # print("dq_match_repeat", dq_match_repeat.size())
+
+        co_match = torch.cat([do_match, dq_match_repeat], -1)
+
+        # print("co_match", co_match.size())
+
+        co_match_hier = co_match.view(d_embs.size(0) * o_embs.size(1) * d_embs.size(2) * d_embs.size(3), d_embs.size(4),
+                                      -1)
+        # print("co_match_hier", co_match_hier.size())
+
+        l_hidden = self.l_encoder([co_match_hier, d_l_len.view(-1)])
+        # print("l_hidden", l_hidden.size())
+        l_hidden_pool, _ = l_hidden.max(1)
+        # print("l_hidden_pool", l_hidden_pool.size())
+
+        h_hidden = self.h_encoder(
+            [l_hidden_pool.view(d_embs.size(0) * o_embs.size(1) * d_embs.size(2), d_embs.size(3), -1),
+             d_h_len.view(-1, 1).view(-1)])
+        # print("h_hidden", h_hidden.size())
+        h_hidden_pool, _ = h_hidden.max(1)
+        # print("h_hidden_pool", h_hidden_pool.size())
+
+        # o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
+        # print("o_rep", o_rep.size())
+        # output = self.rank_module(o_rep).squeeze(2)
+
+        if self.rank_mods == "all":
+            o_rep = h_hidden_pool.view(d_embs.size(0), o_embs.size(1), -1)
+            output = self.rank_module(o_rep).squeeze(2)
+        elif self.rank_mods == "max":
+            y = h_hidden_pool.view(batch * option, k, -1)
+            y = torch.max(y, dim=1)[0]
+            y = y.view(batch * option, -1)
+            y = self.rank_module(y)
+            y = y.view(batch, option)
+            output = y
+        else:
+            y = h_hidden_pool.view(batch * option * k, -1)
+            y = self.rank_module(y)
+            y = y.view(batch, option, k)
+            y = torch.max(y, dim=2)[0]
+            y = y.view(batch, option)
+            output = y
+
+        if self.multi:
+            output = self.multi_module(output)
+
+        if self.more:
+            output = torch.nn.functional.log_softmax(output, dim=1)
+        # print("output", output.size())
+
+        return output
+
+
+class CoMatching4(nn.Module):
+    def __init__(self, config):
+        super(CoMatching4, self).__init__()
+
+        self.co_match = CoMatch4(config)
+
+    def init_multi_gpu(self, device):
+        self.co_match = nn.DataParallel(self.co_match)
+
+    def forward(self, data, criterion, config, usegpu, acc_result=None):
+        q, ql = data["question"], data["question_len"]
+        o, oh, ol = data["option"], data["option_sent"], data["option_len"]
+        d, dh, dl = data["document"], data["document_sent"], data["document_len"]
+        label = data["label"]
+
+        x = [[d, dh, dl], [q, ql], [o, oh, ol]]
+        y = self.co_match(x)
+
+        loss = criterion(y, label)
+        accu, acc_result = calc_accuracy(y, label, config, acc_result)
+
+        result = []
+        res1 = torch.max(y, dim=1)[1].cpu().numpy()
+        res2 = torch.softmax(y, dim=1).tolist()
+        for a in range(0, len(res1)):
+            result.append({"res": int(res1[a]), "prob": res2[a]})
+
+        return {"loss": loss, "accuracy": accu,
+                "result": result,
+                "x": y,
+                "accuracy_result": acc_result}
