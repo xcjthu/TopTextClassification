@@ -600,7 +600,7 @@ class CoMatch4(nn.Module):
         k = d_word.size()[2]
 
         d_embs = self.drop_module(self.embs(d_word))
-        d_embs = torch.zeros(d_embs.shape)
+        d_embs = torch.zeros(d_embs.shape).cuda()
         o_embs = self.drop_module(self.embs(o_word))
         q_embs = self.drop_module(self.embs(q_word))
         # print("d_embs", d_embs.size())
