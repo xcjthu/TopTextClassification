@@ -88,7 +88,7 @@ class reader:
         cnt = config.getint("reader", "max_queue_size")
         # print('read data', cnt)
 
-        put_needed = False
+        put_needed = True
         while True:
             if data_queue.qsize() < cnt:
                 data = self.fetch_data_process(config, file_queue)
