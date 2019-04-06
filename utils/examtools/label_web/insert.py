@@ -26,8 +26,8 @@ if __name__ == "__main__":
     for key in ["text"]:
         mapping[key] = {
             "type": "text",
-            "analyzer": "pl_ik_max_word",
-            "search_analyzer": "pl_ik_smart"
+            "analyzer": "ik_max_word",
+            "search_analyzer": "ik_smart"
         }
 
     mapping = {"mappings": {doc_type: {"properties": mapping}},
