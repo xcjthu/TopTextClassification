@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from elastic.elastic import insert_doc, delete_index, create_index
 
@@ -11,7 +12,7 @@ doc_type = "data"
 def dfs_search(data):
     cnt = 0
     for x in data:
-        insert_doc(index_name, doc_type, {"text": x["_name"], "id": x["_id"]})
+        insert_doc(index_name, doc_type, {"text": x["_name"], "id": x["_id"]}, str(uuid.uuid4()))
         dfs_search(x["content"])
 
 
