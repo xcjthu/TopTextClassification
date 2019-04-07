@@ -34,7 +34,7 @@ def search_():
         }
 
         data = search("content", "data", body, size=20)
-        for x in data["hits"]:
+        for x in data["hits"]["hits"]:
             result.append({"name": x["_source"]["text"], "id": x["_source"]["id"]})
     return render_template("search.html", result=result, text=text)
 
