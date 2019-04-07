@@ -33,7 +33,7 @@ def search_():
             }
         }
 
-        data = search_doc("content", "data", body, size=20)
+        data = search("content", "data", body, size=20)
         for x in data["hits"]:
             result.append({"name": x["_source"]["text"], "id": x["_source"]["id"]})
     return render_template("search.html", result=result, text=text)
