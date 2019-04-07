@@ -2,7 +2,7 @@ from flask import Flask, request, render_template
 import os
 import json
 
-from elastic.elastic import search_doc
+from elastic.elastic import search
 
 app = Flask(__name__, static_folder=os.path.join(os.getcwd(), "static"),
             static_url_path='/static',
@@ -15,7 +15,7 @@ else:
 
 
 @app.route("/search")
-def search():
+def search_():
     text = ""
     result = []
     if "text" in request.args:
