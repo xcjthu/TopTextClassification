@@ -12,28 +12,13 @@
         </table>
         <div class="row">
             <div class="col-xs-6 col-sm-3 col-md-2">
-                题目编号
+                搜索项
             </div>
             <div class="col-xs-6 col-sm-3 col-md-2">
-                <input type="number" name="num" value="{{ num }}" class="form-control">
+                <input type="text" name="text" value="{{ text }}" class="form-control">
             </div>
         </div>
         <table id="FakeTable1" class="table table-striped">
-        </table>
-        <div class="row">
-            <div class="col-xs-6 col-sm-3 col-md-2">
-                选项
-            </div>
-            <div class="col-xs-6 col-sm-3 col-md-2">
-                <select name="option" value = "{{ query }}">
-                    <option value = "A">A</option>
-                    <option value = "B">B</option>
-                    <option value = "C">C</option>
-                    <option value = "D">D</option>
-                </select>
-            </div>
-        </div>
-        <table id="FakeTable2" class="table table-striped">
         </table>
         <div class="row">
             <button type="submit" class="btn btn-success">提交</button>
@@ -42,11 +27,22 @@
     <table id="FakeTable5" class="table table-striped">
     </table>
     <table id="table6" class="table table-striped">
+        <th>
+            <td>
+                考点内容
+            </td>
+            <td>
+                id
+            </td>
+        </th>
         {% for x in result %}
             <tr>
-                <th>
-                    {{ x }}
-                </th>
+                <td>
+                    {{ x["name"] }}
+                </td>
+                <td>
+                    {{ x["id"] }}
+                </td>
             </tr>
         {% endfor %}
     </table>
