@@ -2,3 +2,5 @@ local_config.py
 res
 
 data.json
+data2.json
+templates\view.html

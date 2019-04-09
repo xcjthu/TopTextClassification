@@ -8,3 +8,6 @@ docx
 *.zip
 data2
 crawl_data
+
+content.json
+no_content.json
