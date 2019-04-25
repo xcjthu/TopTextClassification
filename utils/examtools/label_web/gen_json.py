@@ -1,10 +1,12 @@
 import json
 import os
 
+data_path = "/data/disk3/private/zhx/exam/data/origin_data/final4"
+
 data = {
-    "name": "司法考试考点、错别字标注",
+    "name": "司法考试考点标注",
     "description": "司法考试考点标注",
-    "options": "错别字",
+    "options": [],
     "extra": {
         "health": True,
         "healthType": 0,
@@ -14,8 +16,9 @@ data = {
         "healthInterval": 2,
         "healthList": [
             {
-                "content": "我是一个测试题, 错别字，考点为想象竞合犯，请选中错别字，并添加考点“想象竞合犯”的id",
-                "answer": "时间"
+                "description": "题目来源：1__train 题目编号：1 题目选项：A\n" + " <a href=\"http://103.242.175.80:16018/search\" target=\"_blank\" style=\"color:#55A2F3\">跳转至搜索网站</a>\n" + "问题描述",
+                "content": "题目：元代人在《唐律疏议序》中说：“乘之（指唐律）则过，除之则不及，过与不及，其失均矣。”表达了对唐律的敬畏之心。下列关于唐律的哪一表述是错误的？\n" + "选项A：促使法律统治“一准乎礼”，实现了礼律统一\n" + "解析：选项A表述正确。唐朝承袭和发展了以往礼法并用的统治方法，使得法律统治“一准乎礼”，真正实现了礼与律的统一。",
+                "answer": ["16-3-1-2-1"]
             }
         ]
     },
@@ -28,13 +31,38 @@ data = {
     "level": 0,
     "repeat": 3,
     "questionList": [
-        {
-            "description": "问题描述, <strong>支持 html</strong>",
-            "content": "瑞安市人民检察院指控：一、传播淫秽物品牟利事实\n\n2015年6月底至同年8月3日，被告人韩凌翔以牟利为目的建立“×××××”微信群，发布淫秽视频，收取成员费用，并邀请被告人汤某加入该群，后又在该群内发布要求每位成员支付18元／月费用的收费公告，被告人汤某知悉上述情况后仍受被告人韩凌翔委托在该微信群内发布淫秽视频。期间，被告人韩凌翔获利1000余元。经鉴定，被告人韩凌翔在该微信群内（当时群成员114人）发布的55个视频文件属于淫秽物品；被告人汤某在该微信群内（当时群成员119人）发布的49个视频文件属于淫秽物品。\n\n二、传播淫秽物品事实\n\n2015年6月底至同年8月3日，被告人韩凌翔建立“×××××”微信群收集淫秽视频。期间，被告人韩凌翔放任“大朋”（另案处理）在该微信群内（当时群成员237人）发布淫秽视频。经鉴定，“大朋”在该微信群内发布的51个视频文件属于淫秽物品。\n\n2015年8月3日、8月8日，被告人韩凌翔、汤某分别被公安人员抓获。"
-        },
-        {
-            "description": "问题描述, <strong>支持 html</strong>",
-            "content": "问题内容"
-        }
     ]
 }
+
+
+def solve_file(filename, name):
+    task = name.replace(".json", "")
+    f = open(filename, "r")
+
+    cnt = 0
+    for line in f:
+        x = json.loads(line)
+        z = []
+        cnt += 1
+
+        for option in ["A", "B", "C", "D"]:
+            y = {}
+            y["description"] = "题目来源：%s 题目编号：%d 题目选项：%s\n" % (task, cnt,
+                                                              option) + " <a href=\"http://103.242.175.80:16018/search\" target=\"_blank\" style=\"color:#55A2F3\">跳转至搜索网站</a>\n" + "问题描述"
+            y["content"] = "题目：" + x["statement"] + ("\n选项%s：" % option) + x["option_list"][option]
+            if "analyze" in x.keys():
+                y["content"] += "\n解析：" + y["analyze"]
+            z.append(y)
+        data["questionList"].append(z)
+
+        if cnt == 1500:
+            break
+
+    f.close()
+
+
+if __name__ == "__main__":
+    for filename in os.listdir(data_path):
+        solve_file(os.path.join(data_path, filename), filename)
+
+    json.dump(data, open("biao.json", "w"), indent=2, ensure_ascii=False, sort_keys=True)

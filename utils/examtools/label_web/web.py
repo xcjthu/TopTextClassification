@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, send_from_directory
 import os
 import json
 import re
@@ -52,6 +52,7 @@ def check():
 def search_():
     text = ""
     result = []
+    which = 1
     if "text" in request.args:
         body = {
             "query": {
@@ -67,11 +68,25 @@ def search_():
             }
         }
         text = request.args["text"]
+        which = int(request.args["which"])
+        if which == 1:
+            index = "content"
+        else:
+            index = "content2"
 
-        data = search("content", "data", body, size=20)
+        data = search(index, "data", body, size=20)
         for x in data["hits"]["hits"]:
-            result.append({"name": x["_source"]["text"], "id": x["_source"]["id"]})
-    return render_template("search.html", result=result, text=text)
+            if which == 1:
+                name = x["_source"]["text"]
+                id_ = x["_source"]["id"]
+            else:
+                name = x["_source"]["name"]
+                id_ = x["_source"]["id"]
+            if id_ in res.keys():
+                result.append({"name": name, "id": id_, "xcj": "最底层"})
+            else:
+                result.append({"name": name, "id": id_, "xcj": ""})
+    return render_template("search.html", result=result, text=text, which=which)
 
 
 def prefix(id_, x):
@@ -112,6 +127,11 @@ def view():
         s = "\n".join(arr)
 
     return s
+
+
+@app.route("/note")
+def note():
+    return send_from_directory("", "x.pdf")
 
 
 if __name__ == "__main__":

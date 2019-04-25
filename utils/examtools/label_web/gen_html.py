@@ -12,7 +12,7 @@ def dfs_search(data, pre):
         now_id = pre + "-" + str(cnt)
 
         if len(x["content"]) == 0:
-            s = s + """ <a href="/get?id=%s" target="_blank">%s</a><br>""" % (x["_id"], x["_name"] + " " + x["_id"])
+            s = s + """ <a href="/get?id=%s" target="_blank">%s(最底层)</a><br>""" % (x["_id"], x["_name"] + " " + x["_id"])
         else:
             sp = """
 <div class="card"><div class="card-header" id="%s"><h5 class="mb-0">
