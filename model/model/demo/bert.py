@@ -30,6 +30,7 @@ class BertDemo(nn.Module):
 
     def init_multi_gpu(self, device):
         self.bert = nn.DataParallel(self.bert, device_ids=device)
+        self.fc_list = nn.DataParallel(self.fc_list, device_ids=device)
 
     def forward(self, data, criterion, config, usegpu, acc_result={'law': None, 'charge': None, 'time': None}):
         x = data['docs']  # batch, len
@@ -41,6 +42,7 @@ class BertDemo(nn.Module):
 
         y, _ = self.bert(x, output_all_encoded_layers=False)
         y = y.view(y.size()[0], -1)
+        print(y.size())
         task_result = {}
         for a in range(0, len(self.taskName)):
             task_result[self.taskName[a]] = self.fc_list[a](y)
