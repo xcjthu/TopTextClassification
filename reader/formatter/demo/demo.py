@@ -140,10 +140,10 @@ class DemoFormatter2:
             try:
                 lookup_id.append(self.word2id[word])
             except:
-                lookup_id.append(self.word2id["UNK"])
+                lookup_id.append(self.word2id["[UNK]"])
 
         while len(lookup_id) < max_len:
-            lookup_id.append(self.word2id["PAD"])
+            lookup_id.append(self.word2id["[PAD]"])
         lookup_id = lookup_id[:max_len]
 
         return lookup_id

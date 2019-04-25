@@ -23,7 +23,7 @@ class BertDemo(nn.Module):
         self.taskName = [v.strip() for v in self.taskName]
 
         self.fc_list = []
-        for a in range(0, len(config.getint("data", "taskNum"))):
+        for a in range(0, len(self.taskName)):
             self.fc_list.append(nn.Linear(768 * 512, task_name_num[self.taskName[a]]))
 
         self.fc_list = nn.ModuleList(self.fc_list)
