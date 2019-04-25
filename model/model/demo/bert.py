@@ -24,7 +24,7 @@ class BertDemo(nn.Module):
 
         self.fc_list = []
         for a in range(0, len(self.taskName)):
-            self.fc_list.append(nn.Linear(768 * 512, task_name_num[self.taskName[a]]))
+            self.fc_list.append(nn.Linear(768 * config.getint("data", "max_len"), task_name_num[self.taskName[a]]))
 
         self.fc_list = nn.ModuleList(self.fc_list)
 
@@ -42,7 +42,6 @@ class BertDemo(nn.Module):
 
         y, _ = self.bert(x, output_all_encoded_layers=False)
         y = y.view(y.size()[0], -1)
-        print(y.size())
         task_result = {}
         for a in range(0, len(self.taskName)):
             task_result[self.taskName[a]] = self.fc_list[a](y)
