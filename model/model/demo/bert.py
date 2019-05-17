@@ -24,7 +24,7 @@ class BertDemo(nn.Module):
 
         self.fc_list = []
         for a in range(0, len(self.taskName)):
-            self.fc_list.append(nn.Linear(768 * config.getint("data", "max_len"), task_name_num[self.taskName[a]]))
+            self.fc_list.append(nn.Linear(768, task_name_num[self.taskName[a]]))
 
         self.fc_list = nn.ModuleList(self.fc_list)
 
@@ -39,7 +39,7 @@ class BertDemo(nn.Module):
         labels['time'] = data['label_time']
         labels['attribute'] = data['label_attr']
 
-        y, _ = self.bert(x, output_all_encoded_layers=False)
+        _, y = self.bert(x, output_all_encoded_layers=False)
         y = y.view(y.size()[0], -1)
         task_result = {}
         for a in range(0, len(self.taskName)):
