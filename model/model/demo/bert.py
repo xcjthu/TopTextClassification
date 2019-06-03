@@ -18,7 +18,7 @@ class BertDemo(nn.Module):
         self.batch_size = config.getint('train', 'batch_size')
 
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
-        self.bert.half()
+        # self.bert.half()
 
         self.taskName = config.get('data', 'task_name').split(',')
         self.taskName = [v.strip() for v in self.taskName]
@@ -28,7 +28,7 @@ class BertDemo(nn.Module):
             self.fc_list.append(nn.Linear(768, task_name_num[self.taskName[a]]))
 
         self.fc_list = nn.ModuleList(self.fc_list)
-        self.fc_list.half()
+        # self.fc_list.half()
 
     def init_multi_gpu(self, device):
         self.bert = nn.DataParallel(self.bert, device_ids=device)
