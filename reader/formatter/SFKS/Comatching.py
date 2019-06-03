@@ -362,6 +362,8 @@ class ComatchingFormatter3:
         self.symbol = [",", ".", "?", "\"", "”", "。", "？", ""]
         self.last_symbol = [".", "?", "。", "？"]
 
+        self.cnt = 0
+
     def check(self, data, config):
         data = json.loads(data)
         if not ("answer" in data.keys()):
