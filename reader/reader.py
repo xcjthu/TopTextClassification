@@ -20,8 +20,6 @@ from reader.formatter.SFKS.DSQA import DSQAFormatter
 from word2vec.word2vec import init_transformer
 from reader.formatter.demo.demo import DemoFormatter, DemoFormatter2
 
-random.seed(19960618)
-
 
 def init_formatter(config):
     global formatter

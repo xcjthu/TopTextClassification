@@ -244,6 +244,8 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
                     lr, epoch_num + 1, train_loss / train_cnt, train_acc['law'] / train_cnt * 100, train_acc['charge'] / train_cnt * 100, train_acc['time'] / train_cnt * 100,
                     time_to_str((timer() - start))), end='',
                       flush=True)
+            if cnt >= 5000:
+                break
 
         del data
 
