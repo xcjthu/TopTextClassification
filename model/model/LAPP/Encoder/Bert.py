@@ -18,7 +18,9 @@ class Bert(nn.Module):
         x = data
         
         batch_size = x.shape[0]
-
+        
+        #print(x)
+        #print(x.shape)
         _, y = self.bert(x, output_all_encoded_layers=False)
 
         y = y.view(y.size()[0], -1)

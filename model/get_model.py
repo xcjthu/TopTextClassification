@@ -13,6 +13,8 @@ from model.model.SFKS.DSQA_lyk import DSQA
 from model.model.DPCNN import DPCNN
 from model.model.SFKS.DenoiseDSQA import DenoiseDSQA
 from model.model.LAPP.encoder_distance import Encoder_Distance
+from model.model.LAPP.dataminging import DataMining
+from model.model.LAPP.attention_model import Attention_model
 
 model_list = {
     "LSTM": LSTM,
@@ -30,7 +32,9 @@ model_list = {
     "DSQA": DSQA,
     "DPCNN": DPCNN,
     "DenoiseDSQA": DenoiseDSQA,
-    "Encoder_Distance": Encoder_Distance
+    "Encoder_Distance": Encoder_Distance,
+    "attention_model": Attention_model,
+    "DataMining": DataMining
 }
 
 

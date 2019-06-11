@@ -3,7 +3,7 @@ import random
 import torch
 import os
 
-class LAPP_Bert_Formatter:
+class DataMining_Bert_Formatter:
     def __init__(self, config):
         self.need = config.getboolean('data', 'need_word2vec')
         
@@ -36,24 +36,36 @@ class LAPP_Bert_Formatter:
         look_id = look_id[:max_len]
 
         return look_id
+    
+    def lookupab(self, a, b, max_len):
+        look_id = [self.word2id['[CLS]']]
+        look_id += self.lookup(a, max_len)
+        look_id.append(self.word2id['[SEP]'])
+        look_id += self.lookup(b, max_len)
+        look_id.append(self.word2id['[SEP]'])
+        
+        return look_id
+        
 
     def format(self, batch_data, config, transformer, mode):
-        A = []
-        B = []
-        C = []
-        label = []
         
-        l2id = {'B': 0, 'C': 1}
+        label = []
+        ab = []
+
+        l2id = {'unrelated': 0, 'agreed': 1, 'disagreed': 2}
         for data in batch_data:
-            A.append(self.lookup(''.join(data['A']), self.max_len))
-            B.append(self.lookup(''.join(data['B']), self.max_len))
-            C.append(self.lookup(''.join(data['C']), self.max_len))
+            ab.append(self.lookupab(data['a'], data['b'], self.max_len))
+            # A.append(self.lookup(''.join(data['a']), self.max_len))
+            # B.append(self.lookup(''.join(data['b']), self.max_len))
+            # C.append(self.lookup(''.join(data['C']), self.max_len))
             label.append(l2id[data['label']])
 
-        A = torch.tensor(A, dtype = torch.long)
-        B = torch.tensor(B, dtype = torch.long)
-        C = torch.tensor(C, dtype = torch.long)
+        # A = torch.tensor(A, dtype = torch.long)
+        # B = torch.tensor(B, dtype = torch.long)
+        # C = torch.tensor(C, dtype = torch.long)
+        
+        ab = torch.tensor(ab, dtype = torch.long)
         label = torch.tensor(label, dtype=torch.long)
 
-        return {'label': label, 'A': A, 'B': B, 'C': C}
+        return {'label': label, 'ab': ab}
 

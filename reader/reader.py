@@ -19,6 +19,7 @@ from reader.formatter.SFKS.simple import SFKSSimpleAndEffectiveFormatter
 from reader.formatter.SFKS.DSQA import DSQAFormatter
 from reader.formatter.LAPP.cail_formatter import LAPP_Formatter
 from reader.formatter.LAPP.bert_formatter import LAPP_Bert_Formatter
+from reader.formatter.LAPP.bert_DataMining_formatter import DataMining_Bert_Formatter
 from word2vec.word2vec import init_transformer
 
 
@@ -42,7 +43,8 @@ def init_formatter(config):
         "SFKSSimpleAndEffectiveFormatter": SFKSSimpleAndEffectiveFormatter,
         "DSQAFormatter": DSQAFormatter,
         "CAIL_Formatter": LAPP_Formatter,
-        "CAIL_Bert_Formatter": LAPP_Bert_Formatter
+        "CAIL_Bert_Formatter": LAPP_Bert_Formatter,
+        "DataMining": DataMining_Bert_Formatter
     }
     if config.get("data", "formatter") in useable_list.keys():
         formatter = useable_list[config.get("data", "formatter")](config)
