@@ -12,6 +12,7 @@ from model.model.SFKS.simple import SimpleAndEffective
 from model.model.SFKS.DSQA_lyk import DSQA
 from model.model.DPCNN import DPCNN
 from model.model.SFKS.DenoiseDSQA import DenoiseDSQA
+from model.model.cail.ys import YSBert
 
 model_list = {
     "LSTM": LSTM,
@@ -29,7 +30,8 @@ model_list = {
     "SFKSSimpleAndEffective": SimpleAndEffective,
     "DSQA": DSQA,
     "DPCNN": DPCNN,
-    "DenoiseDSQA": DenoiseDSQA
+    "DenoiseDSQA": DenoiseDSQA,
+    "YSBert": YSBert
 }
 
 

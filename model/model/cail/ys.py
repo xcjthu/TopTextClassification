@@ -6,22 +6,13 @@ from pytorch_pretrained_bert import BertModel
 from utils.util import calc_accuracy, print_info
 
 
-class Bert(nn.Module):
+class YSBert(nn.Module):
     def __init__(self, config):
-        super(Bert, self).__init__()
-        self.data_size = config.getint("data", "vec_size")
+        super(YSBert, self).__init__()
         self.output_dim = config.getint("model", "output_dim")
-        self.batch_size = config.getint('train', 'batch_size')
 
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
-        self.fc = nn.Linear(768, self.output_dim)
-
-        self.sigmoid = nn.Sigmoid()
-
-        if config.get('train', 'type_of_loss') == 'multi_label_cross_entropy_loss':
-            self.multi = True
-        else:
-            self.multi = False
+        self.fc = nn.Linear(768, self.output_dim * 2)
 
     def init_multi_gpu(self, device):
         self.bert = nn.DataParallel(self.bert, device_ids=device)
@@ -33,11 +24,12 @@ class Bert(nn.Module):
         _, y = self.bert(x, output_all_encoded_layers=False)
         y = y.view(y.size()[0], -1)
         y = self.fc(y)
-        if self.multi:
-            y = self.sigmoid(y)
+
+        y_out = nn.Softmax(dim=2)(y)
+        y_out = y_out[:, :, 1]
 
         loss = criterion(y, labels)
-        accu, acc_result = calc_accuracy(y, labels, config, acc_result)
+        accu, acc_result = calc_accuracy(y_out, labels, config, acc_result)
 
         return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y,
                 "accuracy_result": acc_result}

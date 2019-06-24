@@ -78,7 +78,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     cnt = 0
     acc_result = []
 
-    #doc_list = []
+    # doc_list = []
     while True:
         data = valid_dataset.fetch_data(config)
         # print('fetch data')
@@ -99,7 +99,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
         outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
         acc_result = results["accuracy_result"]
 
-        #doc_list += results['doc_choice'].tolist()
+        # doc_list += results['doc_choice'].tolist()
 
         running_loss += loss.item()
         running_acc += accu.item()
@@ -117,8 +117,8 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
 
     net.train()
 
-    #fout = open('/data/disk1/private/xcj/exam/gg.json', 'w')
-    #print(json.dumps(doc_list), file = fout)
+    # fout = open('/data/disk1/private/xcj/exam/gg.json', 'w')
+    # print(json.dumps(doc_list), file = fout)
 
     return running_loss / cnt, running_acc / cnt
 

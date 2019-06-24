@@ -15,6 +15,8 @@ def get_loss(task_loss_type):
         criterion = multi_label_cross_entropy_loss
     elif task_loss_type == "DSQA_loss":
         criterion = DSQA_loss
+    elif task_loss_type == "multi_label_softmax_loss":
+        criterion = MultiLabelSoftmaxLoss()
     else:
         raise NotImplementedError
 
@@ -34,6 +36,7 @@ def EM_and_cross_entropy_loss(option_prob, option_output, labels):
     return loss_cross #+ loss
 '''
 
+
 def DSQA_loss(final_result, passage_prob, labels):
     '''
     label_one_shot = torch.zeros(final_result.size()).cuda()
@@ -45,7 +48,7 @@ def DSQA_loss(final_result, passage_prob, labels):
     '''
     loss = cross_entropy_loss(final_result, labels)
     # print('loss:', loss)
-    
+
     # print(passage_prob)
 
     loss_rp = torch.log(passage_prob + 0.0001)
@@ -53,6 +56,19 @@ def DSQA_loss(final_result, passage_prob, labels):
 
     # print('loss_rp', loss_rp)
     return loss + loss_rp
+
+
+class MultiLabelSoftmaxLoss(nn.Module):
+    def __init__(self):
+        super(MultiLabelSoftmaxLoss, self).__init__()
+
+        self.criterion = nn.CrossEntropyLoss()
+
+    def forward(self, outputs, labels):
+        loss = 0
+        for a in range(0, len(outputs[0])):
+            o = outputs[:, a, :].view(outputs.size()[0], -1)
+            loss += self.criterion(o, labels[:, a])
 
 
 def multi_label_cross_entropy_loss(outputs, labels):
