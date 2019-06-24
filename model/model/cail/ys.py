@@ -28,6 +28,7 @@ class YSBert(nn.Module):
         y = y.view(y.size()[0], -1)
         y = self.fc(y)
 
+        y = y.view(y.size()[0], -1, 2)
         y_out = nn.Softmax(dim=2)(y)
         y_out = y_out[:, :, 1]
 
