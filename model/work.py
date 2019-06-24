@@ -135,7 +135,10 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     # fout = open('/data/disk1/private/xcj/exam/gg.json', 'w')
     # print(json.dumps(doc_list), file = fout)
 
-    return running_loss / cnt, macro_F1
+    if config.get("output", "which") == "F1":
+        return running_loss / cnt, macro_F1
+    else:
+        return running_loss / cnt, running_acc / cnt
 
     # print_info("valid end")
     # print_info("------------------------")
@@ -251,9 +254,13 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             total += config.getint("train", "batch_size")
 
             if cnt % output_time == 0:
+                if config.get("output", "which") == "F1":
+                    v = macro_F1
+                else:
+                    v = train_acc / train_cnt
                 print('\r', end='', flush=True)
                 print('%.4f   % 3d    |  %.4f         % 2.2f   |   ????           ?????   |  %s  | %d' % (
-                    lr, epoch_num + 1, train_loss / train_cnt, macro_F1 * 100,
+                    lr, epoch_num + 1, train_loss / train_cnt, v * 100,
                     time_to_str((timer() - start)), total), end='',
                       flush=True)
 
@@ -273,9 +280,14 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
         with torch.no_grad():
             valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
+
+        if config.get("output", "which") == "F1":
+            v = macro_F1
+        else:
+            v = train_acc
         print('\r', end='', flush=True)
         print('%.4f   % 3d    |  %.4f          %.2f   |  %.4f         % 2.2f   |  %s  | %d' % (
-            lr, epoch_num + 1, train_loss, macro_F1 * 100, valid_loss, valid_accu * 100,
+            lr, epoch_num + 1, train_loss, v * 100, valid_loss, valid_accu * 100,
             time_to_str((timer() - start)), total))
 
 
