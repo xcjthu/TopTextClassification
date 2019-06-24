@@ -55,6 +55,6 @@ class YSBertFormatter:
             label.append(temp)
 
         input = torch.LongTensor(input)
-        label = torch.LongStorage(label)
+        label = torch.LongTensor(label)
 
         return {'input': input, 'label': label}
