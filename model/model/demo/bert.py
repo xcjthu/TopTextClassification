@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from pytorch_pretrained_bert import BertModel, BertForPreTraining
+from pytorch_pretrained_bert1 import BertModel, BertForPreTraining
 
 from utils.util import calc_accuracy, print_info
 
