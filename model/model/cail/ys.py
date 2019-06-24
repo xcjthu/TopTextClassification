@@ -9,7 +9,10 @@ from utils.util import calc_accuracy, print_info
 class YSBert(nn.Module):
     def __init__(self, config):
         super(YSBert, self).__init__()
-        self.output_dim = config.getint("model", "output_dim")
+        self.output_dim = 0
+        with open(config.get("data", "label_file"), "r") as f:
+            for line in f:
+                self.output_dim += 1
 
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
         self.fc = nn.Linear(768, self.output_dim * 2)
