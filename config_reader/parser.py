@@ -6,15 +6,15 @@ class ConfigParser:
     def __init__(self, path):
         if os.path.exists("config/default_local.config"):
             self.local_config = configparser.RawConfigParser()
-            self.local_config.read("config/default_local.config")
+            self.local_config.read("config/default_local.config", encoding="utf8")
         else:
             self.local_config = None
 
         self.default_config = configparser.RawConfigParser()
-        self.default_config.read("config/default.config")
+        self.default_config.read("config/default.config", encoding="utf8")
 
         self.config = configparser.RawConfigParser()
-        self.config.read(path)
+        self.config.read(path, encoding="utf8")
 
     def get(self, field, name):
         try:

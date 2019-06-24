@@ -35,5 +35,5 @@ class YSBert(nn.Module):
         loss = criterion(y, labels)
         accu, acc_result = calc_accuracy(y_out, labels, config, acc_result)
 
-        return {"loss": loss, "accuracy": accu, "result": torch.max(y, dim=1)[1].cpu().numpy(), "x": y,
+        return {"loss": loss, "accuracy": accu, "result": y_out, "x": y,
                 "accuracy_result": acc_result}
