@@ -12,7 +12,7 @@ from model.loss import get_loss
 
 task_list = ["divorce", "labor", "loan"]
 
-if __name__ == "__main__":
+if True:
     for task in task_list:
         if os.path.exists(os.path.join("trained", task)):
             configFilePath = os.path.join("trained", task, "config")
@@ -22,6 +22,7 @@ if __name__ == "__main__":
             net = get_model(model_name, config)
 
             net.cuda()
+            net.init_multi_gpu([0])
 
             net.load_state_dict(torch.load(os.path.join("trained", task, "model.pkl")))
 
