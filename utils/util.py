@@ -50,7 +50,7 @@ def get_file_list(file_path, file_name):
 
 
 def check_multi(config):
-    multi_label = ["multi_label_cross_entropy_loss"]
+    multi_label = ["multi_label_cross_entropy_loss", "multi_label_softmax_loss", "focal_loss"]
     if config.get("train", "type_of_loss") in multi_label:
         return True
     else:
