@@ -70,6 +70,8 @@ class MultiLabelSoftmaxLoss(nn.Module):
             o = outputs[:, a, :].view(outputs.size()[0], -1)
             loss += self.criterion(o, labels[:, a])
 
+        return loss
+
 
 def multi_label_cross_entropy_loss(outputs, labels):
     labels = labels.float()
