@@ -124,6 +124,8 @@ def gen_result(res, print=False):
         print_info("Micro f1\t%.3f" % micro_f1)
         print_info("Macro f1\t%.3f" % macro_f1)
 
+    return macro_f1, f1
+
 
 def generate_embedding(embedding, config):
     from word2vec.word2vec import Word2vec

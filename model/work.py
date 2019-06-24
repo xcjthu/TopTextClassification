@@ -78,6 +78,11 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     cnt = 0
     acc_result = []
 
+    F1 = []
+    task_len = net.output_dim
+    for i in range(task_len):
+        F1.append({"TP": 0, "FP": 0, "TN": 0, "FN": 0})
+
     # doc_list = []
     while True:
         data = valid_dataset.fetch_data(config)
@@ -99,10 +104,20 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
         outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
         acc_result = results["accuracy_result"]
 
+        temp_F1 = results["accuracy_result"]
+
+        for i in range(task_len):
+            F1[i]["TP"] += temp_F1[i]["TP"]
+            F1[i]["FP"] += temp_F1[i]["FP"]
+            F1[i]["TN"] += temp_F1[i]["TN"]
+            F1[i]["FN"] += temp_F1[i]["FN"]
+
         # doc_list += results['doc_choice'].tolist()
 
         running_loss += loss.item()
         running_acc += accu.item()
+
+    macro_F1, class_F1 = gen_result(F1)
 
     if writer is None:
         pass
@@ -120,7 +135,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     # fout = open('/data/disk1/private/xcj/exam/gg.json', 'w')
     # print(json.dumps(doc_list), file = fout)
 
-    return running_loss / cnt, running_acc / cnt
+    return running_loss / cnt, macro_F1
 
     # print_info("valid end")
     # print_info("------------------------")
@@ -190,6 +205,11 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             lr = float(g['lr'])
             break
 
+        task_len = net.output_dim
+        F1 = []
+        for i in range(task_len):
+            F1.append({"TP": 0, "FP": 0, "TN": 0, "FN": 0})
+
         while True:
             cnt += 1
             data = train_dataset.fetch_data(config)
@@ -218,12 +238,22 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             accu = accu.item()
             optimizer.step()
 
+            temp_F1 = results["accuracy_result"]
+
+            for i in range(task_len):
+                F1[i]["TP"] += temp_F1[i]["TP"]
+                F1[i]["FP"] += temp_F1[i]["FP"]
+                F1[i]["TN"] += temp_F1[i]["TN"]
+                F1[i]["FN"] += temp_F1[i]["FN"]
+
+            macro_F1, _ = gen_result(F1)
+
             total += config.getint("train", "batch_size")
 
             if cnt % output_time == 0:
                 print('\r', end='', flush=True)
                 print('%.4f   % 3d    |  %.4f         % 2.2f   |   ????           ?????   |  %s  | %d' % (
-                    lr, epoch_num + 1, train_loss / train_cnt, train_acc / train_cnt * 100,
+                    lr, epoch_num + 1, train_loss / train_cnt, macro_F1 * 100,
                     time_to_str((timer() - start)), total), end='',
                       flush=True)
 
@@ -231,6 +261,8 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
         train_loss /= train_cnt
         train_acc /= train_cnt
+
+        macro_F1, _ = gen_result(F1)
 
         # writer.add_scalar(config.get("output", "model_name") + " train loss", train_loss, epoch_num + 1)
         # writer.add_scalar(config.get("output", "model_name") + " train accuracy", train_acc, epoch_num + 1)
@@ -243,7 +275,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
         print('\r', end='', flush=True)
         print('%.4f   % 3d    |  %.4f          %.2f   |  %.4f         % 2.2f   |  %s  | %d' % (
-            lr, epoch_num + 1, train_loss, train_acc * 100, valid_loss, valid_accu * 100,
+            lr, epoch_num + 1, train_loss, macro_F1 * 100, valid_loss, valid_accu * 100,
             time_to_str((timer() - start)), total))
 
 
