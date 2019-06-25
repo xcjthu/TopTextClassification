@@ -15,7 +15,7 @@ class YSBertFormatter:
                 self.label[line[:-1]] = len(self.label)
 
         self.word2id = {}
-        with open(os.path.join(config.get("model", "bert_path"), "vocab.txt"), "r") as f:
+        with open(os.path.join(config.get("model", "bert_path"), "vocab.txt"), "r", encoding="utf8") as f:
             for line in f:
                 self.word2id[line[:-1]] = len(self.word2id)
 

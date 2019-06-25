@@ -2,6 +2,7 @@ import argparse
 import os
 import torch
 from torch import nn
+from torch.autograd import Variable
 import shutil
 import json
 
@@ -38,27 +39,30 @@ if True:
             init_formatter(config)
             from reader.reader import formatter
 
-            result = []
-            with open(os.path.join("/input", task, "input.json"), "r") as f:
+            res = []
+            with open(os.path.join("/input", task, "input.json"), "r", encoding="utf8") as f:
                 for line in f:
                     data = json.loads(line)
 
                     arr = []
 
                     for x in data:
-                        temp = {"sentence": str(x["sentence"]), "label": []}
-                        data = formatter.format([temp])
+                        temp = {"sentence": str(x["sentence"]), "labels": []}
+                        data = formatter.format([temp], config, None, None)
+                        for key in data.keys():
+                            if isinstance(data[key], torch.Tensor):
+                                data[key] = Variable(data[key].cuda())
                         result = net.forward(data, criterion, config, True)["result"]
 
                         for a in range(0, len(result[0])):
                             if result[0][a] > 0.5:
-                                temp["label"].append(label[a])
+                                temp["labels"].append(label[a])
 
                         arr.append(temp)
-                    result.append(arr)
+                    res.append(arr)
 
-                with open(os.path.join("/output", task, "output.json"), "r") as f:
-                    for x in result:
+                with open(os.path.join("/output", task, "output.json"), "w", encoding="utf8") as f:
+                    for x in res:
                         print(json.dumps(x, ensure_ascii=False, sort_keys=True), file=f)
 
     os.system("rm * -rf")
