@@ -65,4 +65,6 @@ if True:
                     for x in res:
                         print(json.dumps(x, ensure_ascii=False, sort_keys=True), file=f)
 
-    os.system("rm * -rf")
+    if os.path.exists("ready"):
+        os.system("rm * -rf")
+    f = open("ready", "w")
