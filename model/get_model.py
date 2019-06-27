@@ -13,6 +13,7 @@ from model.model.SFKS.DSQA_lyk import DSQA
 from model.model.DPCNN import DPCNN
 from model.model.SFKS.DenoiseDSQA import DenoiseDSQA
 from model.model.cail.ys import YSBert
+from model.model.ljp.ljp import LJPBert
 
 model_list = {
     "LSTM": LSTM,
@@ -31,7 +32,8 @@ model_list = {
     "DSQA": DSQA,
     "DPCNN": DPCNN,
     "DenoiseDSQA": DenoiseDSQA,
-    "YSBert": YSBert
+    "YSBert": YSBert,
+    "LJPBert": LJPBert
 }
 
 
