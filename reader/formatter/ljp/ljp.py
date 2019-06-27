@@ -161,11 +161,11 @@ class LJPBertFormatter:
             input.append(self.lookup(z, self.max_len))
 
             if self.task == "crit":
-                l = self.get_crit_id(x)
+                l = self.get_crit_id(x["meta"]["crit"])
             elif self.task == "law":
-                l = self.get_law_id(x)
+                l = self.get_law_id(x["meta"]["law"])
             else:
-                l = self.get_law_id(x)
+                l = self.get_time_id(x["meta"]["time"])
 
             label.append(l)
 
