@@ -158,7 +158,7 @@ class LJPBertFormatter:
             for y in x["content"]:
                 for z in y:
                     text += z
-            input.append(self.lookup(z, self.max_len))
+            input.append(self.lookup(text, self.max_len))
 
             if self.task == "crit":
                 l = self.get_crit_id(x["meta"]["crit"])
