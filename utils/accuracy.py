@@ -42,6 +42,8 @@ def top1(outputs, label, config, result=None):
 
         if True or not (result is None):
             # print(label)
+            if result is None:
+                result = []
             id1 = torch.max(outputs, dim=1)[1]
             # id2 = torch.max(label, dim=1)[1]
             id2 = label
