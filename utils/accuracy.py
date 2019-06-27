@@ -40,7 +40,7 @@ def top1(outputs, label, config, result=None):
         return torch.Tensor([1.0 * total / len(outputs) / len(outputs[0])]), result
     else:
 
-        if not (result is None):
+        if True or not (result is None):
             # print(label)
             id1 = torch.max(outputs, dim=1)[1]
             # id2 = torch.max(label, dim=1)[1]
