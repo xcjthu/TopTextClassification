@@ -4,8 +4,6 @@ import json
 
 from utils.util import calc_accuracy, print_info
 
-torch.manual_seed(1)
-
 
 class ResnetBlock(nn.Module):
     def __init__(self, channel_size):
