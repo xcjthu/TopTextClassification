@@ -19,7 +19,7 @@ class LJPBertFormatter:
                 label = arr[0].replace("[", "").replace("]", "")
                 cnt = int(arr[1])
                 if cnt >= min_freq:
-                    self.crit_label[label] = len(label)
+                    self.crit_label[label] = len(self.law_label)
 
         self.law_label = {}
         with open(config.get("data", "law_label"), "r") as f:
