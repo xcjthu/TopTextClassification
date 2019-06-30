@@ -19,7 +19,7 @@ class LJPBertFormatter:
                 label = arr[0].replace("[", "").replace("]", "")
                 cnt = int(arr[1])
                 if cnt >= min_freq:
-                    self.crit_label[label] = len(self.law_label)
+                    self.crit_label[label] = len(self.crit_label)
 
         self.law_label = {}
         with open(config.get("data", "law_label"), "r") as f:
@@ -30,7 +30,7 @@ class LJPBertFormatter:
                 cnt = int(arr[2])
                 label = (x1, x2)
                 if cnt >= min_freq:
-                    self.law_label[label] = len(label)
+                    self.law_label[label] = len(self.law_label)
         print_info("%d %d" % (len(self.crit_label), len(self.law_label)))
 
         self.word2id = {}
