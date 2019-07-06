@@ -3,6 +3,7 @@ from model.model.TextCNN import TextCNN
 from model.model.demo.Judge_prediction import JudgePrediction
 from model.model.demo.NaiveLSTM import NaiveLSTM
 from model.model.demo.DemoMultiTaskCNN import DemoMultiTaskCNN
+from model.model.demo.bert import BertDemo
 
 from model.model.SFKS.BasicCNN import BasicCNN
 from model.model.SFKS.co_matching import CoMatching
@@ -23,6 +24,7 @@ model_list = {
     "JudgePrediction": JudgePrediction,
     "NaiveLSTM": NaiveLSTM,
     "DemoCNN": DemoMultiTaskCNN,
+    "BertDemo": BertDemo,
 
     "SFKSCNN": BasicCNN,
     "Comatching": CoMatching,

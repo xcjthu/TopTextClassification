@@ -1,12 +1,9 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-from torch.autograd import Variable as Var
-import json
+from pytorch_pretrained_bert1 import BertModel, BertForPreTraining
 
-from utils.util import calc_accuracy, gen_result, generate_embedding
-from model.model.demo.TextCNN import TextCNN
+from utils.util import calc_accuracy, print_info
 
 task_name_num = {
     'law': 183,
@@ -15,46 +12,40 @@ task_name_num = {
 }
 
 
-def get_num_class(task_name):
-    return task_name_num[task_name]
-
-
-class DemoMultiTaskCNN(nn.Module):
+class BertDemo(nn.Module):
     def __init__(self, config):
-        super(DemoMultiTaskCNN, self).__init__()
+        super(BertDemo, self).__init__()
+        self.batch_size = config.getint('train', 'batch_size')
 
-        self.emb_dim = config.getint('data', 'vec_size')
-        self.word_num = len(json.load(open(config.get("data", "word2id"), "r")))
-
-        self.embs = nn.Embedding(self.word_num, self.emb_dim)
-        if config.getboolean("data", "need_word2vec"):
-            self.embs = generate_embedding(self.embs, config)
+        self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
+        self.bert.half()
 
         self.taskName = config.get('data', 'task_name').split(',')
         self.taskName = [v.strip() for v in self.taskName]
 
-        self.cnn = TextCNN(config)
+        self.fc_list = []
+        for a in range(0, len(self.taskName)):
+            self.fc_list.append(nn.Linear(768, task_name_num[self.taskName[a]]))
 
-        self.out = [nn.Linear(config.getint('model', 'hidden_size'), get_num_class(name)) for name in self.taskName]
+        self.fc_list = nn.ModuleList(self.fc_list)
+        self.fc_list.half()
 
-        self.out = nn.ModuleList(self.out)
+    def init_multi_gpu(self, device):
+        self.bert = nn.DataParallel(self.bert, device_ids=device)
 
     def forward(self, data, criterion, config, usegpu, acc_result={'law': None, 'charge': None, 'time': None}):
-        passage = data['docs']  # batch, len
+        x = data['docs']  # batch, len
         labels = {}
         labels['law'] = data['label_law']
         labels['charge'] = data['label_charge']
         labels['time'] = data['label_time']
         labels['attribute'] = data['label_attr']
 
-        passage = self.embs(passage)
-
-        passage = self.cnn(passage)
-
+        _, y = self.bert(x, output_all_encoded_layers=False)
+        y = y.view(y.size()[0], -1)
         task_result = {}
-        for i in range(len(self.taskName)):
-            task_result[self.taskName[i]] = self.out[i](passage)
-            # task_result.append(self.out[i](vec))
+        for a in range(0, len(self.taskName)):
+            task_result[self.taskName[a]] = self.fc_list[a](y)
 
         loss = criterion(task_result, labels)
 
