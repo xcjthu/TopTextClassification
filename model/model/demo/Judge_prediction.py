@@ -5,6 +5,8 @@ import torch.nn.functional as F
 from torch.autograd import Variable as Var
 import json
 
+from model.model.demo.TextCNN import TextCNN
+
 from utils.util import calc_accuracy, gen_result, generate_embedding
 
 task_name_num = {
@@ -87,13 +89,27 @@ class JudgePrediction(nn.Module):
         self.taskName = config.get('data', 'task_name').split(',')
         self.taskName = [v.strip() for v in self.taskName]
 
-        self.gru = nn.GRU(config.getint('data', 'vec_size'), config.getint('model', 'hidden_size'), batch_first = True)
-        self.attr = Attribute(config)
-        # self.attention = Attention(config)
+        # self.gru = nn.LSTM(config.getint('data', 'vec_size'), config.getint('model', 'hidden_size'), batch_first = True)
+        self.attr_task = False
+        if config.get('train', 'type_of_loss') == 'demo_multi_task_loss':
+            self.attr = Attribute(config)
+            self.attr_task = True
+            self.attr_encoder = nn.LSTM(config.getint('data', 'vec_size'), config.getint('model', 'hidden_size'), batch_first = True)
+
+        self.encoder_type = config.get('model', 'encoder')
+        if self.encoder_type == 'cnn':
+            self.encoder = TextCNN(config)
+        elif self.encoder_type == 'lstm':
+            self.encoder = nn.LSTM(config.getint('data', 'vec_size'), config.getint('model', 'hidden_size'), batch_first = True)
+        elif self.encoder_type == 'gru':
+            self.encoder = nn.GRU(config.getint('data', 'vec_size'), config.getint('model', 'hidden_size'), batch_first = True)
+
         
-        # self.predictor = nn.LSTM(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), batch_first = True)
-        # self.predictor = nn.LSTM(2 * config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), batch_first = True)
-        self.predictor = [nn.LSTMCell(2 * config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), bias = True) for name in self.taskName]
+        if self.attr_task:
+            self.predictor = [nn.LSTMCell(2 * config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), bias = True) for name in self.taskName]
+        else:
+            self.predictor = [nn.LSTMCell(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size'), bias = True) for name in self.taskName]
+
         self.cell_fc = [nn.Linear(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size')) for name in self.taskName]
         self.hidden_fc = [nn.Linear(config.getint('model', 'hidden_size'), config.getint('model', 'hidden_size')) for name in self.taskName]
         self.out = [nn.Linear(config.getint('model', 'hidden_size'), get_num_class(name)) for name in self.taskName]
@@ -112,16 +128,16 @@ class JudgePrediction(nn.Module):
         labels['attribute'] = data['label_attr']
 
         passage = self.embs(passage)
-        passage, _ = self.gru(passage)
+        
+        if self.encoder_type == 'cnn':
+            task_vec = self.encoder(passage)
+        else:
+            task_vec, _ = self.encoder(passage)
+            task_vec, _ = torch.max(task_vec, dim = 1)
 
-        # feature = self.attention(passage) # batch, taskNum, hidden_size
-        # feature, _ = self.predictor(feature)
-
-        attr, attr_result = self.attr(passage)
-        # task_vec = self.attention(passage)
-        task_vec, _ = torch.max(passage, dim = 1)
-        # task_vec = torch.cat([task_vec, attr.unsqueeze(1).repeat(1, task_vec.shape[1], 1)], dim = 2)
-        task_vec = torch.cat([task_vec, attr], dim = 1)
+        if self.attr_task:
+            attr, attr_result = self.attr(self.attr_encoder(passage)[0])
+            task_vec = torch.cat([task_vec, attr], dim = 1)
         # print(task_vec.shape)
 
         # task_vec, _ = self.predictor(task_vec)   # batch, taskNum, hidden_size
@@ -135,9 +151,11 @@ class JudgePrediction(nn.Module):
             c = self.cell_fc[i](h)
             task_result[self.taskName[i]] = self.out[i](h)
             # task_result.append(self.out[i](vec))
-
-        loss = criterion(attr_result, task_result, labels)
-        # loss = criterion(task_result, labels)
+        
+        if config.get('train', 'type_of_loss') == 'demo_multi_task_loss':
+            loss = criterion(attr_result, task_result, labels)
+        else:
+            loss = criterion(task_result, labels)
 
         accu = {}
         accu['law'], acc_result['law'] = calc_accuracy(task_result['law'], labels['law'], config, acc_result['law'])
