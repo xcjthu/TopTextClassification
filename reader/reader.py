@@ -19,7 +19,7 @@ from reader.formatter.SFKS.simple import SFKSSimpleAndEffectiveFormatter
 from reader.formatter.SFKS.DSQA import DSQAFormatter
 from word2vec.word2vec import init_transformer
 from reader.formatter.demo.demo import DemoFormatter, DemoFormatter2
-
+from reader.formatter.demo.demo2 import BertFormatter2
 
 def init_formatter(config):
     global formatter
@@ -41,7 +41,8 @@ def init_formatter(config):
         "SFKSSimpleAndEffectiveFormatter": SFKSSimpleAndEffectiveFormatter,
         "DSQAFormatter": DSQAFormatter,
         "DemoFormatter": DemoFormatter,
-        "DemoFormatter2": DemoFormatter2
+        "DemoFormatter2": DemoFormatter2,
+		"BertFormatter2": BertFormatter2
     }
     if config.get("data", "formatter") in useable_list.keys():
         formatter = useable_list[config.get("data", "formatter")](config)

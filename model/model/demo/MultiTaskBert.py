@@ -30,7 +30,34 @@ class MultiTaskBert(nn.Module):
         # self.cnn = TextCNN(config)
         self.bert = BertModel.from_pretrained(config.get("model", "bert_path"))
 
-        self.out = [768, get_num_class(name)) for name in self.taskName]
+
+        min_freq = config.getint("data", "min_freq")
+        self.crit_label = {}
+        with open(config.get("data", "crit_label"), "r") as f:
+            for line in f:
+                arr = line[:-1].split(" ")
+                label = arr[0].replace("[", "").replace("]", "")
+                cnt = int(arr[1])
+                if cnt >= min_freq:
+                    self.crit_label[label] = len(label)
+        
+        self.law_label = {}
+        with open(config.get("data", "law_label"), "r") as f:
+            for line in f:
+                arr = line[:-1].split(" ")
+                x1 = int(arr[0])
+                x2 = int(arr[1])
+                cnt = int(arr[2])
+                label = (x1, x2)
+                if cnt >= min_freq:
+                    self.law_label[label] = len(label)
+        task_name_num = {
+            'law': len(self.law_label),
+            'charge': len(self.crit_label),
+            'time': 11
+        }
+
+        self.out = [nn.Linear(768,task_name_num[name]) for name in self.taskName]
 
         self.out = nn.ModuleList(self.out)
     
@@ -56,7 +83,7 @@ class MultiTaskBert(nn.Module):
 
         task_result = {}
         for i in range(len(self.taskName)):
-            task_result[self.taskName[i]] = self.out[i](passage)
+            task_result[self.taskName[i]] = self.out.module[i](passage)
             # task_result.append(self.out[i](vec))
 
         loss = criterion(task_result, labels)

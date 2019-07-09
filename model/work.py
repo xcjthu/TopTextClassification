@@ -8,7 +8,7 @@ from torch.optim import lr_scheduler
 # from tensorboardX import SummaryWriter
 import shutil
 from timeit import default_timer as timer
-from pytorch_pretrained_bert1 import BertAdam
+from pytorch_pretrained_bert import BertAdam
 
 from model.loss import get_loss
 from utils.util import gen_result, print_info, time_to_str
