@@ -60,7 +60,7 @@ def check_multi(config):
 def calc_accuracy(outputs, label, config, result=None):
     from utils.accuracy import top1, topk
     if config.get("output", "accuracy_method") == "top1":
-        return topk(outputs, label, config, result, 1)
+        return top1(outputs, label, config, result)
     elif config.get("output", "accuracy_method") == "top2":
         return topk(outputs, label, config, result, 2)
     elif config.get("output", "accuracy_method") == "top3":
