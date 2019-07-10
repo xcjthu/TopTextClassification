@@ -118,7 +118,7 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
 
     net.train()
     for a in range(0, len(running_acc)):
-        running_acc[a] /= cnt
+        running_acc[a] = round(float(running_acc[a] / cnt * 100), 2)
 
     # fout = open('/data/disk1/private/xcj/exam/gg.json', 'w')
     # print(json.dumps(doc_list), file = fout)
