@@ -499,9 +499,9 @@ class ComatchingFormatter3:
             for a in range(0, 4):
                 arr = ["A", "B", "C", "D"]
                 res = []
-                k = [0, 1, 2, 6, 12, 7, 13, 3, 8, 9, 14, 15, 4, 10, 16, 5, 16, 17]
+                # k = [0, 1, 2, 6, 12, 7, 13, 3, 8, 9, 14, 15, 4, 10, 16, 5, 16, 17]
                 for b in range(0, self.k):
-                    res.append(self.parseH(temp_data["reference"][arr[a]][k[b]]))
+                    res.append(self.parseH(temp_data["reference"][arr[a]][b]))
                 document[a].append(res)
 
             label.append(label_x)
