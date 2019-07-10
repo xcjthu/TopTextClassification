@@ -58,7 +58,7 @@ def check_multi(config):
 
 
 def calc_accuracy(outputs, label, config, result=None):
-    from utils.accuracy import top1, topk
+    from utils.accuracy import top1, topk, topkx
     if config.get("output", "accuracy_method") == "top1":
         return top1(outputs, label, config, result)
     elif config.get("output", "accuracy_method") == "top2":
@@ -67,6 +67,8 @@ def calc_accuracy(outputs, label, config, result=None):
         return topk(outputs, label, config, result, 3)
     elif config.get("output", "accuracy_method") == "top4":
         return topk(outputs, label, config, result, 4)
+    elif config.get("output", "accuracy_method") == "topk":
+        return topkx(outputs, label, config, result, 4)
     else:
         raise NotImplementedError
 

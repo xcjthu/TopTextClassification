@@ -73,12 +73,12 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     task_loss_type = config.get("train", "type_of_loss")
     criterion = get_loss(task_loss_type)
 
-    running_acc = 0
+    running_acc = [0, 0, 0, 0]
     running_loss = 0
     cnt = 0
     acc_result = []
 
-    #doc_list = []
+    # doc_list = []
     while True:
         data = valid_dataset.fetch_data(config)
         # print('fetch data')
@@ -99,10 +99,11 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
         outputs, loss, accu = results["x"], results["loss"], results["accuracy"]
         acc_result = results["accuracy_result"]
 
-        #doc_list += results['doc_choice'].tolist()
+        # doc_list += results['doc_choice'].tolist()
 
         running_loss += loss.item()
-        running_acc += accu.item()
+        for a in range(0, 4):
+            running_acc[a] += accu[a].item()
 
     if writer is None:
         pass
@@ -116,11 +117,13 @@ def valid_net(net, valid_dataset, use_gpu, config, epoch, writer=None):
     # gen_result(acc_result, True)
 
     net.train()
+    for a in range(0, len(running_acc)):
+        running_acc[a] /= cnt
 
-    #fout = open('/data/disk1/private/xcj/exam/gg.json', 'w')
-    #print(json.dumps(doc_list), file = fout)
+    # fout = open('/data/disk1/private/xcj/exam/gg.json', 'w')
+    # print(json.dumps(doc_list), file = fout)
 
-    return running_loss / cnt, running_acc / cnt
+    return running_loss / cnt, running_acc
 
     # print_info("valid end")
     # print_info("------------------------")
@@ -182,7 +185,7 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
         train_cnt = 0
         train_loss = 0
-        train_acc = 0
+        train_acc = [0, 0, 0, 0]
 
         exp_lr_scheduler.step(epoch_num)
         lr = 0
@@ -211,7 +214,9 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
 
             loss.backward()
             train_loss += loss.item()
-            train_acc += accu.item()
+            for a in range(0, 4):
+                train_acc[a] += accu[a].item()
+            # train_acc += accu.item()
             train_cnt += 1
 
             loss = loss.item()
@@ -221,16 +226,21 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             total += config.getint("train", "batch_size")
 
             if cnt % output_time == 0:
+                vx = []
+                for x in train_acc:
+                    vx.append(round(float(x / train_cnt * 100), 2))
                 print('\r', end='', flush=True)
-                print('%.4f   % 3d    |  %.4f         % 2.2f   |   ????           ?????   |  %s  | %d' % (
-                    lr, epoch_num + 1, train_loss / train_cnt, train_acc / train_cnt * 100,
+                print('%.4f   % 3d    |  %.4f         %s  |   ????           ?????   |  %s  | %d' % (
+                    lr, epoch_num + 1, train_loss / train_cnt, str(vx),
                     time_to_str((timer() - start)), total), end='',
                       flush=True)
 
         del data
 
         train_loss /= train_cnt
-        train_acc /= train_cnt
+
+        for a in range(0, len(train_acc)):
+            train_acc[a] = round(float(train_acc[a] / train_cnt * 100), 2)
 
         # writer.add_scalar(config.get("output", "model_name") + " train loss", train_loss, epoch_num + 1)
         # writer.add_scalar(config.get("output", "model_name") + " train accuracy", train_acc, epoch_num + 1)
@@ -242,8 +252,8 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
         with torch.no_grad():
             valid_loss, valid_accu = valid_net(net, valid_dataset, use_gpu, config, epoch_num + 1, writer)
         print('\r', end='', flush=True)
-        print('%.4f   % 3d    |  %.4f          %.2f   |  %.4f         % 2.2f   |  %s  | %d' % (
-            lr, epoch_num + 1, train_loss, train_acc * 100, valid_loss, valid_accu * 100,
+        print('%.4f   % 3d    |  %.4f         %s  |  %.4f         %s   |  %s  | %d' % (
+            lr, epoch_num + 1, train_loss, str(train_acc), valid_loss, str(valid_accu),
             time_to_str((timer() - start)), total))
 
 
