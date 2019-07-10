@@ -37,7 +37,6 @@ class DataMining(nn.Module):
     def forward(self, data, criterion, config, usegpu, acc_result = None):
         docs = data['ab']
         labels = data['label']
-        
         docs = self.encoder(docs)
 
         out_result = self.decoder(docs)

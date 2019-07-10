@@ -16,7 +16,10 @@ class DataMining_Bert_Formatter:
         self.max_len = config.getint('data', 'max_len')
 
     def check(self, data, config):
-        data = json.loads(data)
+        try:
+            data = json.loads(data)
+        except:
+            data = None
         return data
 
 
@@ -39,26 +42,37 @@ class DataMining_Bert_Formatter:
     
     def lookupab(self, a, b, max_len):
         look_id = [self.word2id['[CLS]']]
-        look_id += self.lookup(a, max_len)
+        # look_id += self.lookup(a, max_len)
+        look_id += self.lookup(a, len(a))
         look_id.append(self.word2id['[SEP]'])
-        look_id += self.lookup(b, max_len)
+        # look_id += self.lookup(b, max_len)
+        look_id += self.lookup(b, len(b))
         look_id.append(self.word2id['[SEP]'])
-        
+        while len(look_id) < max_len * 2 + 3:
+            look_id.append(self.word2id['[PAD]'])
+        look_id = look_id[:max_len * 2 + 3]
+
         return look_id
         
 
     def format(self, batch_data, config, transformer, mode):
-        
         label = []
         ab = []
 
         l2id = {'unrelated': 0, 'agreed': 1, 'disagreed': 2}
         for data in batch_data:
+            
             ab.append(self.lookupab(data['a'], data['b'], self.max_len))
             # A.append(self.lookup(''.join(data['a']), self.max_len))
             # B.append(self.lookup(''.join(data['b']), self.max_len))
             # C.append(self.lookup(''.join(data['C']), self.max_len))
+            # if mode == 'train':
             label.append(l2id[data['label']])
+            #else:
+            #    label.append(0)
+            if mode == 'train':
+                ab.append(self.lookupab(data['b'], data['a'], self.max_len))
+                label.append(l2id[data['label']])
 
         # A = torch.tensor(A, dtype = torch.long)
         # B = torch.tensor(B, dtype = torch.long)
