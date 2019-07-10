@@ -65,7 +65,7 @@ def top1(outputs, label, config, result=None):
         return torch.mean(torch.eq(prediction, label).float()), result
 
 
-def top2(outputs, label, config, result=None):
+def topk(outputs, label, config, result=None, k=2):
     if not (result is None):
         # print(label)
         id1 = torch.max(outputs, dim=1)[1]
@@ -86,9 +86,43 @@ def top2(outputs, label, config, result=None):
                 result[it_is]["FP"] += 1
                 result[should_be]["FN"] += 1
 
-    _, prediction = torch.topk(outputs, 2, 1, largest=True)
+    _, prediction = torch.topk(outputs, k, 1, largest=True)
+    predictions = []
+    for a in range(0, k):
+        predictions.append(prediction[a:a + 1].view(-1))
+
+    res = 0
+    for a in range(0, k):
+        res = res + torch.mean(torch.eq(predictions[a], label).float())
+
+    return res, result
+
+
+def top3(outputs, label, config, result=None):
+    if not (result is None):
+        # print(label)
+        id1 = torch.max(outputs, dim=1)[1]
+        # id2 = torch.max(label, dim=1)[1]
+        id2 = label
+        nr_classes = outputs.size(1)
+        while len(result) < nr_classes:
+            result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
+        for a in range(0, len(id1)):
+            # if len(result) < a:
+            #    result.append({"TP": 0, "FN": 0, "FP": 0, "TN": 0})
+
+            it_is = int(id1[a])
+            should_be = int(id2[a])
+            if it_is == should_be:
+                result[it_is]["TP"] += 1
+            else:
+                result[it_is]["FP"] += 1
+                result[should_be]["FN"] += 1
+
+    _, prediction = torch.topk(outputs, 3, 1, largest=True)
     prediction1 = prediction[:, 0:1]
-    prediction2 = prediction[:, 1:]
+    prediction2 = prediction[:, 1:2]
+    prediction2 = prediction[:, 1:2]
 
     prediction1 = prediction1.view(-1)
     prediction2 = prediction2.view(-1)
