@@ -219,8 +219,6 @@ def train_net(net, train_dataset, valid_dataset, use_gpu, config):
             # train_acc += accu.item()
             train_cnt += 1
 
-            loss = loss.item()
-            accu = accu.item()
             optimizer.step()
 
             total += config.getint("train", "batch_size")
