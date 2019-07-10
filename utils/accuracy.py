@@ -89,7 +89,7 @@ def topk(outputs, label, config, result=None, k=2):
     _, prediction = torch.topk(outputs, k, 1, largest=True)
     predictions = []
     for a in range(0, k):
-        predictions.append(prediction[a:a + 1].view(-1))
+        predictions.append(prediction[:, a:a + 1].view(-1))
 
     res = 0
     for a in range(0, k):
