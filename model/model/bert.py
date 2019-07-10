@@ -2,13 +2,25 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from pytorch_pretrained_bert import BertModel
+import numpy as np
+import random
 
 from utils.util import calc_accuracy, print_info
+
+
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 
 class Bert(nn.Module):
     def __init__(self, config):
         super(Bert, self).__init__()
+        setup_seed(19960618)
+        torch.random.initial_seed()
         self.data_size = config.getint("data", "vec_size")
         self.output_dim = config.getint("model", "output_dim")
         self.batch_size = config.getint('train', 'batch_size')
